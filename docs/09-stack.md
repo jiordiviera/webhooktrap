@@ -325,7 +325,7 @@ Pas de OAuth social au MVP.
 | **ESLint 9** flat config | Lint monorepo |
 | **Prettier** | Format |
 | **Husky** + **lint-staged** | Pre-commit (optionnel MVP) |
-| **.env.example** | par app |
+| **.env.example** | racine monorepo (`hookscope/.env`) |
 
 **Pas de Docker** pour Postgres ni Redis — install native ou DB cloud (Neon).
 

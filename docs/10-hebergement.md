@@ -67,7 +67,7 @@ flowchart TB
 # Production (Railway)
 DATABASE_URL=postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/hookscope?sslmode=require
 
-# Dev local (apps/api/.env)
+# Dev local (hookscope/.env à la racine du monorepo)
 DATABASE_URL=postgresql://user:pass@ep-yyy.eu-central-1.aws.neon.tech/hookscope_dev?sslmode=require
 ```
 
@@ -181,14 +181,11 @@ DNS (Cloudflare ou registrar) :
 ## Flux dev local (sans Docker)
 
 ```env
-# apps/api/.env
+# hookscope/.env (racine monorepo — partagé api + web)
 DATABASE_URL=postgresql://...@neon.tech/hookscope_dev?sslmode=require
 APP_KEY=dev-key-min-32-chars-long-xxxx
 PORT=3333
-
-# apps/web/.env.local
 NEXT_PUBLIC_API_URL=http://localhost:3333
-API_URL=http://localhost:3333
 ```
 
 ```bash

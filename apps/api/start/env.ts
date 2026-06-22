@@ -11,7 +11,10 @@
 
 import { Env } from '@adonisjs/core/env'
 
-export default await Env.create(new URL('../', import.meta.url), {
+/**
+ * Charge .env depuis la racine du monorepo (hookscope/.env), pas apps/api/.
+ */
+export default await Env.create(new URL('../../../', import.meta.url), {
   // Node
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
   PORT: Env.schema.number(),
