@@ -37,4 +37,14 @@ export default await Env.create(new URL('../../../', import.meta.url), {
   DB_CONNECTION: Env.schema.enum(['postgres', 'sqlite'] as const),
   DATABASE_URL: Env.schema.string.optional(),
   DB_DATABASE: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | OAuth social (optionnel — pas au MVP, email/password only)
+  |----------------------------------------------------------
+  */
+  GITHUB_CLIENT_ID: Env.schema.string.optional(),
+  GITHUB_CLIENT_SECRET: Env.schema.string.optional(),
+  GOOGLE_CLIENT_ID: Env.schema.string.optional(),
+  GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
 })

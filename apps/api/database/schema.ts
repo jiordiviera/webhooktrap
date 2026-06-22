@@ -8,7 +8,18 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class AuthAccessTokenSchema extends BaseModel {
-  static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
+  static $columns = [
+    'abilities',
+    'createdAt',
+    'expiresAt',
+    'hash',
+    'id',
+    'lastUsedAt',
+    'name',
+    'tokenableId',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = AuthAccessTokenSchema.$columns
   @column()
   declare abilities: string
@@ -30,6 +41,129 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class EventSchema extends BaseModel {
+  static $columns = [
+    'bodyJson',
+    'bodyText',
+    'contentType',
+    'createdAt',
+    'headers',
+    'id',
+    'inboxId',
+    'ip',
+    'method',
+    'path',
+    'query',
+    'receivedAt',
+    'sizeBytes',
+  ] as const
+  $columns = EventSchema.$columns
+  @column()
+  declare bodyJson: any | null
+  @column()
+  declare bodyText: string | null
+  @column()
+  declare contentType: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare headers: any
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare inboxId: string
+  @column()
+  declare ip: string | null
+  @column()
+  declare method: string
+  @column()
+  declare path: string
+  @column()
+  declare query: any
+  @column.dateTime()
+  declare receivedAt: DateTime
+  @column()
+  declare sizeBytes: number
+}
+
+export class InboxSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'defaultReplayUrl',
+    'expiresAt',
+    'id',
+    'name',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = InboxSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare defaultReplayUrl: string | null
+  @column.dateTime()
+  declare expiresAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
+export class ReplaySchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'durationMs',
+    'errorCode',
+    'errorMessage',
+    'eventId',
+    'id',
+    'responseBody',
+    'responseHeaders',
+    'statusCode',
+    'targetUrl',
+  ] as const
+  $columns = ReplaySchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare durationMs: number | null
+  @column()
+  declare errorCode: string | null
+  @column()
+  declare errorMessage: string | null
+  @column()
+  declare eventId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare responseBody: string | null
+  @column()
+  declare responseHeaders: any | null
+  @column()
+  declare statusCode: number | null
+  @column()
+  declare targetUrl: string
+}
+
+export class ShareTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'eventId', 'expiresAt', 'id', 'token'] as const
+  $columns = ShareTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare eventId: string
+  @column.dateTime()
+  declare expiresAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare token: string
 }
 
 export class UserSchema extends BaseModel {
