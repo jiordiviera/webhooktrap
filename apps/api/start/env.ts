@@ -24,4 +24,14 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Session
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
+
+  /*
+  |--------------------------------------------------------------------------
+  | Database (Lucid)
+  | @see https://docs.adonisjs.com/guides/database/lucid#configuration
+  |--------------------------------------------------------------------------
+  */
+  DB_CONNECTION: Env.schema.enum(['postgres', 'sqlite'] as const),
+  DATABASE_URL: Env.schema.string.optional(),
+  DB_DATABASE: Env.schema.string.optional(),
 })
