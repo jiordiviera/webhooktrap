@@ -1,0 +1,47 @@
+/**
+ * Hookscope — brand tokens & wordmark
+ * Aligné rendu DreamBell / Hookscope (Grok Imagine → Cormorant Garamond en prod)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Lora:wght@400;500&display=swap');
+
+:root {
+  --hookscope-wordmark-light: #6b4a3a;
+  --hookscope-wordmark-light-alt: #7d5a45;
+  --hookscope-wordmark-dark: #f2ebe3;
+  --hookscope-wordmark-dark-alt: #e8e0d5;
+  --hookscope-cream-bg: #f5f0e8;
+
+  --hookscope-font-wordmark: 'Cormorant Garamond', 'Times New Roman', serif;
+  --hookscope-font-body: 'Lora', Georgia, serif;
+  --hookscope-font-ui: ui-sans-serif, system-ui, 'Inter', sans-serif;
+}
+
+.logo-wordmark {
+  font-family: var(--hookscope-font-wordmark);
+  font-weight: 600;
+  font-size: 1.75rem;
+  letter-spacing: 0.04em;
+  color: var(--hookscope-wordmark-light);
+}
+
+.logo-wordmark--dark {
+  color: var(--hookscope-wordmark-dark);
+}
+
+.logo-wordmark--hook-emphasis .logo-wordmark__hook {
+  font-weight: 600;
+}
+
+.logo-wordmark--hook-emphasis .logo-wordmark__scope {
+  font-weight: 500;
+}
+
+.body-text {
+  font-family: var(--hookscope-font-body);
+  font-weight: 400;
+}
+
+.ui-text {
+  font-family: var(--hookscope-font-ui);
+}
