@@ -5,6 +5,7 @@ export interface ApiDefinition {
   ingest: typeof routes['ingest']
   inboxes: {
     store: typeof routes['inboxes.store']
+    index: typeof routes['inboxes.index']
   }
   auth: {
     newAccount: {

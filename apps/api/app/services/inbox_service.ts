@@ -12,4 +12,23 @@ export default class InboxService {
       expiresAt: DateTime.now().plus({ hours: ANONYMOUS_TTL_HOURS }),
     })
   }
+
+  static async createForUser(userId: number, name = 'Untitled inbox') {
+    return Inbox.create({
+      id: inboxId(),
+      userId,
+      name,
+      expiresAt: null,
+    })
+  }
+
+  static async listForUser(userId: number) {
+    return Inbox.query()
+      .where('userId', userId)
+      .withCount('events')
+      .preload('events', (query) => {
+        query.orderBy('receivedAt', 'desc').limit(1)
+      })
+      .orderBy('createdAt', 'desc')
+  }
 }

@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { Button } from '@workspace/ui/components/button'
 import {
@@ -21,7 +21,9 @@ import { OAuthButtons } from './oauth-buttons'
 
 export function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { signIn } = useAuth()
+  const returnTo = searchParams.get('returnTo') ?? '/'
   const {
     register,
     handleSubmit,
@@ -43,7 +45,7 @@ export function LoginForm() {
       })
 
       signIn(body.data)
-      router.push('/')
+      router.push(returnTo.startsWith('/') ? returnTo : '/')
       router.refresh()
     } catch (err) {
       if (err instanceof ApiError) {

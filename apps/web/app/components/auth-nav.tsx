@@ -15,7 +15,13 @@ export function AuthNav() {
   if (isAuthenticated && user) {
     return (
       <div className="flex items-center gap-4">
-        <span className="font-ui text-sm text-muted-foreground">
+        <Link
+          href="/dashboard"
+          className="font-ui text-sm text-muted-foreground transition-colors hover:text-primary"
+        >
+          Dashboard
+        </Link>
+        <span className="font-ui hidden text-sm text-muted-foreground sm:inline">
           {user.fullName ?? user.email}
         </span>
         <Button

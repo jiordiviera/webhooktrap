@@ -52,7 +52,7 @@ function ProviderLogo({ Logo, logoClassName }: Pick<Provider, 'Logo' | 'logoClas
 
 function ProviderItem({ name, Logo, logoClassName, showLabel }: Provider) {
   return (
-    <div className="group flex shrink-0 items-center gap-2.5 px-2">
+    <div className="group flex shrink-0 cursor-pointer items-center gap-2.5 px-2">
       <ProviderLogo Logo={Logo} logoClassName={logoClassName} />
       {showLabel ? (
         <span className="font-ui text-sm tracking-wide text-foreground/70">{name}</span>

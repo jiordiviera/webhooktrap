@@ -18,6 +18,12 @@ const routes = {
     tokens: [{"old":"/api/v1/inboxes","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes","type":0,"val":"inboxes","end":""}],
     types: placeholder as Registry['inboxes.store']['types'],
   },
+  'inboxes.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/inboxes',
+    tokens: [{"old":"/api/v1/inboxes","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes","type":0,"val":"inboxes","end":""}],
+    types: placeholder as Registry['inboxes.index']['types'],
+  },
   'auth.new_account.store': {
     methods: ["POST"],
     pattern: '/api/v1/auth/signup',

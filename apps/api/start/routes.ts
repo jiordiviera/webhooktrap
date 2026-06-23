@@ -25,6 +25,10 @@ router
   .group(() => {
     router.post('inboxes', [controllers.Inboxes, 'store']).as('inboxes.store')
     router
+      .get('inboxes', [controllers.Inboxes, 'index'])
+      .as('inboxes.index')
+      .use(middleware.auth())
+    router
       .group(() => {
         router.post('signup', [controllers.NewAccount, 'store'])
         router.post('login', [controllers.AccessTokens, 'store'])

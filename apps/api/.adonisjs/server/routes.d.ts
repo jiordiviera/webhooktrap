@@ -6,6 +6,7 @@ export type ScannedRoutes = {
   ALL: {
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
     'inboxes.store': { paramsTuple?: []; params?: {} }
+    'inboxes.index': { paramsTuple?: []; params?: {} }
     'auth.new_account.store': { paramsTuple?: []; params?: {} }
     'auth.access_tokens.store': { paramsTuple?: []; params?: {} }
     'auth.oauth.providers': { paramsTuple?: []; params?: {} }
@@ -16,12 +17,14 @@ export type ScannedRoutes = {
   }
   GET: {
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
+    'inboxes.index': { paramsTuple?: []; params?: {} }
     'auth.oauth.providers': { paramsTuple?: []; params?: {} }
     'auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'profile.profile.show': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
+    'inboxes.index': { paramsTuple?: []; params?: {} }
     'auth.oauth.providers': { paramsTuple?: []; params?: {} }
     'auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
