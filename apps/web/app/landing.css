@@ -91,6 +91,10 @@
   animation: ticker 42s linear infinite;
 }
 
+.landing-ticker-track:hover .landing-ticker {
+  animation-play-state: paused;
+}
+
 .landing-replay-active {
   animation: replay-pulse 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }

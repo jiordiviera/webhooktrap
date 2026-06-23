@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from 'react'
+import { cn } from '@workspace/ui/lib/utils'
 import { GithubWordmarkLight } from '@workspace/ui/components/svgs/githubWordmarkLight'
 import { ClerkWordmarkLight } from '@workspace/ui/components/ui/svgs/clerkWordmarkLight'
 import { GoogleWordmark } from '@workspace/ui/components/ui/svgs/googleWordmark'
@@ -32,12 +33,29 @@ const PROVIDERS: Provider[] = [
   { name: 'X', Logo: X, logoClassName: 'size-5', showLabel: true },
 ]
 
+function ProviderLogo({ Logo, logoClassName }: Pick<Provider, 'Logo' | 'logoClassName'>) {
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <Logo
+        className={cn(logoClassName, 'brightness-0 transition-opacity duration-300 group-hover:opacity-0')}
+        aria-hidden
+      />
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <Logo
+          className={cn(logoClassName, 'opacity-0 transition-opacity duration-300 group-hover:opacity-100')}
+          aria-hidden
+        />
+      </div>
+    </div>
+  )
+}
+
 function ProviderItem({ name, Logo, logoClassName, showLabel }: Provider) {
   return (
-    <div className="flex shrink-0 items-center gap-2.5 px-2">
-      <Logo className={logoClassName} aria-hidden />
+    <div className="group flex shrink-0 items-center gap-2.5 px-2">
+      <ProviderLogo Logo={Logo} logoClassName={logoClassName} />
       {showLabel ? (
-        <span className="font-ui text-sm tracking-wide text-muted-foreground">{name}</span>
+        <span className="font-ui text-sm tracking-wide text-foreground/70">{name}</span>
       ) : (
         <span className="sr-only">{name}</span>
       )}
@@ -49,14 +67,16 @@ export function ProviderTicker() {
   const items = [...PROVIDERS, ...PROVIDERS]
 
   return (
-    <section aria-label="Webhook providers" className="relative border-y border-border bg-secondary/40 py-6">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-secondary/90 to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-secondary/90 to-transparent" />
+    <section aria-label="Webhook providers" className="relative border-y border-border bg-white py-6">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-white to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-white to-transparent" />
 
-      <div className="landing-ticker flex w-max items-center gap-16 px-10 motion-reduce:transform-none">
+      <div className="landing-ticker-track overflow-hidden">
+        <div className="landing-ticker flex w-max items-center gap-16 px-10 motion-reduce:transform-none">
         {items.map((provider, index) => (
           <ProviderItem key={`${provider.name}-${index}`} {...provider} />
         ))}
+        </div>
       </div>
     </section>
   )
