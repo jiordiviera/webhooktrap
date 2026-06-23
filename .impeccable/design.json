@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-23T16:30:00.000Z",
+  "title": "Design System: Hookscope",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Burnt Terracotta",
+        "canonical": "oklch(0.42 0.075 46)",
+        "tonalRamp": [
+          "oklch(0.18 0.04 46)",
+          "oklch(0.28 0.06 46)",
+          "oklch(0.36 0.07 46)",
+          "oklch(0.42 0.075 46)",
+          "oklch(0.52 0.07 46)",
+          "oklch(0.65 0.05 50)",
+          "oklch(0.78 0.03 58)",
+          "oklch(0.92 0.015 72)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Studio Cream",
+        "canonical": "oklch(0.96 0.018 78)",
+        "tonalRamp": [
+          "oklch(0.22 0.025 48)",
+          "oklch(0.36 0.045 48)",
+          "oklch(0.52 0.03 52)",
+          "oklch(0.72 0.025 70)",
+          "oklch(0.88 0.02 75)",
+          "oklch(0.94 0.02 76)",
+          "oklch(0.96 0.018 78)",
+          "oklch(0.98 0.012 78)"
+        ]
+      },
+      "signal": {
+        "role": "secondary",
+        "displayName": "Webhook Signal",
+        "canonical": "oklch(0.55 0.12 145)",
+        "tonalRamp": [
+          "oklch(0.22 0.06 145)",
+          "oklch(0.32 0.09 145)",
+          "oklch(0.42 0.11 145)",
+          "oklch(0.55 0.12 145)",
+          "oklch(0.65 0.10 145)",
+          "oklch(0.78 0.07 145)",
+          "oklch(0.90 0.04 145)",
+          "oklch(0.96 0.02 145)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Ink Brown",
+        "canonical": "oklch(0.36 0.045 48)",
+        "tonalRamp": [
+          "oklch(0.15 0.03 48)",
+          "oklch(0.22 0.035 48)",
+          "oklch(0.30 0.04 48)",
+          "oklch(0.36 0.045 48)",
+          "oklch(0.45 0.04 50)",
+          "oklch(0.55 0.035 52)",
+          "oklch(0.70 0.025 60)",
+          "oklch(0.85 0.015 70)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing hero headlines. Cormorant Garamond 600 only."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Marketing paragraphs and long-form copy. Lora 400, max 65–75ch."
+      },
+      "label": {
+        "displayName": "UI Label",
+        "purpose": "Forms, tables, nav, buttons, status. system-ui via font-ui."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Ingest URLs, HTTP methods, JSON. font-ui 0.8125rem, tabular-nums where needed."
+      }
+    },
+    "shadows": [
+      {
+        "name": "ingest-reveal",
+        "value": "0 12px 40px oklch(0.35 0.04 48 / 0.08)",
+        "purpose": "Single marketing card after inbox creation on landing."
+      },
+      {
+        "name": "demo-glow-rest",
+        "value": "0 24px 60px oklch(0.35 0.04 48 / 0.08)",
+        "purpose": "Live webhook demo panel ambient lift at rest."
+      },
+      {
+        "name": "demo-glow-peak",
+        "value": "0 28px 70px oklch(0.42 0.075 46 / 0.14), 0 0 0 1px oklch(0.55 0.12 145 / 0.2)",
+        "purpose": "Animated peak state on demo panel only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Landing orb drift, count-up, replay pulse. Default marketing easing."
+      },
+      {
+        "name": "ease-product",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Product UI transitions 150–250ms. State feedback only."
+      },
+      {
+        "name": "ticker-linear",
+        "value": "linear",
+        "purpose": "Provider logo marquee. Pauses on track hover."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default forward action: open inbox, sign in, new inbox, replay.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">New inbox</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0.5rem 1rem; border: 1px solid transparent; border-radius: 0.625rem; background: oklch(0.42 0.075 46); color: oklch(0.97 0.01 78); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: oklch(0.42 0.075 46 / 0.8); } .ds-btn-primary:focus-visible { outline: none; border-color: oklch(0.55 0.06 48); box-shadow: 0 0 0 3px oklch(0.55 0.06 48 / 0.5); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary actions: copy URL, retry, cancel.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Copy URL</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; height: 1.75rem; padding: 0.375rem 0.625rem; border: 1px solid oklch(0.88 0.02 75); border-radius: 0.625rem; background: oklch(0.96 0.018 78); color: oklch(0.36 0.045 48); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s; } .ds-btn-outline:hover { background: oklch(0.94 0.02 76); color: oklch(0.36 0.045 48); } .ds-btn-outline:focus-visible { outline: none; border-color: oklch(0.55 0.06 48); box-shadow: 0 0 0 3px oklch(0.55 0.06 48 / 0.5); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Tertiary nav actions: sign out, low-emphasis links in chrome.",
+      "html": "<button class=\"ds-btn-ghost\" type=\"button\">Sign out</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; height: 1.75rem; padding: 0.375rem 0.625rem; border: 1px solid transparent; border-radius: 0.625rem; background: transparent; color: oklch(0.36 0.045 48); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.2s; } .ds-btn-ghost:hover { background: oklch(0.94 0.02 76); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 3px oklch(0.55 0.06 48 / 0.5); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Auth and settings fields. 32px height, transparent fill.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"you@company.com\" aria-label=\"Email\" />",
+      "css": ".ds-input { display: block; width: 100%; height: 2rem; padding: 0.25rem 0.625rem; border: 1px solid oklch(0.88 0.02 75); border-radius: 0.625rem; background: transparent; color: oklch(0.36 0.045 48); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input::placeholder { color: oklch(0.52 0.03 52); } .ds-input:focus-visible { outline: none; border-color: oklch(0.55 0.06 48); box-shadow: 0 0 0 3px oklch(0.55 0.06 48 / 0.5); } .ds-input[aria-invalid=\"true\"] { border-color: oklch(0.48 0.12 28); box-shadow: 0 0 0 3px oklch(0.48 0.12 28 / 0.2); }"
+    },
+    {
+      "name": "Dashboard Nav Link",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "Active pill in dashboard header.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Dashboard\"><a class=\"ds-nav-link ds-nav-link--active\" href=\"/dashboard\" aria-current=\"page\">Inboxes</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 0.25rem; font-family: ui-sans-serif, system-ui, sans-serif; } .ds-nav-link { display: inline-block; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; color: oklch(0.52 0.03 52); text-decoration: none; transition: color 0.2s, background 0.2s; } .ds-nav-link:hover { color: oklch(0.36 0.045 48); } .ds-nav-link--active { background: oklch(0.94 0.025 74); color: oklch(0.36 0.045 48); } .ds-nav-link:focus-visible { outline: none; box-shadow: 0 0 0 3px oklch(0.55 0.06 48 / 0.5); }"
+    },
+    {
+      "name": "Inbox List Row",
+      "kind": "custom",
+      "refersTo": "button-outline",
+      "description": "Border-separated dashboard row. No card wrapper.",
+      "html": "<article class=\"ds-inbox-row\"><div class=\"ds-inbox-row__name\"><a href=\"/i/xK9m2pQ7nR4a\">Stripe Integration</a><span class=\"ds-inbox-row__id\">/xK9m2pQ7nR4a</span></div><span class=\"ds-inbox-row__meta\">12 events</span></article>",
+      "css": ".ds-inbox-row { display: grid; gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid oklch(0.88 0.02 75); font-family: ui-sans-serif, system-ui, sans-serif; align-items: center; } .ds-inbox-row__name a { font-size: 0.9375rem; font-weight: 500; color: oklch(0.36 0.045 48); text-decoration: none; } .ds-inbox-row__name a:hover { color: oklch(0.42 0.075 46); } .ds-inbox-row__id { display: block; margin-top: 0.125rem; font-size: 0.75rem; color: oklch(0.52 0.03 52); } .ds-inbox-row__meta { font-size: 0.875rem; font-variant-numeric: tabular-nums; color: oklch(0.36 0.045 48); }"
+    },
+    {
+      "name": "Landing CTA Pill",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Hero call-to-action on marketing pages. Taller, fully rounded.",
+      "html": "<button class=\"ds-btn-cta\" type=\"button\">Open a free inbox</button>",
+      "css": ".ds-btn-cta { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.75rem; padding: 0 1.5rem; border: none; border-radius: 9999px; background: oklch(0.42 0.075 46); color: oklch(0.97 0.01 78); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.9375rem; font-weight: 500; cursor: pointer; transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-cta:hover { background: oklch(0.42 0.075 46 / 0.85); } .ds-btn-cta:focus-visible { outline: none; box-shadow: 0 0 0 3px oklch(0.55 0.06 48 / 0.5); }"
+    },
+    {
+      "name": "Signal Badge",
+      "kind": "chip",
+      "refersTo": "signal",
+      "description": "Live webhook / success indicator in demo and inbox.",
+      "html": "<span class=\"ds-badge-signal\"><span class=\"ds-badge-signal__dot\" aria-hidden=\"true\"></span>Listening</span>",
+      "css": ".ds-badge-signal { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.125rem 0.5rem; border-radius: 9999px; background: oklch(0.94 0.04 145); color: oklch(0.42 0.11 145); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; } .ds-badge-signal__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: oklch(0.55 0.12 145); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Warm Workbench",
+    "overview": "Hookscope looks like a well-lit developer bench: warm cream surfaces, terracotta accents used sparingly, and typography that shifts from editorial serif on the landing to system UI in the debugger. Density is controlled. Lists and borders carry structure; cards appear only when grouping related actions. Depth comes from tonal layering more than heavy shadows.",
+    "keyCharacteristics": [
+      "OKLCH terracotta/crème palette with tinted neutrals",
+      "Dual typography: serif editorial landing, font-ui product surfaces",
+      "Restrained terracotta accent ≤10% on product screens",
+      "Signal green for live webhook states only",
+      "Row-first layouts, flat product elevation",
+      "prefers-reduced-motion respected on landing"
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Terracotta primary occupies ≤10% of any product screen. Signal green is even rarer: live state only.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tinted Neutral Rule",
+        "body": "Backgrounds, borders, and text neutrals carry a warm hue. Never use untinted #000 or #fff.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Registers Rule",
+        "body": "Landing uses Cormorant + Lora. Dashboard, inbox, auth use font-ui for headings, labels, tables, and code.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Product Rule",
+        "body": "Dashboard and inbox UI do not use drop shadows on list rows. Separation is by border-border only.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Motion-Only Lift Rule",
+        "body": "On landing, elevation may animate. In product UI, hover changes tone or border, not shadow stacks.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use OKLCH tokens from packages/ui/src/styles/globals.css",
+      "Do use font-ui for dashboard, inbox, auth, tables, and code",
+      "Do use Cormorant + Lora on landing only",
+      "Do separate lists with border-b border-border",
+      "Do use signal green for live/success webhook semantics",
+      "Do respect prefers-reduced-motion on landing",
+      "Do provide focus-visible rings on interactive controls"
+    ],
+    "donts": [
+      "Don't default to observability dark-blue dashboards (Datadog / Grafana aesthetic)",
+      "Don't build bloated webhook admin UIs (Hookdeck / RequestBin clutter)",
+      "Don't use email marketing product chrome (Resend / SendGrid vibes)",
+      "Don't use generic SaaS purple Inter templates, hero metrics, or identical icon-card grids",
+      "Don't use crypto neon, glassmorphism-as-decoration, gradient text, or side-stripe accent borders",
+      "Don't put serif display fonts on data tables or replay panels",
+      "Don't use pure #000 or #fff",
+      "Don't animate layout properties on hover",
+      "Don't open modals when inline expansion suffices"
+    ]
+  }
+}
