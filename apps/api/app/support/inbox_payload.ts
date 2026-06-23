@@ -1,5 +1,4 @@
 import type Inbox from '#models/inbox'
-import { DateTime } from 'luxon'
 
 type InboxWithMeta = Inbox & {
   $extras: {
@@ -22,9 +21,4 @@ export function serializeInbox(inbox: InboxWithMeta) {
     createdAt: inbox.createdAt,
     updatedAt: inbox.updatedAt,
   }
-}
-
-export function isInboxExpired(expiresAt: DateTime | null) {
-  if (!expiresAt) return false
-  return expiresAt < DateTime.now()
 }
