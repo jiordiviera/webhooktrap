@@ -17,7 +17,7 @@ export function AuthNav() {
       <div className="flex items-center gap-4">
         <Link
           href="/dashboard"
-          className="font-ui text-sm text-muted-foreground transition-colors hover:text-primary"
+          className="font-ui text-sm font-medium text-foreground transition-colors hover:text-primary"
         >
           Dashboard
         </Link>

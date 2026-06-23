@@ -1,12 +1,28 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { AuthNav } from './components/auth-nav'
+import { DeveloperCredit } from './components/developer-credit'
 import { CreateInboxCta } from './components/create-inbox-cta'
 import { LiveWebhookDemo } from './components/landing/live-webhook-demo'
 import { ProviderTicker } from './components/landing/provider-ticker'
 import { ScrollReveal } from './components/landing/scroll-reveal'
 import { SignalField } from './components/landing/signal-field'
 import './landing.css'
+
+const DIFFERENTIATORS = [
+  {
+    title: 'Replay with response',
+    body: 'Most tools stop at the payload. Hookscope shows status, headers, latency, and the body your app returned.',
+  },
+  {
+    title: 'Any provider',
+    body: 'One ingest URL for Stripe, GitHub, Shopify, Twilio, or a raw curl. No vendor-specific setup.',
+  },
+  {
+    title: 'Minutes, not maze',
+    body: 'Anonymous inbox in one click. Sign in later to keep it. No tunnel gymnastics before the first event.',
+  },
+] as const
 
 const FLOW = [
   {
@@ -106,6 +122,17 @@ export default function Home() {
 
       <ProviderTicker />
 
+      <section className="border-y border-border bg-secondary/50 px-6 py-10 md:px-16">
+        <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3 md:gap-12">
+          {DIFFERENTIATORS.map((item) => (
+            <div key={item.title}>
+              <h2 className="font-ui mb-2 text-sm font-semibold text-foreground">{item.title}</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section id="demo" className="scroll-mt-20 px-6 py-20 md:px-16 md:py-28">
         <ScrollReveal>
           <div className="mb-12 max-w-2xl">
@@ -169,20 +196,31 @@ export default function Home() {
             <h2 className="mb-4 text-[clamp(2rem,4.5vw,3rem)] leading-tight font-semibold">
               Your next webhook is already on its way.
             </h2>
-            <p className="mb-8 max-w-[40ch] text-muted-foreground">
-              Open an inbox in seconds. Anonymous inboxes last 48 hours. Sign in later to keep
-              them.
+            <p className="mb-4 max-w-[42ch] text-muted-foreground">
+              Open an inbox in seconds. Anonymous inboxes last 48 hours. Sign in to save them and
+              unlock replay history.
+            </p>
+            <p className="font-ui mb-8 text-sm text-muted-foreground/80">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+                Sign in to your dashboard
+              </Link>
             </p>
             <CreateInboxCta showSecondaryLink={false} />
           </div>
         </ScrollReveal>
       </section>
 
-      <footer className="mt-auto flex flex-wrap items-baseline gap-x-8 gap-y-3 border-t border-border px-6 py-8 md:px-16">
-        <span className="text-xl font-semibold tracking-widest text-wordmark">Hookscope</span>
-        <p className="font-ui text-[0.8125rem] text-muted-foreground">
-          Developer-first debugging. Receive → Replay → Response.
-        </p>
+      <footer className="mt-auto border-t border-border px-6 py-8 md:px-16">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-4">
+          <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2">
+            <span className="text-xl font-semibold tracking-widest text-wordmark">Hookscope</span>
+            <p className="font-ui text-[0.8125rem] text-muted-foreground">
+              Developer-first debugging. Receive → Replay → Response.
+            </p>
+          </div>
+          <DeveloperCredit />
+        </div>
       </footer>
     </div>
   )

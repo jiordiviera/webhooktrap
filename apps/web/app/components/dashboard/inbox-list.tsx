@@ -33,8 +33,8 @@ function InboxRow({
   return (
     <article
       className={cn(
-        'group grid gap-3 border-b border-border py-4 transition-colors last:border-b-0 md:grid-cols-[minmax(0,1.35fr)_4.5rem_6rem_minmax(0,1.5fr)_auto] md:items-center md:gap-5 md:py-5',
-        'hover:bg-muted/30'
+        'group grid gap-3 border-b border-border px-5 py-4 transition-colors last:border-b-0 md:grid-cols-[minmax(0,1.35fr)_4.5rem_6rem_minmax(0,1.5fr)_auto] md:items-center md:gap-5 md:py-5',
+        'hover:bg-muted/40'
       )}
     >
       <div className="min-w-0 pl-0.5 md:pl-1">
@@ -156,14 +156,18 @@ export function InboxList({ token }: { token: string }) {
     <section aria-labelledby="inboxes-heading" className="mx-auto w-full max-w-5xl">
       <div className="flex flex-wrap items-start justify-between gap-4 md:gap-6">
         <div className="min-w-0">
+          <p className="font-ui mb-2 text-[0.6875rem] font-medium tracking-[0.14em] text-primary uppercase">
+            Ingest endpoints
+          </p>
           <h1
             id="inboxes-heading"
-            className="text-2xl font-semibold tracking-tight text-foreground"
+            className="font-heading text-[clamp(1.75rem,3vw,2.25rem)] font-semibold tracking-wide text-foreground"
           >
             Inboxes
           </h1>
-          <p className="mt-1.5 max-w-xl text-[0.9375rem] leading-relaxed text-muted-foreground">
-            Copy an ingest URL, point your provider at it, then open the inbox to inspect and replay.
+          <p className="mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-muted-foreground">
+            Each inbox is a public URL. Point Stripe, GitHub, or curl at it, then inspect and replay
+            every byte.
           </p>
         </div>
 
@@ -193,7 +197,7 @@ export function InboxList({ token }: { token: string }) {
         </p>
       )}
 
-      <div className="mt-6 border-t border-border md:mt-8">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card md:mt-8">
         {state === 'loading' && (
           <div aria-busy="true" aria-label="Loading inboxes">
             <InboxSkeleton />
@@ -228,7 +232,7 @@ export function InboxList({ token }: { token: string }) {
           <>
             <div
               className={cn(
-                'hidden border-b border-border py-3 text-[0.6875rem] font-medium tracking-wider text-muted-foreground uppercase md:grid',
+                'hidden border-b border-border bg-muted/30 px-5 py-3 text-[0.6875rem] font-medium tracking-wider text-muted-foreground uppercase md:grid',
                 'md:grid-cols-[minmax(0,1.35fr)_4.5rem_6rem_minmax(0,1.5fr)_auto] md:gap-5'
               )}
             >

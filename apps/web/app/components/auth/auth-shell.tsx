@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { DeveloperCredit } from '@/app/components/developer-credit'
 
 type AuthShellProps = {
   title: string
@@ -33,9 +34,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
           <div className="mt-6 text-center text-sm text-muted-foreground">{footer}</div>
         </div>
 
-        <p className="font-ui text-xs text-muted-foreground">
-          Developer-first debugging. Receive, inspect, replay.
-        </p>
+        <DeveloperCredit />
       </div>
 
       <aside className="relative hidden overflow-hidden border-l border-border bg-secondary/50 lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10">

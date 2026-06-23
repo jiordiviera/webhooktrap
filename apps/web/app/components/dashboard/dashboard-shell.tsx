@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Inbox, LogOut } from 'lucide-react'
+import { ExternalLink, Inbox, LayoutDashboard, LogOut } from 'lucide-react'
 import { Loader } from '@workspace/ui/components/loader'
 import {
   Sidebar,
@@ -11,24 +11,34 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarRail,
-  SidebarSeparator,
   SidebarTrigger,
 } from '@workspace/ui/components/sidebar'
 import { TooltipProvider } from '@workspace/ui/components/tooltip'
 import { cn } from '@workspace/ui/lib/utils'
+import { DeveloperCredit } from '@/app/components/developer-credit'
 import { useAuth } from '@/contexts/auth-context'
 
 const NAV = [
-  { href: '/dashboard', label: 'Inboxes', icon: Inbox },
-  { href: '/', label: 'Home', icon: Home },
+  {
+    href: '/dashboard',
+    label: 'Dashboard',
+    hint: 'Activity and quick actions',
+    icon: LayoutDashboard,
+    isActive: (pathname: string) => pathname === '/dashboard',
+  },
+  {
+    href: '/inboxes',
+    label: 'Inboxes',
+    hint: 'Ingest URLs and events',
+    icon: Inbox,
+    isActive: (pathname: string) => pathname === '/inboxes' || pathname.startsWith('/i/'),
+  },
 ] as const
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -37,48 +47,65 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <SidebarProvider defaultOpen>
-        <Sidebar collapsible="icon" className="font-ui border-sidebar-border">
-          <SidebarHeader className="border-b border-sidebar-border">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton size="lg" asChild className="hover:bg-transparent active:bg-transparent">
-                  <Link href="/" className="gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background">
-                      <Image
-                        src="/logo.png"
-                        alt=""
-                        width={32}
-                        height={32}
-                        className="size-7 object-contain"
-                        aria-hidden
-                      />
-                    </span>
-                    <span className="truncate font-medium text-sidebar-foreground">Hookscope</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
+      <SidebarProvider
+        defaultOpen
+        className="bg-[radial-gradient(ellipse_at_top_left,oklch(0.94_0.03_72),transparent_55%)]"
+      >
+        <Sidebar
+          variant="floating"
+          collapsible="offcanvas"
+          className="font-ui [--sidebar-width:15.5rem]"
+        >
+          <SidebarHeader className="gap-3 p-4">
+            <Link href="/" className="flex items-center gap-3 rounded-xl p-1 transition-opacity hover:opacity-90">
+              <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sidebar-accent ring-1 ring-sidebar-border">
+                <Image
+                  src="/logo.png"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="size-7 object-contain brightness-110"
+                  aria-hidden
+                />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-sidebar-foreground">
+                  Hookscope
+                </span>
+                <span className="block truncate text-[0.6875rem] text-sidebar-foreground/65">
+                  Inspect · Replay · Respond
+                </span>
+              </span>
+            </Link>
           </SidebarHeader>
 
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarContent className="px-2">
+            <SidebarGroup className="p-0">
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="gap-1.5">
                   {NAV.map((item) => {
                     const Icon = item.icon
-                    const isActive =
-                      item.href === '/dashboard'
-                        ? pathname === '/dashboard' || pathname.startsWith('/i/')
-                        : pathname === item.href
+                    const active = item.isActive(pathname)
 
                     return (
                       <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          className={cn(
+                            'h-auto flex-col items-start gap-0.5 rounded-xl px-3 py-2.5',
+                            'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground',
+                            'hover:bg-sidebar-accent/70'
+                          )}
+                        >
                           <Link href={item.href}>
-                            <Icon />
-                            <span>{item.label}</span>
+                            <span className="flex w-full items-center gap-2">
+                              <Icon className="size-4 shrink-0 opacity-90" />
+                              <span className="text-sm font-medium">{item.label}</span>
+                            </span>
+                            <span className="pl-6 text-[0.6875rem] leading-snug text-sidebar-foreground/55 group-data-[active=true]/menu-button:text-sidebar-accent-foreground/75">
+                              {item.hint}
+                            </span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -89,68 +116,84 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-sidebar-border">
+          <SidebarFooter className="gap-3 p-4">
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className="rounded-xl text-sidebar-foreground/75 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+                >
+                  <Link href="/">
+                    <ExternalLink className="size-4" />
+                    <span>Marketing site</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               {status === 'loading' ? (
                 <SidebarMenuItem>
-                  <div className="flex h-8 items-center px-2">
+                  <div className="flex h-10 items-center px-2">
                     <Loader size="sm" tone="muted" label="Checking session" />
                   </div>
                 </SidebarMenuItem>
               ) : user ? (
                 <>
                   <SidebarMenuItem>
-                    <div
-                      className={cn(
-                        'flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5',
-                        'group-data-[collapsible=icon]/sidebar-wrapper:justify-center'
-                      )}
-                    >
+                    <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-sidebar-accent/50 px-3 py-2.5 ring-1 ring-sidebar-border">
                       <span
-                        className="flex size-7 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-xs font-medium text-sidebar-accent-foreground"
+                        className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground"
                         aria-hidden
                       >
                         {user.initials}
                       </span>
-                      <div className="min-w-0 group-data-[collapsible=icon]/sidebar-wrapper:hidden">
+                      <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-sidebar-foreground">
                           {user.fullName ?? 'Account'}
                         </p>
-                        <p className="truncate text-xs text-sidebar-foreground/70">{user.email}</p>
+                        <p className="truncate text-[0.6875rem] text-sidebar-foreground/60">
+                          {user.email}
+                        </p>
                       </div>
                     </div>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      tooltip="Sign out"
                       onClick={() => void signOut()}
-                      className="text-sidebar-foreground/80"
+                      className="rounded-xl text-sidebar-foreground/75 hover:bg-sidebar-accent/70"
                     >
-                      <LogOut />
+                      <LogOut className="size-4" />
                       <span>Sign out</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </>
               ) : (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Sign in">
+                  <SidebarMenuButton
+                    asChild
+                    className="rounded-xl bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 hover:text-sidebar-primary-foreground"
+                  >
                     <Link href="/login?returnTo=/dashboard">Sign in</Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
             </SidebarMenu>
+            <DeveloperCredit variant="sidebar" className="px-1" />
           </SidebarFooter>
-
-          <SidebarRail />
         </Sidebar>
 
-        <SidebarInset className="font-ui min-h-svh">
-          <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
-            <SidebarTrigger className="-ml-1" />
-            <SidebarSeparator orientation="vertical" className="mr-1 h-4 bg-border" />
+        <SidebarInset className="font-ui min-h-svh md:m-2 md:ml-0 md:rounded-2xl md:shadow-[0_8px_40px_oklch(0.35_0.04_48/0.06)] md:ring-1 md:ring-border/80">
+          <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/80 px-4 md:rounded-t-2xl md:px-6">
+            <SidebarTrigger className="text-foreground md:hidden" />
+            <p className="text-sm text-muted-foreground">
+              {pathname === '/dashboard'
+                ? 'Overview'
+                : pathname === '/inboxes' || pathname.startsWith('/i/')
+                  ? 'Inbox workspace'
+                  : 'Hookscope'}
+            </p>
           </header>
 
-          <main className="flex flex-1 flex-col px-4 py-6 md:px-8 md:py-8">{children}</main>
+          <div className="flex flex-1 flex-col px-4 py-6 md:px-8 md:py-8">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

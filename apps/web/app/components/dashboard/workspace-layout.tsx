@@ -4,12 +4,11 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader } from '@workspace/ui/components/loader'
 import { DashboardShell } from '@/app/components/dashboard/dashboard-shell'
-import { InboxList } from '@/app/components/dashboard/inbox-list'
 import { useAuth } from '@/contexts/auth-context'
 
-export default function DashboardPage() {
+export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { status, isAuthenticated, token } = useAuth()
+  const { status, isAuthenticated } = useAuth()
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -21,13 +20,13 @@ export default function DashboardPage() {
     return (
       <DashboardShell>
         <div className="flex min-h-[40vh] items-center justify-center">
-          <Loader layout="centered" label="Loading dashboard" />
+          <Loader layout="centered" label="Loading workspace" />
         </div>
       </DashboardShell>
     )
   }
 
-  if (!isAuthenticated || !token) {
+  if (!isAuthenticated) {
     return (
       <DashboardShell>
         <div className="flex min-h-[40vh] items-center justify-center">
@@ -37,9 +36,5 @@ export default function DashboardPage() {
     )
   }
 
-  return (
-    <DashboardShell>
-      <InboxList token={token} />
-    </DashboardShell>
-  )
+  return <DashboardShell>{children}</DashboardShell>
 }
