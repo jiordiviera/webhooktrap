@@ -39,12 +39,12 @@ export default function Home() {
           <Link href="#flow" className="transition-colors hover:text-primary">
             Flow
           </Link>
-          <a
-            href="https://github.com"
+          <Link
+            href="/login"
             className="text-muted-foreground transition-colors hover:text-primary"
           >
-            GitHub
-          </a>
+            Sign in
+          </Link>
         </nav>
       </header>
 
