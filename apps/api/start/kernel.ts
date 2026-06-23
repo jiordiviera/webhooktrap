@@ -46,4 +46,5 @@ router.use([
  */
 export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
+  ingestLimit: () => import('#middleware/ingest_body_limit_middleware'),
 })

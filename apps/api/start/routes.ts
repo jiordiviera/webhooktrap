@@ -16,11 +16,22 @@ router.get('/', () => {
 })
 
 router
+  .route('/i/:inboxId', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], [controllers.Ingest, 'handle'])
+  .where('inboxId', /^[A-Za-z0-9]{12}$/)
+  .use(middleware.ingestLimit())
+  .as('ingest')
+
+router
   .group(() => {
+    router.post('inboxes', [controllers.Inboxes, 'store']).as('inboxes.store')
     router
       .group(() => {
         router.post('signup', [controllers.NewAccount, 'store'])
         router.post('login', [controllers.AccessTokens, 'store'])
+
+        router.get('oauth/providers', [controllers.Oauth, 'providers'])
+        router.get('oauth/:provider/redirect', [controllers.Oauth, 'redirect'])
+        router.get('oauth/:provider/callback', [controllers.Oauth, 'callback'])
       })
       .prefix('auth')
       .as('auth')

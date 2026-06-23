@@ -1,5 +1,6 @@
 import { UserSchema } from '#database/schema'
 import Inbox from '#models/inbox'
+import UserOauthAccount from '#models/user_oauth_account'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
@@ -13,6 +14,9 @@ export default class User extends compose(UserSchema, withAuthFinder(hash)) {
 
   @hasMany(() => Inbox)
   declare inboxes: HasMany<typeof Inbox>
+
+  @hasMany(() => UserOauthAccount)
+  declare oauthAccounts: HasMany<typeof UserOauthAccount>
 
   get initials() {
     const [first, last] = this.fullName ? this.fullName.split(' ') : this.email.split('@')

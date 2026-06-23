@@ -10,7 +10,16 @@
 |
 */
 
+/**
+ * Force test DB before Adonis loads dotenv files.
+ * process.env wins over .env / .env.test (loaded in parallel), so this
+ * keeps tests on sqlite even when hookscope/.env points at postgres.
+ */
 process.env.NODE_ENV = 'test'
+process.env.SESSION_DRIVER = 'memory'
+process.env.DB_CONNECTION = 'sqlite'
+process.env.DB_DATABASE = ':memory:'
+delete process.env.DATABASE_URL
 
 import 'reflect-metadata'
 import { Ignitor, prettyPrintError } from '@adonisjs/core'

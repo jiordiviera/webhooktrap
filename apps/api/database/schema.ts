@@ -8,18 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class AuthAccessTokenSchema extends BaseModel {
-  static $columns = [
-    'abilities',
-    'createdAt',
-    'expiresAt',
-    'hash',
-    'id',
-    'lastUsedAt',
-    'name',
-    'tokenableId',
-    'type',
-    'updatedAt',
-  ] as const
+  static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
   $columns = AuthAccessTokenSchema.$columns
   @column()
   declare abilities: string
@@ -44,21 +33,7 @@ export class AuthAccessTokenSchema extends BaseModel {
 }
 
 export class EventSchema extends BaseModel {
-  static $columns = [
-    'bodyJson',
-    'bodyText',
-    'contentType',
-    'createdAt',
-    'headers',
-    'id',
-    'inboxId',
-    'ip',
-    'method',
-    'path',
-    'query',
-    'receivedAt',
-    'sizeBytes',
-  ] as const
+  static $columns = ['bodyJson', 'bodyText', 'contentType', 'createdAt', 'headers', 'id', 'inboxId', 'ip', 'method', 'path', 'query', 'receivedAt', 'sizeBytes'] as const
   $columns = EventSchema.$columns
   @column()
   declare bodyJson: any | null
@@ -89,15 +64,7 @@ export class EventSchema extends BaseModel {
 }
 
 export class InboxSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'defaultReplayUrl',
-    'expiresAt',
-    'id',
-    'name',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['createdAt', 'defaultReplayUrl', 'expiresAt', 'id', 'name', 'updatedAt', 'userId'] as const
   $columns = InboxSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -116,18 +83,7 @@ export class InboxSchema extends BaseModel {
 }
 
 export class ReplaySchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'durationMs',
-    'errorCode',
-    'errorMessage',
-    'eventId',
-    'id',
-    'responseBody',
-    'responseHeaders',
-    'statusCode',
-    'targetUrl',
-  ] as const
+  static $columns = ['createdAt', 'durationMs', 'errorCode', 'errorMessage', 'eventId', 'id', 'responseBody', 'responseHeaders', 'statusCode', 'targetUrl'] as const
   $columns = ReplaySchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -164,6 +120,27 @@ export class ShareTokenSchema extends BaseModel {
   declare id: number
   @column()
   declare token: string
+}
+
+export class UserOauthAccountSchema extends BaseModel {
+  static $columns = ['avatarUrl', 'createdAt', 'id', 'provider', 'providerEmail', 'providerUserId', 'updatedAt', 'userId'] as const
+  $columns = UserOauthAccountSchema.$columns
+  @column()
+  declare avatarUrl: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare provider: string
+  @column()
+  declare providerEmail: string | null
+  @column()
+  declare providerUserId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
 }
 
 export class UserSchema extends BaseModel {

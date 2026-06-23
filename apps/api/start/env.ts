@@ -24,6 +24,7 @@ export default await Env.create(new URL('../../../', import.meta.url), {
   // App
   APP_KEY: Env.schema.secret(),
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
+  WEB_URL: Env.schema.string({ format: 'url', tld: false }),
 
   // Session
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
@@ -40,7 +41,7 @@ export default await Env.create(new URL('../../../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
-  | OAuth social (optionnel — pas au MVP, email/password only)
+  | OAuth social (GitHub + Google)
   |----------------------------------------------------------
   */
   GITHUB_CLIENT_ID: Env.schema.string.optional(),

@@ -6,6 +6,8 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 
 export default class Inbox extends InboxSchema {
+  static selfAssignPrimaryKey = true
+
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
