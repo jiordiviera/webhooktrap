@@ -7,7 +7,8 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 
 function jsonColumn() {
   return column({
-    prepare: (value: unknown) => (value === null || value === undefined ? value : JSON.stringify(value)),
+    prepare: (value: unknown) =>
+      value === null || value === undefined ? value : JSON.stringify(value),
     consume: (value: unknown) => {
       if (value === null || value === undefined) return value
       if (typeof value === 'string') return JSON.parse(value)
