@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@workspace/ui/components/button'
+import { Loader } from '@workspace/ui/components/loader'
 
 type InboxResponse = {
   data: {
@@ -53,7 +54,14 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
           onClick={createInbox}
           disabled={status === 'loading'}
         >
-          {status === 'loading' ? 'Opening inbox…' : 'Open a free inbox'}
+          {status === 'loading' ? (
+            <>
+              <Loader size="sm" tone="inherit" />
+              Opening inbox…
+            </>
+          ) : (
+            'Open a free inbox'
+          )}
         </Button>
 
         {showSecondaryLink && (

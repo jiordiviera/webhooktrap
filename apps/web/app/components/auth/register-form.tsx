@@ -14,13 +14,15 @@ import {
   FieldSeparator,
 } from '@workspace/ui/components/field'
 import { Input } from '@workspace/ui/components/input'
+import { useAuth } from '@/contexts/auth-context'
 import { ApiError, apiFetch } from '@/lib/api'
-import { type AuthPayload, saveAuthToken } from '@/lib/auth'
+import { type AuthPayload } from '@/lib/auth'
 import { type RegisterValues, registerSchema } from '@/lib/schemas/auth'
 import { OAuthButtons } from './oauth-buttons'
 
 export function RegisterForm() {
   const router = useRouter()
+  const { signIn } = useAuth()
   const {
     register,
     handleSubmit,
@@ -48,7 +50,7 @@ export function RegisterForm() {
         }),
       })
 
-      saveAuthToken(body.data.token)
+      signIn(body.data)
       router.push('/')
       router.refresh()
     } catch (err) {

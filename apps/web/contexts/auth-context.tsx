@@ -1,0 +1,142 @@
+'use client'
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
+import { ApiError, apiFetch } from '@/lib/api'
+import {
+  type AuthPayload,
+  type AuthUser,
+  clearAuthToken,
+  getAuthToken,
+  saveAuthToken,
+} from '@/lib/auth'
+
+type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
+
+type ProfileResponse = {
+  data: AuthUser
+}
+
+type AuthContextValue = {
+  user: AuthUser | null
+  token: string | null
+  status: AuthStatus
+  isAuthenticated: boolean
+  signIn: (payload: AuthPayload['data']) => void
+  signInWithToken: (token: string) => Promise<void>
+  signOut: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
+
+async function fetchProfile(token: string): Promise<AuthUser> {
+  const body = await apiFetch<ProfileResponse>('/api/v1/account/profile', { token })
+  return body.data
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [status, setStatus] = useState<AuthStatus>('loading')
+
+  const signIn = useCallback((payload: AuthPayload['data']) => {
+    saveAuthToken(payload.token)
+    setToken(payload.token)
+    setUser(payload.user)
+    setStatus('authenticated')
+  }, [])
+
+  const signInWithToken = useCallback(async (nextToken: string) => {
+    saveAuthToken(nextToken)
+    setToken(nextToken)
+
+    const profile = await fetchProfile(nextToken)
+    setUser(profile)
+    setStatus('authenticated')
+  }, [])
+
+  const signOut = useCallback(async () => {
+    const currentToken = getAuthToken()
+
+    if (currentToken) {
+      try {
+        await apiFetch('/api/v1/account/logout', {
+          method: 'POST',
+          token: currentToken,
+        })
+      } catch {
+        // Clear local session even if the API is unreachable.
+      }
+    }
+
+    clearAuthToken()
+    setToken(null)
+    setUser(null)
+    setStatus('unauthenticated')
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function restoreSession() {
+      const storedToken = getAuthToken()
+
+      if (!storedToken) {
+        if (!cancelled) setStatus('unauthenticated')
+        return
+      }
+
+      try {
+        const profile = await fetchProfile(storedToken)
+        if (cancelled) return
+        setToken(storedToken)
+        setUser(profile)
+        setStatus('authenticated')
+      } catch (error) {
+        if (cancelled) return
+        if (error instanceof ApiError && error.status === 401) {
+          clearAuthToken()
+        }
+        setToken(null)
+        setUser(null)
+        setStatus('unauthenticated')
+      }
+    }
+
+    void restoreSession()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user,
+      token,
+      status,
+      isAuthenticated: status === 'authenticated' && user !== null,
+      signIn,
+      signInWithToken,
+      signOut,
+    }),
+    [user, token, status, signIn, signInWithToken, signOut]
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider')
+  }
+  return context
+}

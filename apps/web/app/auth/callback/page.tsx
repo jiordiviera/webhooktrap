@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { Button } from '@workspace/ui/components/button'
-import { saveAuthToken } from '@/lib/auth'
+import { Loader } from '@workspace/ui/components/loader'
+import { useAuth } from '@/contexts/auth-context'
 
 const ERROR_MESSAGES: Record<string, string> = {
   unknown_provider: 'This sign-in provider is not available.',
@@ -16,6 +17,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { signInWithToken } = useAuth()
   const [status, setStatus] = useState<'loading' | 'error'>('loading')
   const [message, setMessage] = useState('')
 
@@ -23,22 +25,36 @@ function AuthCallbackContent() {
     const token = searchParams.get('token')
     const error = searchParams.get('error')
 
-    if (token) {
-      saveAuthToken(token)
-      router.replace('/')
+    if (error) {
+      setStatus('error')
+      setMessage(ERROR_MESSAGES[error] ?? 'Sign-in failed.')
       return
     }
 
-    setStatus('error')
-    setMessage(error ? (ERROR_MESSAGES[error] ?? 'Sign-in failed.') : 'Missing sign-in token.')
-  }, [router, searchParams])
+    if (!token) {
+      setStatus('error')
+      setMessage('Missing sign-in token.')
+      return
+    }
+
+    void signInWithToken(token)
+      .then(() => router.replace('/'))
+      .catch(() => {
+        setStatus('error')
+        setMessage('Could not finish sign-in. Try again.')
+      })
+  }, [router, searchParams, signInWithToken])
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-svh flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="font-heading text-xl font-semibold">Finishing sign-in…</p>
-        <p className="text-sm text-muted-foreground">You will be redirected in a moment.</p>
-      </div>
+      <Loader
+        layout="fullscreen"
+        variant="ring"
+        size="lg"
+        label="Finishing sign-in"
+        showLabel
+        className="px-6"
+      />
     )
   }
 
@@ -64,9 +80,7 @@ export default function AuthCallbackPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-svh items-center justify-center text-sm text-muted-foreground">
-          Loading…
-        </div>
+        <Loader layout="fullscreen" variant="ring" size="lg" label="Loading" showLabel />
       }
     >
       <AuthCallbackContent />
