@@ -4,7 +4,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { DeveloperCredit } from '@/app/components/developer-credit'
+import { ThemeToggle } from '@/app/components/theme-toggle'
 import { GithubDark } from '@workspace/ui/components/svgs/githubDark'
+import { GithubLight } from '@workspace/ui/components/svgs/githubLight'
+import { X as XIcon } from '@workspace/ui/components/ui/svgs/x'
+import { XDark } from '@workspace/ui/components/ui/svgs/xDark'
+
+const X_URL = 'https://x.com/jiordiviera'
+const GITHUB_URL = 'https://github.com/jiordiviera'
 
 const footerLinks = {
   Product: [
@@ -39,17 +46,29 @@ export function FooterSection() {
               <p className="mb-8 max-w-xs leading-relaxed text-muted-foreground">
                 Developer-first webhook debugging. Receive, inspect, replay, see the response.
               </p>
-              <a
-                href="https://github.com/jiordiviera"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="jiordiviera on GitHub"
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
-              >
-                <GithubDark className="size-4" />
-                GitHub
-                <ArrowUpRight className="size-3" />
-              </a>
+              <div className="flex flex-wrap items-center gap-5">
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                >
+                  <GithubLight className="size-4 dark:hidden" aria-hidden />
+                  <GithubDark className="hidden size-4 dark:block" aria-hidden />
+                  GitHub
+                  <ArrowUpRight className="size-3" aria-hidden />
+                </a>
+                <a
+                  href={X_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                >
+                  <XIcon className="size-4 dark:hidden" aria-hidden />
+                  <XDark className="hidden size-4 dark:block" aria-hidden />
+                  <ArrowUpRight className="size-3" aria-hidden />
+                </a>
+              </div>
             </div>
 
             {Object.entries(footerLinks).map(([title, links]) => (
@@ -74,7 +93,10 @@ export function FooterSection() {
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-border py-8 md:flex-row">
           <p className="text-sm text-muted-foreground">Hookscope. Inspect. Replay. Respond.</p>
-          <DeveloperCredit />
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <ThemeToggle />
+            <DeveloperCredit />
+          </div>
         </div>
       </div>
     </footer>
