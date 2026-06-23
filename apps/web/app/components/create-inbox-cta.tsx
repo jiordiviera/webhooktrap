@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import styles from '../page.module.css'
+import Link from 'next/link'
+import { Button } from '@workspace/ui/components/button'
 
 type InboxResponse = {
   data: {
@@ -14,7 +15,7 @@ type InboxResponse = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333'
 
-export function CreateInboxCta() {
+export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink?: boolean }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [ingestUrl, setIngestUrl] = useState('')
   const [copied, setCopied] = useState(false)
@@ -44,38 +45,48 @@ export function CreateInboxCta() {
   }
 
   return (
-    <div className={styles.ctaBlock}>
-      <div className={styles.ctaActions}>
-        <button
-          type="button"
-          className={styles.ctaPrimary}
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-center gap-4">
+        <Button
+          size="lg"
+          className="h-11 rounded-full px-6 text-[0.9375rem]"
           onClick={createInbox}
           disabled={status === 'loading'}
         >
           {status === 'loading' ? 'Opening inbox…' : 'Open a free inbox'}
-        </button>
-        <a href="#flow" className={styles.ctaGhost}>
-          See how it works
-        </a>
+        </Button>
+
+        {showSecondaryLink && (
+          <Button variant="link" asChild className="text-muted-foreground">
+            <Link href="#flow">See how it works</Link>
+          </Button>
+        )}
       </div>
 
       {status === 'ready' && (
-        <div className={styles.ctaResult} role="status">
-          <p className={styles.ctaResultLabel}>Your ingest URL</p>
-          <div className={styles.ctaResultRow}>
-            <code className={styles.ctaResultUrl}>{ingestUrl}</code>
-            <button type="button" className={styles.ctaCopy} onClick={copyUrl}>
+        <div
+          className="animate-in fade-in slide-in-from-bottom-2 rounded-xl border border-border bg-card p-4 shadow-[0_12px_40px_oklch(0.35_0.04_48/0.08)] duration-500"
+          role="status"
+        >
+          <p className="font-ui mb-2 text-xs tracking-widest text-muted-foreground uppercase">
+            Your ingest URL
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <code className="font-ui min-w-48 flex-1 text-[0.8125rem] break-all text-foreground">
+              {ingestUrl}
+            </code>
+            <Button variant="outline" size="sm" className="rounded-full" onClick={copyUrl}>
               {copied ? 'Copied' : 'Copy'}
-            </button>
+            </Button>
           </div>
-          <p className={styles.ctaResultHint}>
+          <p className="mt-2.5 text-sm text-muted-foreground">
             Point Stripe, GitHub, or any provider at this URL. Events appear in your inbox.
           </p>
         </div>
       )}
 
       {status === 'error' && (
-        <p className={styles.ctaError} role="alert">
+        <p className="font-ui text-sm text-destructive" role="alert">
           Could not reach the API. Start the server on port 3333 and try again.
         </p>
       )}

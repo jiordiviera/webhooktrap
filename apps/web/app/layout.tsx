@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Hookscope',
     description: 'Receive. Inspect. Replay.',
-    images: ['/branding/logo.png'],
+    images: ['/logo.png'],
   },
 }
 

@@ -10,14 +10,17 @@
     "cssVariables": true
   },
   "iconLibrary": "lucide",
+  "rtl": false,
+  "menuColor": "default",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@workspace/ui/components",
     "utils": "@workspace/ui/lib/utils",
-    "hooks": "@workspace/ui/hooks",
+    "ui": "@workspace/ui/components",
     "lib": "@workspace/ui/lib",
-    "ui": "@workspace/ui/components"
+    "hooks": "@workspace/ui/hooks"
   },
-  "rtl": false,
-  "menuColor": "default",
-  "menuAccent": "subtle"
+  "registries": {
+    "@svgl": "https://svgl.app/r/{name}.json"
+  }
 }
