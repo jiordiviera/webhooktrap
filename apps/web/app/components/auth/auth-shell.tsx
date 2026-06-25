@@ -20,7 +20,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
             alt="Hookscope"
             width={132}
             height={36}
-            className="h-auto w-[8.25rem]"
+            className="h-auto w-18"
             priority
           />
         </Link>

@@ -5,6 +5,9 @@ export type AuthUser = {
   fullName: string | null
   email: string
   initials: string
+  avatar: string | null
+  createdAt?: string
+  updatedAt?: string | null
 }
 
 export type AuthPayload = {

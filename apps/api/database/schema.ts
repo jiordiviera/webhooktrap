@@ -115,6 +115,57 @@ export class InboxSchema extends BaseModel {
   declare userId: number | null
 }
 
+export class MediaSchema extends BaseModel {
+  static $columns = [
+    'blobPathname',
+    'blobUrl',
+    'collection',
+    'conversions',
+    'createdAt',
+    'customProps',
+    'disk',
+    'fileName',
+    'id',
+    'mimeType',
+    'modelId',
+    'modelType',
+    'orderColumn',
+    'sizeBytes',
+    'updatedAt',
+  ] as const
+  $columns = MediaSchema.$columns
+  @column()
+  declare blobPathname: string
+  @column()
+  declare blobUrl: string
+  @column()
+  declare collection: string
+  @column()
+  declare conversions: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare customProps: any
+  @column()
+  declare disk: string
+  @column()
+  declare fileName: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare mimeType: string
+  @column()
+  declare modelId: string
+  @column()
+  declare modelType: string
+  @column()
+  declare orderColumn: number
+  @column()
+  declare sizeBytes: bigint | number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class ReplaySchema extends BaseModel {
   static $columns = [
     'createdAt',
@@ -197,7 +248,17 @@ export class UserOauthAccountSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'email',
+    'fullName',
+    'id',
+    'isTwoFactorEnabled',
+    'password',
+    'twoFactorRecoveryCodes',
+    'twoFactorSecret',
+    'updatedAt',
+  ] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -207,8 +268,14 @@ export class UserSchema extends BaseModel {
   declare fullName: string | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare isTwoFactorEnabled: boolean | null
   @column({ serializeAs: null })
   declare password: string
+  @column()
+  declare twoFactorRecoveryCodes: string | null
+  @column()
+  declare twoFactorSecret: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

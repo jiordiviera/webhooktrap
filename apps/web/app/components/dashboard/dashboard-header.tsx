@@ -8,6 +8,7 @@ import {
   IconExternalLink,
   IconLogout,
   IconSearch,
+  IconUserCircle,
 } from '@tabler/icons-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/avatar'
 import { Button } from '@workspace/ui/components/button'
@@ -84,6 +85,7 @@ export function DashboardHeader() {
   }, [])
 
   const displayName = user?.fullName ?? user?.email ?? 'Account'
+  const avatarSrc = user?.avatar ?? '/logo.png'
 
   return (
     <>
@@ -175,7 +177,7 @@ export function DashboardHeader() {
                   className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full"
                 >
                   <Avatar className="size-9">
-                    <AvatarImage src="/logo.png" alt={displayName} />
+                    <AvatarImage src={avatarSrc} alt={displayName} />
                     <AvatarFallback className="text-xs font-semibold">{user.initials}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -188,7 +190,7 @@ export function DashboardHeader() {
               >
                 <div className="flex items-center gap-3 px-2 py-2.5">
                   <Avatar className="size-10 shrink-0 rounded-lg">
-                    <AvatarImage src="/logo.png" alt={displayName} />
+                    <AvatarImage src={avatarSrc} alt={displayName} />
                     <AvatarFallback className="rounded-lg text-sm font-semibold">
                       {user.initials}
                     </AvatarFallback>
@@ -202,6 +204,13 @@ export function DashboardHeader() {
                 <DropdownMenuSeparator className="my-1" />
 
                 <div className="space-y-0.5 px-1 py-1">
+                  <DropdownMenuItem asChild className="rounded-lg px-2 py-2">
+                    <Link href="/profile">
+                      <IconUserCircle className="mr-2.5 size-4" stroke={1.8} aria-hidden />
+                      Profile
+                      <IconChevronRight className="ml-auto size-3.5 opacity-50" stroke={1.8} />
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild className="rounded-lg px-2 py-2">
                     <Link href="/">
                       <IconExternalLink className="mr-2.5 size-4" stroke={1.8} aria-hidden />

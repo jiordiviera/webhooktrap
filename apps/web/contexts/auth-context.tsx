@@ -17,12 +17,9 @@ import {
   getAuthToken,
   saveAuthToken,
 } from '@/lib/auth'
+import { fetchProfile as loadProfile } from '@/lib/profile'
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
-
-type ProfileResponse = {
-  data: AuthUser
-}
 
 type AuthContextValue = {
   user: AuthUser | null
@@ -32,14 +29,11 @@ type AuthContextValue = {
   signIn: (payload: AuthPayload['data']) => void
   signInWithToken: (token: string) => Promise<void>
   signOut: () => Promise<void>
+  refreshProfile: () => Promise<AuthUser | null>
+  setUser: (user: AuthUser) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
-
-async function fetchProfile(token: string): Promise<AuthUser> {
-  const body = await apiFetch<ProfileResponse>('/api/v1/account/profile', { token })
-  return body.data
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -57,9 +51,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveAuthToken(nextToken)
     setToken(nextToken)
 
-    const profile = await fetchProfile(nextToken)
+    const profile = await loadProfile(nextToken)
     setUser(profile)
     setStatus('authenticated')
+  }, [])
+
+  const setUserState = useCallback((nextUser: AuthUser) => {
+    setUser(nextUser)
+  }, [])
+
+  const refreshProfile = useCallback(async () => {
+    const currentToken = getAuthToken()
+    if (!currentToken) return null
+
+    const profile = await loadProfile(currentToken)
+    setUser(profile)
+    return profile
   }, [])
 
   const signOut = useCallback(async () => {
@@ -94,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const profile = await fetchProfile(storedToken)
+        const profile = await loadProfile(storedToken)
         if (cancelled) return
         setToken(storedToken)
         setUser(profile)
@@ -126,8 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signInWithToken,
       signOut,
+      refreshProfile,
+      setUser: setUserState,
     }),
-    [user, token, status, signIn, signInWithToken, signOut]
+    [user, token, status, signIn, signInWithToken, signOut, refreshProfile, setUserState]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

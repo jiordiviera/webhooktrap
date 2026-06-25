@@ -20,6 +20,8 @@ process.env.SESSION_DRIVER = 'memory'
 process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE = ':memory:'
 delete process.env.DATABASE_URL
+process.env.BLOB_READ_WRITE_TOKEN = 'test-blob-token'
+process.env.MEDIA_CDN_BASE_URL = 'https://media.hookscope.test'
 
 import 'reflect-metadata'
 import { Ignitor, prettyPrintError } from '@adonisjs/core'

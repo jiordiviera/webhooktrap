@@ -3,29 +3,45 @@ import type { routes } from './index.ts'
 
 export interface ApiDefinition {
   ingest: typeof routes['ingest']
-  inboxes: {
-    store: typeof routes['inboxes.store']
-    index: typeof routes['inboxes.index']
-  }
-  auth: {
-    newAccount: {
-      store: typeof routes['auth.new_account.store']
+  v1: {
+    2Fa: {
+      generate: typeof routes['v1.2fa.generate']
+      verify: typeof routes['v1.2fa.verify']
+      generateRecoveryCodes: typeof routes['v1.2fa.generate_recovery_codes']
+      disable: typeof routes['v1.2fa.disable']
     }
-    accessTokens: {
-      store: typeof routes['auth.access_tokens.store']
+    inboxes: {
+      store: typeof routes['v1.inboxes.store']
+      index: typeof routes['v1.inboxes.index']
     }
-    oauth: {
-      providers: typeof routes['auth.oauth.providers']
-      redirect: typeof routes['auth.oauth.redirect']
-      callback: typeof routes['auth.oauth.callback']
+    auth: {
+      newAccount: {
+        store: typeof routes['v1.auth.new_account.store']
+      }
+      accessTokens: {
+        store: typeof routes['v1.auth.access_tokens.store']
+      }
+      oauth: {
+        providers: typeof routes['v1.auth.oauth.providers']
+        redirect: typeof routes['v1.auth.oauth.redirect']
+        callback: typeof routes['v1.auth.oauth.callback']
+      }
     }
-  }
-  profile: {
     profile: {
-      show: typeof routes['profile.profile.show']
+      profile: {
+        show: typeof routes['v1.profile.profile.show']
+        update: typeof routes['v1.profile.profile.update']
+      }
+      accessTokens: {
+        destroy: typeof routes['v1.profile.access_tokens.destroy']
+      }
     }
-    accessTokens: {
-      destroy: typeof routes['profile.access_tokens.destroy']
+    media: {
+      index: typeof routes['v1.media.index']
+      show: typeof routes['v1.media.show']
+      store: typeof routes['v1.media.store']
+      fromUrl: typeof routes['v1.media.from_url']
+      destroy: typeof routes['v1.media.destroy']
     }
   }
 }

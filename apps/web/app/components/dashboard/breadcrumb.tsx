@@ -21,6 +21,10 @@ type BreadcrumbCrumb = {
 }
 
 function getBreadcrumbs(pathname: string, navItems: DashboardNavItem[]): BreadcrumbCrumb[] {
+  if (pathname === '/profile') {
+    return [{ label: 'Profile' }]
+  }
+
   if (pathname.startsWith('/i/')) {
     const inboxId = pathname.slice(3).split('/')[0]
     return [

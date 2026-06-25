@@ -1,3 +1,4 @@
+import { withUserMedia } from '#media/has_media'
 import { UserSchema } from '#database/schema'
 import Inbox from '#models/inbox'
 import UserOauthAccount from '#models/user_oauth_account'
@@ -8,7 +9,7 @@ import { type AccessToken, DbAccessTokensProvider } from '@adonisjs/auth/access_
 import { hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 
-export default class User extends compose(UserSchema, withAuthFinder(hash)) {
+export default class User extends compose(UserSchema, withAuthFinder(hash), withUserMedia) {
   static accessTokens = DbAccessTokensProvider.forModel(User)
   declare currentAccessToken?: AccessToken
 

@@ -48,4 +48,13 @@ export default await Env.create(new URL('../../../', import.meta.url), {
   GITHUB_CLIENT_SECRET: Env.schema.string.optional(),
   GOOGLE_CLIENT_ID: Env.schema.string.optional(),
   GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Media storage (Vercel Blob)
+  |----------------------------------------------------------
+  */
+  BLOB_READ_WRITE_TOKEN: Env.schema.string.optional(),
+  MEDIA_CDN_BASE_URL: Env.schema.string.optional(),
+  MEDIA_MAX_FILE_SIZE_MB: Env.schema.number.optional(),
 })

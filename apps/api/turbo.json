@@ -22,13 +22,7 @@
       ]
     },
     "test": {
-      "env": [
-        "NODE_ENV",
-        "APP_KEY",
-        "DB_CONNECTION",
-        "DB_DATABASE",
-        "SESSION_DRIVER"
-      ]
+      "env": ["NODE_ENV", "APP_KEY", "DB_CONNECTION", "DB_DATABASE", "SESSION_DRIVER"]
     }
   }
 }

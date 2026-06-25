@@ -1,3 +1,4 @@
+import MediaService from '#media/media_service'
 import User from '#models/user'
 import UserOauthAccount from '#models/user_oauth_account'
 import type { OAuthProvider } from '#services/oauth_types'
@@ -26,6 +27,7 @@ export default class OAuthService {
           avatarUrl: profile.avatarUrl,
         })
         .save()
+      await this.importAvatar(linked.user, profile.avatarUrl)
       return linked.user
     }
 
@@ -39,6 +41,7 @@ export default class OAuthService {
           providerEmail: profile.email,
           avatarUrl: profile.avatarUrl,
         })
+        await this.importAvatar(existingUser, profile.avatarUrl)
         return existingUser
       }
     }
@@ -61,6 +64,25 @@ export default class OAuthService {
       avatarUrl: profile.avatarUrl,
     })
 
+    await this.importAvatar(user, profile.avatarUrl)
     return user
+  }
+
+  private static async importAvatar(user: User, avatarUrl: string | null) {
+    if (!avatarUrl) return
+
+    const existing = await MediaService.getFirst('users', String(user.id), 'avatar')
+    if (existing) return
+
+    try {
+      await MediaService.attachFromUrl({
+        modelType: 'users',
+        modelId: String(user.id),
+        collection: 'avatar',
+        url: avatarUrl,
+      })
+    } catch {
+      // Keep OAuth login successful even if remote avatar import fails.
+    }
   }
 }

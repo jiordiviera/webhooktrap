@@ -1,11 +1,13 @@
+import { withInboxMedia } from '#media/has_media'
 import { InboxSchema } from '#database/schema'
+import { compose } from '@adonisjs/core/helpers'
 import Event from '#models/event'
 import User from '#models/user'
 import { belongsTo, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 
-export default class Inbox extends InboxSchema {
+export default class Inbox extends compose(InboxSchema, withInboxMedia) {
   static selfAssignPrimaryKey = true
 
   @belongsTo(() => User)
