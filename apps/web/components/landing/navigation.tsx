@@ -1,83 +1,84 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { useCallback, useEffect, useId, useState } from 'react'
-import { IconMenu2, IconX } from '@tabler/icons-react'
-import { cn } from '@workspace/ui/lib/utils'
-import { AuthNav } from '@/app/components/auth-nav'
+import Image from "next/image";
+import Link from "next/link";
+import { useCallback, useEffect, useId, useState } from "react";
+import { IconMenu2, IconX } from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { cn } from "@workspace/ui/lib/utils";
+import { AuthNav } from "@/app/components/auth-nav";
 
 const navLinks = [
-  { name: 'Features', href: '#features' },
-  { name: 'How it works', href: '#how-it-works' },
-  { name: 'Integrations', href: '#integrations' },
-  { name: 'Developers', href: '#developers' },
-  { name: 'Pricing', href: '#pricing' },
-] as const
+  { name: "Features", href: "#features" },
+  { name: "How it works", href: "#how-it-works" },
+  { name: "Integrations", href: "#integrations" },
+  { name: "Developers", href: "#developers" },
+  { name: "Pricing", href: "#pricing" },
+] as const;
 
 export function Navigation() {
-  const menuId = useId()
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const menuId = useId();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = useCallback(() => {
-    setIsMobileMenuOpen(false)
-  }, [])
+    setIsMobileMenuOpen(false);
+  }, []);
 
   const toggleMobileMenu = useCallback(() => {
-    setIsMobileMenuOpen((open) => !open)
-  }, [])
+    setIsMobileMenuOpen((open) => !open);
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
-    if (!isMobileMenuOpen) return
+    if (!isMobileMenuOpen) return;
 
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeMobileMenu()
-    }
+      if (event.key === "Escape") closeMobileMenu();
+    };
 
-    const mediaQuery = window.matchMedia('(min-width: 768px)')
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
     const onViewportChange = () => {
-      if (mediaQuery.matches) closeMobileMenu()
-    }
+      if (mediaQuery.matches) closeMobileMenu();
+    };
 
-    window.addEventListener('keydown', onKeyDown)
-    mediaQuery.addEventListener('change', onViewportChange)
+    window.addEventListener("keydown", onKeyDown);
+    mediaQuery.addEventListener("change", onViewportChange);
 
     return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', onKeyDown)
-      mediaQuery.removeEventListener('change', onViewportChange)
-    }
-  }, [isMobileMenuOpen, closeMobileMenu])
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+      mediaQuery.removeEventListener("change", onViewportChange);
+    };
+  }, [isMobileMenuOpen, closeMobileMenu]);
 
   return (
     <header
       className={cn(
-        'fixed z-50 transition-all duration-500',
-        isScrolled ? 'top-4 right-4 left-4' : 'top-0 right-0 left-0'
+        "fixed z-50 transition-all duration-500",
+        isScrolled ? "top-4 right-4 left-4" : "top-0 right-0 left-0",
       )}
     >
       <div
         className={cn(
-          'fixed inset-0 z-40 md:hidden',
-          isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'
+          "fixed inset-0 z-40 md:hidden",
+          isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none",
         )}
         aria-hidden={!isMobileMenuOpen}
       >
         <button
           type="button"
           className={cn(
-            'absolute inset-0 bg-background/95 backdrop-blur-sm transition-opacity duration-500',
-            isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
+            "absolute inset-0 bg-background/95 backdrop-blur-sm transition-opacity duration-500",
+            isMobileMenuOpen ? "opacity-100" : "opacity-0",
           )}
           aria-label="Close menu"
           tabIndex={isMobileMenuOpen ? 0 : -1}
@@ -87,8 +88,8 @@ export function Navigation() {
         <div
           id={menuId}
           className={cn(
-            'relative z-10 flex h-full flex-col px-8 pt-28 pb-8 transition-opacity duration-500',
-            isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
+            "relative z-10 flex h-full flex-col px-8 pt-28 pb-8 transition-opacity duration-500",
+            isMobileMenuOpen ? "opacity-100" : "opacity-0",
           )}
         >
           <div className="flex flex-1 flex-col justify-center gap-8">
@@ -98,10 +99,14 @@ export function Navigation() {
                 href={link.href}
                 onClick={closeMobileMenu}
                 className={cn(
-                  'font-display text-5xl text-foreground transition-all duration-500 hover:text-primary',
-                  isMobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                  "font-display text-5xl text-foreground transition-all duration-500 hover:text-primary",
+                  isMobileMenuOpen
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-4 opacity-0",
                 )}
-                style={{ transitionDelay: isMobileMenuOpen ? `${i * 75}ms` : '0ms' }}
+                style={{
+                  transitionDelay: isMobileMenuOpen ? `${i * 75}ms` : "0ms",
+                }}
                 tabIndex={isMobileMenuOpen ? 0 : -1}
               >
                 {link.name}
@@ -111,28 +116,39 @@ export function Navigation() {
 
           <div
             className={cn(
-              'border-t border-border pt-8 transition-all duration-500',
-              isMobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              "flex flex-col gap-4 border-t border-border pt-8 transition-all duration-500",
+              isMobileMenuOpen
+                ? "translate-y-0 opacity-100"
+                : "translate-y-4 opacity-0",
             )}
-            style={{ transitionDelay: isMobileMenuOpen ? '300ms' : '0ms' }}
+            style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
             <AuthNav />
+            <Button className="h-14 rounded-full text-base" asChild>
+              <a
+                href="#cta"
+                onClick={closeMobileMenu}
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+              >
+                Open inbox
+              </a>
+            </Button>
           </div>
         </div>
       </div>
 
       <nav
         className={cn(
-          'relative z-50 mx-auto transition-all duration-500',
+          "relative z-50 mx-auto transition-all duration-500",
           isScrolled || isMobileMenuOpen
-            ? 'max-w-[1200px] rounded-2xl border border-border/80 bg-background/90 shadow-[0_8px_32px_oklch(0.35_0.04_48/0.08)] backdrop-blur-xl'
-            : 'max-w-[1400px] bg-transparent'
+            ? "max-w-[1200px] rounded-2xl border border-border/80 bg-background/90 shadow-[0_8px_32px_oklch(0.35_0.04_48/0.08)] backdrop-blur-xl"
+            : "max-w-[1400px] bg-transparent",
         )}
       >
         <div
           className={cn(
-            'flex items-center justify-between px-6 transition-all duration-500 lg:px-8',
-            isScrolled || isMobileMenuOpen ? 'h-14' : 'h-20'
+            "flex items-center justify-between px-6 transition-all duration-500 lg:px-8",
+            isScrolled || isMobileMenuOpen ? "h-14" : "h-20",
           )}
         >
           <Link
@@ -143,11 +159,11 @@ export function Navigation() {
             <Image
               src="/logo.png"
               alt="Hookscope"
-              width={500}
-              height={100}
+              width={120}
+              height={32}
               className={cn(
-                'h-auto w-auto transition-all duration-500',
-                isScrolled || isMobileMenuOpen ? 'max-h-12' : 'max-h-14'
+                "h-auto w-auto transition-all duration-500",
+                isScrolled || isMobileMenuOpen ? "max-h-7" : "max-h-8",
               )}
               priority
             />
@@ -174,14 +190,18 @@ export function Navigation() {
             type="button"
             onClick={toggleMobileMenu}
             className="relative z-50 rounded-lg p-2 md:hidden"
-            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMobileMenuOpen}
             aria-controls={menuId}
           >
-            {isMobileMenuOpen ? <IconX className="size-6" /> : <IconMenu2 className="size-6" />}
+            {isMobileMenuOpen ? (
+              <IconX className="size-6" />
+            ) : (
+              <IconMenu2 className="size-6" />
+            )}
           </button>
         </div>
       </nav>
     </header>
-  )
+  );
 }

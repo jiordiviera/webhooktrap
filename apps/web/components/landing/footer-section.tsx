@@ -41,7 +41,7 @@ export function FooterSection() {
           <div className="grid grid-cols-2 gap-12 md:grid-cols-6 lg:gap-8">
             <div className="col-span-2">
               <Link href="/" className="mb-6 inline-flex items-center">
-                <Image src="/logo.png" alt="Hookscope" width={132} height={36} className="h-auto w-[8.25rem]" />
+                <Image src="/logo.png" alt="Hookscope" width={132} height={36} className="h-auto max-w-10" />
               </Link>
               <p className="mb-8 max-w-xs leading-relaxed text-muted-foreground">
                 Developer-first webhook debugging. Receive, inspect, replay, see the response.

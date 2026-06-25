@@ -1,15 +1,10 @@
-"use client";
+'use client'
 
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  IconExternalLink,
-  IconInbox,
-  IconLayoutDashboard,
-  IconLogout,
-} from "@tabler/icons-react";
-import { Loader } from "@workspace/ui/components/loader";
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { IconExternalLink, IconInbox, IconLayoutDashboard, IconLogout } from '@tabler/icons-react'
+import { Loader } from '@workspace/ui/components/loader'
 import {
   Sidebar,
   SidebarContent,
@@ -23,33 +18,32 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from "@workspace/ui/components/sidebar";
-import { TooltipProvider } from "@workspace/ui/components/tooltip";
-import { cn } from "@workspace/ui/lib/utils";
-import { DeveloperCredit } from "@/app/components/developer-credit";
-import { useAuth } from "@/contexts/auth-context";
+} from '@workspace/ui/components/sidebar'
+import { TooltipProvider } from '@workspace/ui/components/tooltip'
+import { cn } from '@workspace/ui/lib/utils'
+import { DeveloperCredit } from '@/app/components/developer-credit'
+import { useAuth } from '@/contexts/auth-context'
 
 const NAV = [
   {
-    href: "/dashboard",
-    label: "Dashboard",
-    hint: "Activity and quick actions",
+    href: '/dashboard',
+    label: 'Dashboard',
+    hint: 'Activity and quick actions',
     icon: IconLayoutDashboard,
-    isActive: (pathname: string) => pathname === "/dashboard",
+    isActive: (pathname: string) => pathname === '/dashboard',
   },
   {
-    href: "/inboxes",
-    label: "Inboxes",
-    hint: "Ingest URLs and events",
+    href: '/inboxes',
+    label: 'Inboxes',
+    hint: 'Ingest URLs and events',
     icon: IconInbox,
-    isActive: (pathname: string) =>
-      pathname === "/inboxes" || pathname.startsWith("/i/"),
+    isActive: (pathname: string) => pathname === '/inboxes' || pathname.startsWith('/i/'),
   },
-] as const;
+] as const
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const { user, status, signOut } = useAuth();
+  const pathname = usePathname()
+  const { user, status, signOut } = useAuth()
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -63,16 +57,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           className="font-ui [--sidebar-width:15.5rem]"
         >
           <SidebarHeader className="gap-3 p-4">
-            <Link
-              href="/"
-              className="flex items-center gap-3 rounded-xl p-1 transition-opacity hover:opacity-90"
-            >
+            <Link href="/" className="flex items-center gap-3 rounded-xl p-1 transition-opacity hover:opacity-90">
               <Image
-                src="/icon.jpg"
-                alt=""
-                width={36}
-                height={36}
-                className="size-7 object-contain brightness-110"
+                  src="/logo.png"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="size-7 object-contain brightness-110"
                 aria-hidden
               />
               <span className="min-w-0">
@@ -91,8 +82,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <SidebarGroupContent>
                 <SidebarMenu className="gap-1.5">
                   {NAV.map((item) => {
-                    const Icon = item.icon;
-                    const active = item.isActive(pathname);
+                    const Icon = item.icon
+                    const active = item.isActive(pathname)
 
                     return (
                       <SidebarMenuItem key={item.href}>
@@ -100,17 +91,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                           asChild
                           isActive={active}
                           className={cn(
-                            "h-auto flex-col items-start gap-0.5 rounded-xl px-3 py-2.5",
-                            "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-                            "hover:bg-sidebar-accent/70",
+                            'h-auto flex-col items-start gap-0.5 rounded-xl px-3 py-2.5',
+                            'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground',
+                            'hover:bg-sidebar-accent/70'
                           )}
                         >
                           <Link href={item.href}>
                             <span className="flex w-full items-center gap-2">
                               <Icon className="size-4 shrink-0 opacity-90" />
-                              <span className="text-sm font-medium">
-                                {item.label}
-                              </span>
+                              <span className="text-sm font-medium">{item.label}</span>
                             </span>
                             <span className="pl-6 text-[0.6875rem] leading-snug text-sidebar-foreground/55 group-data-[active=true]/menu-button:text-sidebar-accent-foreground/75">
                               {item.hint}
@@ -118,7 +107,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
-                    );
+                    )
                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -139,7 +128,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {status === "loading" ? (
+              {status === 'loading' ? (
                 <SidebarMenuItem>
                   <div className="flex h-10 items-center px-2">
                     <Loader size="sm" tone="muted" label="Checking session" />
@@ -157,7 +146,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                       </span>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-sidebar-foreground">
-                          {user.fullName ?? "Account"}
+                          {user.fullName ?? 'Account'}
                         </p>
                         <p className="truncate text-[0.6875rem] text-sidebar-foreground/60">
                           {user.email}
@@ -194,19 +183,17 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/80 px-4 md:rounded-t-2xl md:px-6">
             <SidebarTrigger className="text-foreground md:hidden" />
             <p className="text-sm text-muted-foreground">
-              {pathname === "/dashboard"
-                ? "Overview"
-                : pathname === "/inboxes" || pathname.startsWith("/i/")
-                  ? "Inbox workspace"
-                  : "Hookscope"}
+              {pathname === '/dashboard'
+                ? 'Overview'
+                : pathname === '/inboxes' || pathname.startsWith('/i/')
+                  ? 'Inbox workspace'
+                  : 'Hookscope'}
             </p>
           </header>
 
-          <div className="flex flex-1 flex-col px-4 py-6 md:px-8 md:py-8">
-            {children}
-          </div>
+          <div className="flex flex-1 flex-col px-4 py-6 md:px-8 md:py-8">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
-  );
+  )
 }
