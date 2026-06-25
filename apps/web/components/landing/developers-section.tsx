@@ -77,7 +77,7 @@ export function DevelopersSection() {
               <span className="h-px w-8 bg-primary/40" />
               Developers
             </span>
-            <h2 className="font-display mb-8 text-4xl tracking-tight lg:text-6xl">
+            <h2 className="font-heading mb-8 text-4xl tracking-tight lg:text-6xl">
               Terminal-friendly
               <br />
               from minute one.

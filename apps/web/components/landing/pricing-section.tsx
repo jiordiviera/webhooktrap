@@ -45,7 +45,7 @@ export function PricingSection() {
           <span className="font-ui mb-6 block text-xs tracking-widest text-muted-foreground uppercase">
             Pricing
           </span>
-          <h2 className="font-display mb-6 text-5xl tracking-tight text-foreground md:text-6xl lg:text-7xl">
+          <h2 className="font-heading mb-6 text-5xl tracking-tight text-foreground md:text-6xl lg:text-7xl">
             Start free.
             <br />
             <span className="text-stroke">Stay when it sticks.</span>
@@ -69,9 +69,9 @@ export function PricingSection() {
                   Recommended
                 </span>
               )}
-              <h3 className="font-display mt-2 text-3xl text-foreground">{plan.name}</h3>
+              <h3 className="font-heading mt-2 text-3xl text-foreground">{plan.name}</h3>
               <p className="mt-2 text-muted-foreground">{plan.description}</p>
-              <p className="font-display mt-8 text-5xl text-foreground lg:text-6xl">{plan.price}</p>
+              <p className="font-heading mt-8 text-5xl text-foreground lg:text-6xl">{plan.price}</p>
               <ul className="mt-8 flex-1 space-y-4">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3 text-sm text-foreground/85">

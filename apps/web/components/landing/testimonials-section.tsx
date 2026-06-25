@@ -66,7 +66,7 @@ export function TestimonialsSection() {
                 isAnimating ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'
               }`}
             >
-              <p className="font-display text-4xl leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-6xl">
+              <p className="font-heading text-4xl leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-6xl">
                 &ldquo;{active.quote}&rdquo;
               </p>
             </blockquote>
@@ -107,7 +107,7 @@ export function TestimonialsSection() {
                 {['Stripe', 'GitHub', 'Shopify', 'Twilio', 'Linear', 'Vercel', 'curl'].map((name) => (
                   <span
                     key={`${name}-${i}`}
-                    className="font-display text-xl whitespace-nowrap text-foreground/25 transition-colors duration-300 hover:text-primary md:text-2xl"
+                    className="font-heading text-xl whitespace-nowrap text-foreground/25 transition-colors duration-300 hover:text-primary md:text-2xl"
                   >
                     {name}
                   </span>

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Lora } from 'next/font/google'
+import { Cormorant_Garamond, Geist, Lora } from 'next/font/google'
 import { Providers } from '@/app/components/providers'
-import './globals.css'
+import '@workspace/ui/globals.css'
+import { cn } from '@workspace/ui/lib/utils'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -15,6 +16,11 @@ const lora = Lora({
   weight: ['400', '500'],
   variable: '--font-lora',
   display: 'swap',
+})
+
+const geist = Geist({
+  subsets: ['latin'],
+  variable: '--font-sans'
 })
 
 const siteUrl = process.env.WEB_URL ?? 'http://localhost:7777'
@@ -37,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${lora.variable}`} suppressHydrationWarning>
+    <html lang="en" className={cn(cormorant.variable, lora.variable, geist.variable)} suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
       </body>

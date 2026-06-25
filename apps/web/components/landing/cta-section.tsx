@@ -31,7 +31,7 @@ export function CtaSection() {
         >
           <div className="relative z-10 px-8 py-16 lg:px-16 lg:py-24">
             <div className="max-w-3xl">
-              <h2 className="font-display mb-8 text-4xl leading-[0.95] tracking-tight lg:text-7xl">
+              <h2 className="font-heading mb-8 text-4xl leading-[0.95] tracking-tight lg:text-7xl">
                 Your next webhook
                 <br />
                 is already on its way.

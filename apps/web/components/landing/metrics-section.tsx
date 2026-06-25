@@ -37,7 +37,7 @@ export function MetricsSection() {
               Tagline
             </span>
             <h2
-              className={`font-display text-4xl tracking-tight transition-all duration-700 lg:text-6xl ${
+              className={`font-heading text-4xl tracking-tight transition-all duration-700 lg:text-6xl ${
                 isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
               }`}
             >
@@ -63,7 +63,7 @@ export function MetricsSection() {
               }`}
               style={{ transitionDelay: `${index * 120}ms` }}
             >
-              <p className="font-display mb-3 text-4xl text-primary lg:text-5xl">{metric.value}</p>
+              <p className="font-heading mb-3 text-4xl text-primary lg:text-5xl">{metric.value}</p>
               <p className="text-muted-foreground">{metric.label}</p>
             </div>
           ))}

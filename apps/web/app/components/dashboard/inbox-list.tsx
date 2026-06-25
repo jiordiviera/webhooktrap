@@ -156,7 +156,7 @@ export function InboxList({ token }: { token: string }) {
     <section aria-labelledby="inboxes-heading" className="mx-auto w-full max-w-5xl">
       <div className="flex flex-wrap items-start justify-between gap-4 md:gap-6">
         <div className="min-w-0">
-          <p className="font-ui mb-2 text-[0.6875rem] font-medium tracking-[0.14em] text-primary uppercase">
+          <p className="mb-2 text-[0.6875rem] font-medium tracking-[0.14em] text-primary uppercase">
             Ingest endpoints
           </p>
           <h1

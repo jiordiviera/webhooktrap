@@ -168,7 +168,7 @@ function FeatureCard({ feature, index }: { feature: (typeof features)[0]; index:
         </div>
         <div className="grid flex-1 items-center gap-8 lg:grid-cols-2">
           <div>
-            <h3 className="font-display mb-4 text-3xl transition-transform duration-500 group-hover:translate-x-2 lg:text-4xl">
+            <h3 className="font-heading mb-4 text-3xl transition-transform duration-500 group-hover:translate-x-2 lg:text-4xl">
               {feature.title}
             </h3>
             <p className="text-lg leading-relaxed text-muted-foreground">{feature.description}</p>
@@ -208,7 +208,7 @@ export function FeaturesSection() {
             Capabilities
           </span>
           <h2
-            className={`font-display text-4xl tracking-tight transition-all duration-700 lg:text-6xl ${
+            className={`font-heading text-4xl tracking-tight transition-all duration-700 lg:text-6xl ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >

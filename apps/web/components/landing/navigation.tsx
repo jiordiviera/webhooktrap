@@ -99,7 +99,7 @@ export function Navigation() {
                 href={link.href}
                 onClick={closeMobileMenu}
                 className={cn(
-                  "font-display text-5xl text-foreground transition-all duration-500 hover:text-primary",
+                  "font-heading text-5xl text-foreground transition-all duration-500 hover:text-primary",
                   isMobileMenuOpen
                     ? "translate-y-0 opacity-100"
                     : "translate-y-4 opacity-0",

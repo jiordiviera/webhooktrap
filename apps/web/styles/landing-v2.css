@@ -1,9 +1,5 @@
-.font-display {
-  font-family: var(--font-heading);
-}
-
 .noise-overlay::before {
-  content: '';
+  content: "";
   pointer-events: none;
   position: fixed;
   inset: 0;

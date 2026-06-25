@@ -45,7 +45,7 @@ export function InfrastructureSection() {
               <span className="h-px w-8 bg-primary/40" />
               Capture pipeline
             </span>
-            <h2 className="font-display mb-8 text-4xl tracking-tight lg:text-6xl">
+            <h2 className="font-heading mb-8 text-4xl tracking-tight lg:text-6xl">
               Nothing lost
               <br />
               in translation.
@@ -56,15 +56,15 @@ export function InfrastructureSection() {
             </p>
             <div className="grid grid-cols-3 gap-8">
               <div>
-                <div className="font-display mb-2 text-4xl text-primary lg:text-5xl">3</div>
+                <div className="font-heading mb-2 text-4xl text-primary lg:text-5xl">3</div>
                 <div className="text-sm text-muted-foreground">core moves</div>
               </div>
               <div>
-                <div className="font-display mb-2 text-4xl text-primary lg:text-5xl">48h</div>
+                <div className="font-heading mb-2 text-4xl text-primary lg:text-5xl">48h</div>
                 <div className="text-sm text-muted-foreground">anonymous retention</div>
               </div>
               <div>
-                <div className="font-display mb-2 text-4xl text-primary lg:text-5xl">∞</div>
+                <div className="font-heading mb-2 text-4xl text-primary lg:text-5xl">∞</div>
                 <div className="text-sm text-muted-foreground">providers supported</div>
               </div>
             </div>

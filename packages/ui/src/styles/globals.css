@@ -31,7 +31,7 @@
 @theme inline {
   --font-heading: var(--font-cormorant), "Times New Roman", serif;
   --font-sans: var(--font-lora), Georgia, serif;
-  --font-ui: ui-sans-serif, system-ui, sans-serif;
+  --font-ui: var(--font-sans);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -117,7 +117,7 @@
   --chart-4: oklch(0.62 0.025 55);
   --chart-5: oklch(0.78 0.03 58);
 
-  --radius: 1.5rem;
+  --radius: .625rem;
 
   --sidebar: oklch(0.34 0.065 44);
   --sidebar-foreground: oklch(0.94 0.018 78);
@@ -179,18 +179,26 @@
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply bg-background text-foreground font-sans scrollbar-thin scrollbar-thumb-muted/80;
+    letter-spacing: var(--tracking-normal);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    font-family: var(--font-heading);
+    @apply font-heading;
   }
   button {
     @apply cursor-pointer;
+  }
+
+  p {
+    @apply leading-relaxed text-muted-foreground;
   }
 }

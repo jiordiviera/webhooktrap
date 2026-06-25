@@ -60,7 +60,7 @@ export function SecuritySection() {
               <span className="h-px w-8 bg-primary/40" />
               Trust
             </span>
-            <h2 className="font-display mb-8 text-4xl tracking-tight lg:text-6xl">
+            <h2 className="font-heading mb-8 text-4xl tracking-tight lg:text-6xl">
               Debug safely.
               <br />
               Share deliberately.

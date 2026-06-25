@@ -80,7 +80,7 @@ export function HowItWorksSection() {
             Process
           </span>
           <h2
-            className={`font-display text-4xl tracking-tight transition-all duration-700 lg:text-6xl ${
+            className={`font-heading text-4xl tracking-tight transition-all duration-700 lg:text-6xl ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >
@@ -102,9 +102,9 @@ export function HowItWorksSection() {
                 }`}
               >
                 <div className="flex items-start gap-6">
-                  <span className="font-display text-3xl text-primary-foreground/30">{step.number}</span>
+                  <span className="font-heading text-3xl text-primary-foreground/30">{step.number}</span>
                   <div className="flex-1">
-                    <h3 className="font-display mb-3 text-2xl lg:text-3xl">{step.title}</h3>
+                    <h3 className="font-heading mb-3 text-2xl lg:text-3xl">{step.title}</h3>
                     <p className="leading-relaxed text-primary-foreground/70">{step.description}</p>
                     {activeStep === index && (
                       <div className="mt-4 h-px overflow-hidden bg-primary-foreground/20">

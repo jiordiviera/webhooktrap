@@ -65,7 +65,7 @@ export function HeroSection() {
 
           <div className="mb-10">
             <h1
-              className={`font-display text-[clamp(2.75rem,9vw,6.5rem)] leading-[0.95] tracking-tight transition-all duration-1000 ${
+              className={`font-heading text-[clamp(2.75rem,9vw,6.5rem)] leading-[0.95] tracking-tight transition-all duration-1000 ${
                 isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
               }`}
             >
@@ -136,7 +136,7 @@ export function HeroSection() {
             <div key={i} className="flex gap-16">
               {stats.map((stat) => (
                 <div key={`${stat.company}-${i}`} className="flex items-baseline gap-4">
-                  <span className="font-display text-3xl text-foreground lg:text-4xl">
+                  <span className="font-heading text-3xl text-foreground lg:text-4xl">
                     {stat.value}
                   </span>
                   <span className="text-sm text-muted-foreground">

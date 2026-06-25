@@ -45,7 +45,7 @@ export function IntegrationsSection() {
             Integrations
             <span className="h-px w-8 bg-primary/40" />
           </span>
-          <h2 className="font-display mb-6 text-4xl tracking-tight lg:text-6xl">
+          <h2 className="font-heading mb-6 text-4xl tracking-tight lg:text-6xl">
             One ingest URL.
             <br />
             Every provider you already use.
