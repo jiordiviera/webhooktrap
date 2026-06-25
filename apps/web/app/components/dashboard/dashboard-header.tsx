@@ -30,6 +30,7 @@ import { Input } from '@workspace/ui/components/input'
 import { Kbd, KbdGroup } from '@workspace/ui/components/kbd'
 import { SidebarTrigger } from '@workspace/ui/components/sidebar'
 import { useAuth } from '@/contexts/auth-context'
+import { resolveAvatarSrc } from '@/lib/avatar'
 import { useDashboardNav } from '@/features/dashboard/context/dashboard-nav-context'
 import { DashboardBreadcrumb } from './breadcrumb'
 
@@ -85,7 +86,7 @@ export function DashboardHeader() {
   }, [])
 
   const displayName = user?.fullName ?? user?.email ?? 'Account'
-  const avatarSrc = user?.avatar ?? '/logo.png'
+  const avatarSrc = resolveAvatarSrc(user?.avatar)
 
   return (
     <>

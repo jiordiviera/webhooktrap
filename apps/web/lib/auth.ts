@@ -1,3 +1,5 @@
+import { sanitizeAvatarUrl } from '@/lib/avatar'
+
 export const AUTH_TOKEN_KEY = 'hookscope_token'
 
 export type AuthUser = {
@@ -14,6 +16,13 @@ export type AuthPayload = {
   data: {
     user: AuthUser
     token: string
+  }
+}
+
+export function normalizeAuthUser(user: AuthUser): AuthUser {
+  return {
+    ...user,
+    avatar: sanitizeAvatarUrl(user.avatar),
   }
 }
 

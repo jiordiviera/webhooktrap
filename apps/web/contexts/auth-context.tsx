@@ -15,6 +15,7 @@ import {
   type AuthUser,
   clearAuthToken,
   getAuthToken,
+  normalizeAuthUser,
   saveAuthToken,
 } from '@/lib/auth'
 import { fetchProfile as loadProfile } from '@/lib/profile'
@@ -43,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback((payload: AuthPayload['data']) => {
     saveAuthToken(payload.token)
     setToken(payload.token)
-    setUser(payload.user)
+    setUser(normalizeAuthUser(payload.user))
     setStatus('authenticated')
   }, [])
 
