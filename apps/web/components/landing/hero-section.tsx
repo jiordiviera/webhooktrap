@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { IconArrowRight } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { CreateInboxCta } from '@/app/components/create-inbox-cta'
 import { LiveWebhookDemo } from '@/app/components/landing/live-webhook-demo'
@@ -110,7 +110,7 @@ export function HeroSection() {
               <Button variant="outline" className="rounded-full" asChild>
                 <Link href="#how-it-works">
                   See how it works
-                  <ArrowRight className="ml-2 size-4" />
+                  <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             </div>

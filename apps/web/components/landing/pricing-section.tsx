@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Check } from 'lucide-react'
+import { IconArrowRight, IconCheck } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 
 const plans = [
@@ -75,7 +75,7 @@ export function PricingSection() {
               <ul className="mt-8 flex-1 space-y-4">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3 text-sm text-foreground/85">
-                    <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <IconCheck className="mt-0.5 size-4 shrink-0 text-primary" />
                     {feature}
                   </li>
                 ))}
@@ -83,7 +83,7 @@ export function PricingSection() {
               <Button className="mt-10 h-12 rounded-full" variant={plan.popular ? 'default' : 'outline'} asChild>
                 <Link href={plan.ctaHref}>
                   {plan.cta}
-                  <ArrowRight className="ml-2 size-4" />
+                  <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             </div>

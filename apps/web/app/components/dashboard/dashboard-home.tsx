@@ -2,7 +2,14 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Inbox, Plus, Radio, Zap } from 'lucide-react'
+import {
+  IconArrowRight,
+  IconAntenna,
+  IconBolt,
+  IconInbox,
+  IconPlus,
+  type TablerIcon,
+} from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { Loader } from '@workspace/ui/components/loader'
 import { Skeleton } from '@workspace/ui/components/skeleton'
@@ -26,7 +33,7 @@ function StatCard({
   label: string
   value: string
   hint: string
-  icon: typeof Inbox
+  icon: TablerIcon
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -126,7 +133,7 @@ export function DashboardHome({ token }: { token: string }) {
               </>
             ) : (
               <>
-                <Plus className="size-4" aria-hidden />
+                <IconPlus className="size-4" aria-hidden />
                 New inbox
               </>
             )}
@@ -134,7 +141,7 @@ export function DashboardHome({ token }: { token: string }) {
           <Button type="button" variant="outline" asChild>
             <Link href="/inboxes">
               All inboxes
-              <ArrowRight className="size-4" aria-hidden />
+              <IconArrowRight className="size-4" aria-hidden />
             </Link>
           </Button>
         </div>
@@ -159,7 +166,7 @@ export function DashboardHome({ token }: { token: string }) {
               label="Inboxes"
               value={String(inboxes.length)}
               hint={inboxes.length === 0 ? 'Create your first ingest endpoint' : 'Saved in your account'}
-              icon={Inbox}
+              icon={IconInbox}
             />
             <StatCard
               label="Events captured"
@@ -169,13 +176,13 @@ export function DashboardHome({ token }: { token: string }) {
                   ? 'Waiting for your first webhook'
                   : `${stats.activeInboxes} inbox${stats.activeInboxes === 1 ? '' : 'es'} with traffic`
               }
-              icon={Radio}
+              icon={IconAntenna}
             />
             <StatCard
               label="Last activity"
               value={stats.latest ? formatRelativeTime(stats.latest) : '—'}
               hint={stats.latest ? 'Most recent webhook received' : 'No events yet'}
-              icon={Zap}
+              icon={IconBolt}
             />
           </>
         )}
@@ -216,7 +223,7 @@ export function DashboardHome({ token }: { token: string }) {
                 </>
               ) : (
                 <>
-                  <Plus className="size-4" aria-hidden />
+                  <IconPlus className="size-4" aria-hidden />
                   Create inbox
                 </>
               )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Check, Copy } from 'lucide-react'
+import { IconCheck, IconCopy } from '@tabler/icons-react'
 
 const codeExamples = [
   {
@@ -122,7 +122,7 @@ export function DevelopersSection() {
                 onClick={() => void handleCopy()}
                 className="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
-                {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                {copied ? <IconCheck className="size-3.5" /> : <IconCopy className="size-3.5" />}
                 {copied ? 'Copied' : 'Copy'}
               </button>
               <pre className="overflow-x-auto p-6 font-mono text-sm leading-relaxed text-muted-foreground">

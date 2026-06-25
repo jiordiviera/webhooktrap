@@ -14,20 +14,15 @@ export function AuthNav() {
 
   if (isAuthenticated && user) {
     return (
-      <div className="flex items-center gap-4">
-        <Button asChild>
-          <Link href="/dashboard">Dashboard</Link>
-        </Button>
-      </div>
+      <Button asChild>
+        <Link href="/dashboard">Dashboard</Link>
+      </Button>
     );
   }
 
   return (
-    <Link
-      href="/login"
-      className="text-muted-foreground transition-colors hover:text-primary"
-    >
-      Sign in
-    </Link>
+    <Button asChild>
+      <Link href="/login">Sign in</Link>
+    </Button>
   );
 }

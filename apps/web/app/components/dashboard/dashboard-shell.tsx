@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ExternalLink, Inbox, LayoutDashboard, LogOut } from 'lucide-react'
+import { IconExternalLink, IconInbox, IconLayoutDashboard, IconLogout } from '@tabler/icons-react'
 import { Loader } from '@workspace/ui/components/loader'
 import {
   Sidebar,
@@ -29,14 +29,14 @@ const NAV = [
     href: '/dashboard',
     label: 'Dashboard',
     hint: 'Activity and quick actions',
-    icon: LayoutDashboard,
+    icon: IconLayoutDashboard,
     isActive: (pathname: string) => pathname === '/dashboard',
   },
   {
     href: '/inboxes',
     label: 'Inboxes',
     hint: 'Ingest URLs and events',
-    icon: Inbox,
+    icon: IconInbox,
     isActive: (pathname: string) => pathname === '/inboxes' || pathname.startsWith('/i/'),
   },
 ] as const
@@ -124,7 +124,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   className="rounded-xl text-sidebar-foreground/75 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
                 >
                   <Link href="/">
-                    <ExternalLink className="size-4" />
+                    <IconExternalLink className="size-4" />
                     <span>Marketing site</span>
                   </Link>
                 </SidebarMenuButton>
@@ -161,7 +161,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                       onClick={() => void signOut()}
                       className="rounded-xl text-sidebar-foreground/75 hover:bg-sidebar-accent/70"
                     >
-                      <LogOut className="size-4" />
+                      <IconLogout className="size-4" />
                       <span>Sign out</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

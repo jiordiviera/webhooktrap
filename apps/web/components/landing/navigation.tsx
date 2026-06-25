@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { AuthNav } from "@/app/components/auth-nav";
 
@@ -69,13 +69,6 @@ export function Navigation() {
 
           <div className="hidden items-center gap-4 md:flex">
             <AuthNav />
-            <Button
-              size="sm"
-              className={`rounded-full transition-all duration-500 ${isScrolled ? "h-8 px-4 text-xs" : "px-6"}`}
-              asChild
-            >
-              <a href="#cta">Open inbox</a>
-            </Button>
           </div>
 
           <button
@@ -85,9 +78,9 @@ export function Navigation() {
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
-              <X className="size-6" />
+              <IconX className="size-6" />
             ) : (
-              <Menu className="size-6" />
+              <IconMenu2 className="size-6" />
             )}
           </button>
         </div>
@@ -101,6 +94,7 @@ export function Navigation() {
         }`}
       >
         <div className="flex h-full flex-col px-8 pt-28 pb-8">
+          
           <div className="flex flex-1 flex-col justify-center gap-8">
             {navLinks.map((link, i) => (
               <Link
@@ -130,11 +124,6 @@ export function Navigation() {
             style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
             <AuthNav />
-            <Button asChild>
-              <a href="#cta" onClick={() => setIsMobileMenuOpen(false)}>
-                Open inbox
-              </a>
-            </Button>
           </div>
         </div>
       </div>

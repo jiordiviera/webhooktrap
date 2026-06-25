@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { IconArrowRight } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { CreateInboxCta } from '@/app/components/create-inbox-cta'
 
@@ -45,7 +45,7 @@ export function CtaSection() {
                 <Button variant="outline" className="rounded-full" asChild>
                   <Link href="/login">
                     Sign in to save inboxes
-                    <ArrowRight className="ml-2 size-4" />
+                    <IconArrowRight className="ml-2 size-4" />
                   </Link>
                 </Button>
                 <p className="font-ui text-sm text-muted-foreground">Anonymous inboxes last 48 hours</p>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
-import { Copy, ExternalLink, Plus } from 'lucide-react'
+import { IconCopy, IconExternalLink, IconPlus } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { Loader } from '@workspace/ui/components/loader'
 import { Skeleton } from '@workspace/ui/components/skeleton'
@@ -71,12 +71,12 @@ function InboxRow({
           onClick={() => onCopy(inbox.id, ingestUrl)}
           aria-label={copied ? 'URL copied' : `Copy ingest URL for ${inbox.name}`}
         >
-          <Copy className="size-3.5" aria-hidden />
+          <IconCopy className="size-3.5" aria-hidden />
           <span className="sr-only sm:not-sr-only">{copied ? 'Copied' : 'Copy'}</span>
         </Button>
         <Button type="button" variant="ghost" size="sm" asChild>
           <Link href={inbox.ingestUrl} aria-label={`Open ${inbox.name}`}>
-            <ExternalLink className="size-3.5" aria-hidden />
+            <IconExternalLink className="size-3.5" aria-hidden />
             <span className="sr-only sm:not-sr-only">Open</span>
           </Link>
         </Button>
@@ -184,7 +184,7 @@ export function InboxList({ token }: { token: string }) {
             </>
           ) : (
             <>
-              <Plus className="size-4" aria-hidden />
+              <IconPlus className="size-4" aria-hidden />
               New inbox
             </>
           )}
@@ -220,7 +220,7 @@ export function InboxList({ token }: { token: string }) {
                 </>
               ) : (
                 <>
-                  <Plus className="size-4" aria-hidden />
+                  <IconPlus className="size-4" aria-hidden />
                   Create inbox
                 </>
               )}

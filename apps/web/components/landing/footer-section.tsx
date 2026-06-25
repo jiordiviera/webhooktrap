@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
+import { IconArrowUpRight } from '@tabler/icons-react'
 import { DeveloperCredit } from '@/app/components/developer-credit'
 import { ThemeToggle } from '@/app/components/theme-toggle'
 import { GithubDark } from '@workspace/ui/components/svgs/githubDark'
@@ -56,7 +56,7 @@ export function FooterSection() {
                   <GithubLight className="size-4 dark:hidden" aria-hidden />
                   <GithubDark className="hidden size-4 dark:block" aria-hidden />
                   GitHub
-                  <ArrowUpRight className="size-3" aria-hidden />
+                  <IconArrowUpRight className="size-3" aria-hidden />
                 </a>
                 <a
                   href={X_URL}
@@ -66,7 +66,7 @@ export function FooterSection() {
                 >
                   <XIcon className="size-4 dark:hidden" aria-hidden />
                   <XDark className="hidden size-4 dark:block" aria-hidden />
-                  <ArrowUpRight className="size-3" aria-hidden />
+                  <IconArrowUpRight className="size-3" aria-hidden />
                 </a>
               </div>
             </div>

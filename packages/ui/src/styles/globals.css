@@ -7,6 +7,27 @@
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
+@keyframes loader-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes loader-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @theme inline {
   --font-heading: var(--font-cormorant), "Times New Roman", serif;
   --font-sans: var(--font-lora), Georgia, serif;
@@ -54,6 +75,9 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --animate-loader-progress: loader-progress 8s linear forwards;
+  --animate-loader-dot: loader-dot 1.2s ease-in-out infinite;
 }
 
 :root {

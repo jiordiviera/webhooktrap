@@ -1,26 +1,26 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Eye, FileCheck, Lock, Shield } from 'lucide-react'
+import { IconEye, IconFileCheck, IconLock, IconShield } from '@tabler/icons-react'
 
 const securityFeatures = [
   {
-    icon: Shield,
+    icon: IconShield,
     title: 'Signature visibility',
     description: 'Inspect provider signatures alongside the raw payload before you replay to your handler.',
   },
   {
-    icon: Lock,
+    icon: IconLock,
     title: 'TLS in transit',
     description: 'Ingest URLs are served over HTTPS. Payloads stay encrypted between provider and inbox.',
   },
   {
-    icon: Eye,
+    icon: IconEye,
     title: 'Read-only shares',
     description: 'Send a link to a teammate without granting write access or account creation.',
   },
   {
-    icon: FileCheck,
+    icon: IconFileCheck,
     title: 'Account persistence',
     description: 'Sign in to keep inboxes past the 48-hour anonymous window. Delete when you are done.',
   },

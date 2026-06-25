@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Moon, Sun } from 'lucide-react'
+import { IconMoon, IconSun } from '@tabler/icons-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@workspace/ui/components/button'
 import { cn } from '@workspace/ui/lib/utils'
@@ -28,7 +28,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         disabled
         aria-label="Toggle theme"
       >
-        <Sun className="size-4 opacity-0" aria-hidden />
+        <IconSun className="size-4 opacity-0" aria-hidden />
       </Button>
     )
   }
@@ -45,7 +45,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       aria-pressed={isDark}
     >
-      {isDark ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
+      {isDark ? <IconSun className="size-4" aria-hidden /> : <IconMoon className="size-4" aria-hidden />}
     </Button>
   )
 }
