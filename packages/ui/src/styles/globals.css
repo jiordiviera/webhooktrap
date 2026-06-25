@@ -190,4 +190,7 @@
   h4 {
     font-family: var(--font-heading);
   }
+  button {
+    @apply cursor-pointer;
+  }
 }

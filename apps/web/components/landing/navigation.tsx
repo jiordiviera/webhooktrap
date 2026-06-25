@@ -143,11 +143,11 @@ export function Navigation() {
             <Image
               src="/logo.png"
               alt="Hookscope"
-              width={120}
-              height={32}
+              width={500}
+              height={100}
               className={cn(
                 'h-auto w-auto transition-all duration-500',
-                isScrolled || isMobileMenuOpen ? 'max-h-7' : 'max-h-8'
+                isScrolled || isMobileMenuOpen ? 'max-h-12' : 'max-h-14'
               )}
               priority
             />
