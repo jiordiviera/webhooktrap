@@ -18,6 +18,12 @@ import { Input } from '@workspace/ui/components/input'
 import { Loader } from '@workspace/ui/components/loader'
 import { Separator } from '@workspace/ui/components/separator'
 import { cn } from '@workspace/ui/lib/utils'
+import {
+  EventInspectorSkeleton,
+  InboxDetailSkeleton,
+  ReplayPanelSkeleton,
+} from '@/app/components/inbox/inbox-detail-skeleton'
+import { DataTable } from '@/features/data-table/components/data-table'
 import { ApiError } from '@/lib/api'
 import { useConfirm } from '@/contexts/confirm-context'
 import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
@@ -25,56 +31,25 @@ import { buildEventCurl, buildEventJson } from '@/lib/event-copy'
 import {
   fetchEvent,
   fetchEventReplays,
-  fetchInboxEvents,
   replayEvent,
   type EventDetail,
-  type EventSummary,
   type ReplayRecord,
 } from '@/lib/events'
 import {
   deleteInbox,
   fetchInbox,
   formatRelativeTime,
-  inboxPublicUrl,
   updateInbox,
   type InboxSummary,
 } from '@/lib/inboxes'
 
 const POLL_INTERVAL_MS = 3000
 
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  return `${(bytes / 1024).toFixed(1)} KB`
-}
-
-function EventListItem({
-  event,
-  selected,
-  onSelect,
-}: {
-  event: EventSummary
-  selected: boolean
-  onSelect: () => void
-}) {
+function MethodBadge({ method }: { method: string }) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        'flex w-full flex-col gap-1 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0',
-        selected ? 'bg-muted/60' : 'hover:bg-muted/40'
-      )}
-    >
-      <div className="flex items-center gap-2">
-        <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[0.6875rem] font-semibold text-primary">
-          {event.method}
-        </span>
-        <span className="truncate text-sm text-foreground">{event.path}</span>
-      </div>
-      <span className="text-xs text-muted-foreground">
-        {formatRelativeTime(event.receivedAt)} · {formatBytes(event.sizeBytes)}
-      </span>
-    </button>
+    <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[0.6875rem] font-semibold tracking-wide text-primary">
+      {method}
+    </span>
   )
 }
 
@@ -88,17 +63,69 @@ function JsonBlock({ value }: { value: unknown }) {
   )
 }
 
+function ReplayStatus({ replay }: { replay: ReplayRecord }) {
+  if (replay.statusCode) {
+    const isSuccess = replay.statusCode >= 200 && replay.statusCode < 300
+    const isError = replay.statusCode >= 400
+
+    return (
+      <span
+        className={cn(
+          'font-mono text-sm font-semibold tabular-nums',
+          isError ? 'text-destructive' : isSuccess ? 'text-signal' : 'text-foreground'
+        )}
+      >
+        {replay.statusCode}
+      </span>
+    )
+  }
+
+  return (
+    <span className="font-mono text-sm font-semibold text-destructive">
+      {replay.errorCode ?? 'ERROR'}
+    </span>
+  )
+}
+
+function SectionPanel({
+  title,
+  description,
+  children,
+  actions,
+}: {
+  title: string
+  description?: string
+  children: React.ReactNode
+  actions?: React.ReactNode
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3">
+        <div className="min-w-0">
+          <h2 className="font-ui text-sm font-semibold text-foreground">{title}</h2>
+          {description ? (
+            <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+          ) : null}
+        </div>
+        {actions ? <div className="flex shrink-0 gap-2">{actions}</div> : null}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: string }) {
   const router = useRouter()
   const confirm = useConfirm()
   const inboxPage = useInboxPageTitle()
   const [inbox, setInbox] = useState<InboxSummary | null>(null)
-  const [events, setEvents] = useState<EventSummary[]>([])
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+  const [eventsTotal, setEventsTotal] = useState(0)
   const [eventDetail, setEventDetail] = useState<EventDetail | null>(null)
   const [replays, setReplays] = useState<ReplayRecord[]>([])
   const [replayUrl, setReplayUrl] = useState('')
   const [loading, setLoading] = useState(true)
+  const [detailLoading, setDetailLoading] = useState(false)
   const [replaying, setReplaying] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -108,7 +135,8 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
   const [savingName, setSavingName] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const ingestUrl = inbox ? inboxPublicUrl(inbox.ingestUrl) : ''
+  const ingestUrl = inbox?.ingestUrl ?? ''
+  const eventCount = inbox?.eventsCount || eventsTotal
 
   const loadInbox = useCallback(async () => {
     const next = await fetchInbox(token, inboxId)
@@ -117,22 +145,16 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     return next
   }, [inboxId, token])
 
-  const loadEvents = useCallback(async () => {
-    const next = await fetchInboxEvents(token, inboxId)
-    setEvents(next)
-    return next
-  }, [inboxId, token])
-
   const refresh = useCallback(async () => {
     try {
-      await Promise.all([loadInbox(), loadEvents()])
+      await loadInbox()
       setErrorMessage(null)
     } catch (error) {
       setErrorMessage(
         error instanceof ApiError ? error.message : 'Could not load inbox. Try again.'
       )
     }
-  }, [loadEvents, loadInbox])
+  }, [loadInbox])
 
   useEffect(() => {
     let cancelled = false
@@ -140,12 +162,9 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     async function init() {
       setLoading(true)
       try {
-        const [, eventList] = await Promise.all([loadInbox(), loadEvents()])
+        await loadInbox()
         if (cancelled) return
         setErrorMessage(null)
-        if (eventList[0]) {
-          setSelectedEventId(eventList[0].id)
-        }
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
@@ -159,15 +178,10 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
 
     void init()
 
-    const interval = window.setInterval(() => {
-      void loadEvents().catch(() => undefined)
-    }, POLL_INTERVAL_MS)
-
     return () => {
       cancelled = true
-      window.clearInterval(interval)
     }
-  }, [loadEvents, loadInbox])
+  }, [loadInbox])
 
   useEffect(() => {
     if (!inboxPage || !inbox) return
@@ -183,12 +197,17 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     if (!selectedEventId) {
       setEventDetail(null)
       setReplays([])
+      setDetailLoading(false)
       return
     }
 
     let cancelled = false
 
     async function loadDetail(eventId: string) {
+      setDetailLoading(true)
+      setEventDetail(null)
+      setReplays([])
+
       try {
         const [detail, replayList] = await Promise.all([
           fetchEvent(token, eventId),
@@ -203,6 +222,8 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
           setEventDetail(null)
           setReplays([])
         }
+      } finally {
+        if (!cancelled) setDetailLoading(false)
       }
     }
 
@@ -340,11 +361,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader layout="centered" label="Loading inbox" />
-      </div>
-    )
+    return <InboxDetailSkeleton />
   }
 
   if (!inbox) {
@@ -360,7 +377,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 space-y-2">
           <Button variant="ghost" size="sm" className="-ml-2 h-8 px-2" asChild>
             <Link href="/inboxes">
@@ -374,7 +391,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
                 <Input
                   value={nameDraft}
                   onChange={(event) => setNameDraft(event.target.value)}
-                  className="h-9 max-w-sm text-lg font-semibold"
+                  className="h-9 max-w-sm font-ui text-lg font-semibold"
                   autoFocus
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') void handleSaveName()
@@ -407,7 +424,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                <h1 className="font-ui text-2xl font-semibold tracking-tight text-foreground">
                   {inbox.name}
                 </h1>
                 <Button
@@ -426,13 +443,6 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <code className="max-w-md truncate rounded-md border border-border bg-muted/40 px-2 py-1 font-mono text-xs">
-            {ingestUrl}
-          </code>
-          <Button type="button" variant="outline" size="sm" onClick={() => void handleCopyUrl()}>
-            <IconCopy className="size-3.5" aria-hidden />
-            {copied ? 'Copied' : 'Copy URL'}
-          </Button>
           <Button type="button" variant="outline" size="sm" onClick={() => void refresh()}>
             <IconRefresh className="size-3.5" aria-hidden />
             Refresh
@@ -453,7 +463,35 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
             {deleting ? 'Deleting…' : 'Delete'}
           </Button>
         </div>
-      </div>
+      </header>
+
+      <section
+        aria-labelledby="ingest-url-heading"
+        className="rounded-xl border border-border bg-card p-4 sm:p-5"
+      >
+        <p
+          id="ingest-url-heading"
+          className="mb-3 text-[0.6875rem] font-medium tracking-[0.14em] text-primary uppercase"
+        >
+          Your ingest URL
+        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <code className="min-w-0 flex-1 truncate rounded-lg border border-border bg-muted/30 px-3 py-2.5 font-mono text-sm text-foreground">
+            {ingestUrl}
+          </code>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => void handleCopyUrl()}
+            aria-label={copied ? 'URL copied' : 'Copy ingest URL'}
+          >
+            <IconCopy className="size-3.5" aria-hidden />
+            {copied ? 'Copied' : 'Copy URL'}
+          </Button>
+        </div>
+      </section>
 
       {errorMessage ? (
         <p className="text-sm text-destructive" role="alert">
@@ -462,49 +500,43 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-6">
-        <section className="overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-4 py-3">
-            <h2 className="text-sm font-semibold text-foreground">Events ({events.length})</h2>
+        <section aria-labelledby="events-heading">
+          <div className="mb-3 px-1">
+            <h2 id="events-heading" className="font-ui text-sm font-semibold text-foreground">
+              Events
+              <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">
+                ({eventCount})
+              </span>
+            </h2>
           </div>
-          {events.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-muted-foreground">
-              Waiting for the first webhook. Send a POST to the ingest URL above.
-            </div>
-          ) : (
-            <div className="max-h-128 overflow-y-auto">
-              {events.map((event) => (
-                <EventListItem
-                  key={event.id}
-                  event={event}
-                  selected={event.id === selectedEventId}
-                  onSelect={() => setSelectedEventId(event.id)}
-                />
-              ))}
-            </div>
-          )}
+          <div className="max-h-128 overflow-y-auto rounded-xl">
+            <DataTable
+              model="inbox-events"
+              token={token}
+              context={{ inboxId }}
+              refetchInterval={POLL_INTERVAL_MS}
+              selectedRowId={selectedEventId}
+              onRowClickAction={(event) => setSelectedEventId(event.id)}
+              showPagination
+              onDataChangeAction={({ rows, total }) => {
+                setEventsTotal(total)
+                if (!selectedEventId && rows[0]) {
+                  setSelectedEventId(rows[0].id)
+                }
+              }}
+            />
+          </div>
         </section>
 
-        <section className="flex flex-col gap-4">
-          <div className="overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="border-b border-border px-5 py-4">
-              <h2 className="text-sm font-semibold text-foreground">Event detail</h2>
-            </div>
-
-            {!eventDetail ? (
-              <p className="px-5 py-10 text-sm text-muted-foreground">
-                Select an event to inspect headers and body.
-              </p>
-            ) : (
-              <div className="space-y-5 px-5 py-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex flex-wrap gap-3 text-sm">
-                    <span className="font-mono font-semibold text-primary">{eventDetail.method}</span>
-                    <span className="font-mono text-foreground">{eventDetail.path}</span>
-                    <span className="text-muted-foreground">
-                      {formatRelativeTime(eventDetail.receivedAt)}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
+        <section className="flex min-w-0 flex-col gap-4">
+          {detailLoading ? (
+            <EventInspectorSkeleton />
+          ) : (
+            <SectionPanel
+              title="Event detail"
+              actions={
+                eventDetail ? (
+                  <>
                     <Button
                       type="button"
                       variant="outline"
@@ -512,7 +544,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
                       onClick={() => void handleCopyEvent('json')}
                     >
                       <IconCopy className="size-3.5" aria-hidden />
-                      {copiedAction === 'json' ? 'Copied' : 'Copy JSON'}
+                      {copiedAction === 'json' ? 'Copied' : 'JSON'}
                     </Button>
                     <Button
                       type="button"
@@ -521,129 +553,137 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
                       onClick={() => void handleCopyEvent('curl')}
                     >
                       <IconCopy className="size-3.5" aria-hidden />
-                      {copiedAction === 'curl' ? 'Copied' : 'Copy cURL'}
+                      {copiedAction === 'curl' ? 'Copied' : 'cURL'}
+                    </Button>
+                  </>
+                ) : undefined
+              }
+            >
+              {!eventDetail ? (
+                <p className="px-4 py-10 text-sm text-muted-foreground">
+                  {selectedEventId
+                    ? 'Could not load this event. Select another or refresh.'
+                    : 'Select an event to inspect headers and body.'}
+                </p>
+              ) : (
+                <div className="space-y-5 p-4">
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <MethodBadge method={eventDetail.method} />
+                    <span className="min-w-0 truncate font-mono text-foreground">
+                      {eventDetail.path}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {formatRelativeTime(eventDetail.receivedAt)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                      Headers
+                    </h3>
+                    <JsonBlock value={eventDetail.headers} />
+                  </div>
+
+                  <div>
+                    <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                      Body
+                    </h3>
+                    {eventDetail.bodyJson ? (
+                      <JsonBlock value={eventDetail.bodyJson} />
+                    ) : (
+                      <pre className="max-h-80 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs whitespace-pre-wrap text-foreground">
+                        {eventDetail.bodyText ?? '(empty)'}
+                      </pre>
+                    )}
+                  </div>
+                </div>
+              )}
+            </SectionPanel>
+          )}
+
+          {detailLoading ? (
+            <ReplayPanelSkeleton />
+          ) : (
+            <SectionPanel
+              title="Replay"
+              description="Fire the same request to your local server or staging endpoint."
+            >
+              <div className="space-y-4 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Input
+                    value={replayUrl}
+                    onChange={(event) => setReplayUrl(event.target.value)}
+                    placeholder="http://localhost:3000/webhooks/stripe"
+                    className="font-mono text-sm"
+                  />
+                  <div className="flex shrink-0 gap-2">
+                    <Button type="button" variant="outline" onClick={() => void handleSaveReplayUrl()}>
+                      Save
+                    </Button>
+                    <Button
+                      type="button"
+                      disabled={!selectedEventId || replaying}
+                      onClick={() => void handleReplay()}
+                    >
+                      {replaying ? (
+                        <>
+                          <Loader size="sm" tone="inherit" />
+                          Replaying…
+                        </>
+                      ) : (
+                        <>
+                          <IconPlayerPlay className="size-4" aria-hidden />
+                          Replay
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                    Headers
-                  </h3>
-                  <JsonBlock value={eventDetail.headers} />
-                </div>
-
-                <div>
-                  <h3 className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                    Body
-                  </h3>
-                  {eventDetail.bodyJson ? (
-                    <JsonBlock value={eventDetail.bodyJson} />
-                  ) : (
-                    <pre className="max-h-80 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs whitespace-pre-wrap text-foreground">
-                      {eventDetail.bodyText ?? '(empty)'}
-                    </pre>
-                  )}
-                </div>
+                {replays.length > 0 ? (
+                  <div className="space-y-3">
+                    <Separator />
+                    <h3 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                      History
+                    </h3>
+                    <ul className="divide-y divide-border rounded-lg border border-border">
+                      {replays.map((replay) => (
+                        <li key={replay.id} className="px-3 py-3 text-sm">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <ReplayStatus replay={replay} />
+                            {replay.durationMs !== null ? (
+                              <span className="text-muted-foreground tabular-nums">
+                                {replay.durationMs}ms
+                              </span>
+                            ) : null}
+                            <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
+                              {replay.targetUrl}
+                            </span>
+                          </div>
+                          {replay.errorMessage ? (
+                            <p className="mt-2 text-destructive">{replay.errorMessage}</p>
+                          ) : null}
+                          {replay.responseHeaders ? (
+                            <div className="mt-3">
+                              <p className="mb-1.5 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                                Response headers
+                              </p>
+                              <JsonBlock value={replay.responseHeaders} />
+                            </div>
+                          ) : null}
+                          {replay.responseBody ? (
+                            <pre className="mt-2 max-h-40 overflow-auto font-mono text-xs whitespace-pre-wrap text-foreground">
+                              {replay.responseBody}
+                            </pre>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
-            )}
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="border-b border-border px-5 py-4">
-              <h2 className="text-sm font-semibold text-foreground">Replay</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Fire the same request to your local server or staging endpoint.
-              </p>
-            </div>
-
-            <div className="space-y-4 px-5 py-5">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Input
-                  value={replayUrl}
-                  onChange={(event) => setReplayUrl(event.target.value)}
-                  placeholder="http://localhost:3000/webhooks/stripe"
-                  className="font-mono text-sm"
-                />
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => void handleSaveReplayUrl()}>
-                    Save
-                  </Button>
-                  <Button
-                    type="button"
-                    disabled={!selectedEventId || replaying}
-                    onClick={() => void handleReplay()}
-                  >
-                    {replaying ? (
-                      <>
-                        <Loader size="sm" tone="inherit" />
-                        Replaying…
-                      </>
-                    ) : (
-                      <>
-                        <IconPlayerPlay className="size-4" aria-hidden />
-                        Replay
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              {replays.length > 0 ? (
-                <div className="space-y-3">
-                  <Separator />
-                  <h3 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                    History
-                  </h3>
-                  {replays.map((replay) => (
-                    <div
-                      key={replay.id}
-                      className="rounded-lg border border-border bg-muted/20 px-3 py-3 text-sm"
-                    >
-                      <div className="flex flex-wrap items-center gap-2">
-                        {replay.statusCode ? (
-                          <span
-                            className={cn(
-                              'font-mono font-semibold',
-                              replay.statusCode >= 400 ? 'text-destructive' : 'text-primary'
-                            )}
-                          >
-                            {replay.statusCode}
-                          </span>
-                        ) : (
-                          <span className="font-mono font-semibold text-destructive">
-                            {replay.errorCode ?? 'ERROR'}
-                          </span>
-                        )}
-                        {replay.durationMs !== null ? (
-                          <span className="text-muted-foreground">{replay.durationMs}ms</span>
-                        ) : null}
-                        <span className="truncate font-mono text-xs text-muted-foreground">
-                          {replay.targetUrl}
-                        </span>
-                      </div>
-                      {replay.errorMessage ? (
-                        <p className="mt-2 text-destructive">{replay.errorMessage}</p>
-                      ) : null}
-                      {replay.responseHeaders ? (
-                        <div className="mt-2">
-                          <p className="mb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                            Response headers
-                          </p>
-                          <JsonBlock value={replay.responseHeaders} />
-                        </div>
-                      ) : null}
-                      {replay.responseBody ? (
-                        <pre className="mt-2 max-h-40 overflow-auto font-mono text-xs whitespace-pre-wrap text-foreground">
-                          {replay.responseBody}
-                        </pre>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </div>
+            </SectionPanel>
+          )}
         </section>
       </div>
     </div>

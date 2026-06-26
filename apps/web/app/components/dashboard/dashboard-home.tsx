@@ -17,7 +17,6 @@ import { ApiError } from '@/lib/api'
 import {
   fetchInboxes,
   formatRelativeTime,
-  inboxPublicUrl,
   type InboxSummary,
 } from '@/lib/inboxes'
 
@@ -209,7 +208,7 @@ export function DashboardHome({ token }: { token: string }) {
                   <div className="min-w-0">
                     <p className="font-medium text-foreground">{inbox.name}</p>
                     <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                      {inboxPublicUrl(inbox.ingestUrl)}
+                      {inbox.ingestUrl}
                     </p>
                   </div>
                   <div className="text-right text-sm">

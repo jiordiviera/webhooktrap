@@ -1,4 +1,6 @@
+import type { DataTableParams } from '@/features/data-table/types'
 import { apiFetch } from '@/lib/api'
+import { buildListQueryString, parsePaginatedResponse } from '@/lib/list-query'
 
 export type InboxSummary = {
   id: string
@@ -25,8 +27,22 @@ type InboxCreateResponse = {
 }
 
 export async function fetchInboxes(token: string) {
-  const body = await apiFetch<InboxListResponse>('/api/v1/inboxes', { token })
-  return body.data.inboxes
+  const page = await fetchInboxesPage(token, {
+    page: 1,
+    pageSize: 100,
+    sort: null,
+    filters: {},
+    search: '',
+  })
+  return page.rows
+}
+
+export async function fetchInboxesPage(token: string, params: DataTableParams) {
+  const body = await apiFetch<InboxListResponse & { data: { meta?: unknown } }>(
+    `/api/v1/inboxes${buildListQueryString(params)}`,
+    { token }
+  )
+  return parsePaginatedResponse<'inboxes', InboxSummary>(body, 'inboxes')
 }
 
 export async function createInbox(token: string, input: { name: string }) {
@@ -68,10 +84,6 @@ export async function deleteInbox(token: string, inboxId: string) {
   })
 }
 
-export function inboxPublicUrl(ingestPath: string) {
-  const webUrl = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:7777'
-  return `${webUrl}${ingestPath}`
-}
 
 export function formatRelativeTime(iso: string | null) {
   if (!iso) return 'No events yet'

@@ -1,4 +1,5 @@
-import { API_URL, ApiError } from '@/lib/api'
+import { isAxiosError } from 'axios'
+import { apiClient, ApiError } from '@/lib/api'
 
 export type MediaRecord = {
   id: string
@@ -35,24 +36,24 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRecord>
   formData.append('model_id', input.modelId)
   formData.append('collection', input.collection)
 
-  const response = await fetch(`${API_URL}/api/v1/media`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${input.token}`,
-      Accept: 'application/json',
-    },
-    body: formData,
-  })
+  try {
+    const response = await apiClient.post<UploadMediaResponse>('/api/v1/media', formData, {
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+      },
+    })
 
-  const body = (await response.json().catch(() => ({}))) as UploadMediaResponse & {
-    message?: string
-    data?: { message?: string }
+    return response.data.data.media
+  } catch (error) {
+    if (isAxiosError(error) && error.response) {
+      const body = (error.response.data ?? {}) as UploadMediaResponse & {
+        message?: string
+        data?: { message?: string }
+      }
+      const message = body.data?.message ?? body.message ?? `Upload failed (${error.response.status})`
+      throw new ApiError(error.response.status, { message })
+    }
+
+    throw error
   }
-
-  if (!response.ok) {
-    const message = body.data?.message ?? body.message ?? `Upload failed (${response.status})`
-    throw new ApiError(response.status, { message })
-  }
-
-  return body.data.media
 }

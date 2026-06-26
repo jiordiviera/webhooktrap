@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@workspace/ui/components/button'
 import { Loader } from '@workspace/ui/components/loader'
+import { API_URL, apiFetch } from '@/lib/api'
 
 type InboxResponse = {
   data: {
@@ -13,8 +14,6 @@ type InboxResponse = {
     }
   }
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333'
 
 export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink?: boolean }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
@@ -26,18 +25,13 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
     setCopied(false)
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/inboxes`, {
+      const body = await apiFetch<InboxResponse>('/api/v1/inboxes', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
         body: JSON.stringify({ name: 'My inbox' }),
       })
-      if (!response.ok) throw new Error('Failed to create inbox')
-
-      const body = (await response.json()) as InboxResponse
-      const url = `${API_URL}${body.data.inbox.ingestUrl}`
+      const url = body.data.inbox.ingestUrl.startsWith('http')
+        ? body.data.inbox.ingestUrl
+        : `${API_URL}${body.data.inbox.ingestUrl}`
       setIngestUrl(url)
       setStatus('ready')
     } catch {

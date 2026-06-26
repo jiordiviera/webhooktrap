@@ -1,23 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { IconCopy, IconExternalLink, IconPlus } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
-import { Skeleton } from '@workspace/ui/components/skeleton'
-import { cn } from '@workspace/ui/lib/utils'
-import { ApiError } from '@/lib/api'
 import { CreateInboxDialog } from '@/app/components/dashboard/create-inbox-dialog'
-import {
-  fetchInboxes,
-  formatRelativeTime,
-  inboxPublicUrl,
-  type InboxSummary,
-} from '@/lib/inboxes'
+import { DataTable } from '@/features/data-table/components/data-table'
+import { type InboxSummary } from '@/lib/inboxes'
 
-type LoadState = 'loading' | 'ready' | 'error' | 'empty'
-
-function InboxRow({
+function InboxActionsCell({
   inbox,
   onCopy,
   copiedId,
@@ -26,112 +18,40 @@ function InboxRow({
   onCopy: (id: string, url: string) => void
   copiedId: string | null
 }) {
-  const ingestUrl = inboxPublicUrl(inbox.ingestUrl)
   const copied = copiedId === inbox.id
 
   return (
-    <article
-      className={cn(
-        'group grid gap-3 border-b border-border px-5 py-4 transition-colors last:border-b-0 md:grid-cols-[minmax(0,1.35fr)_4.5rem_6rem_minmax(0,1.5fr)_auto] md:items-center md:gap-5 md:py-5',
-        'hover:bg-muted/40'
-      )}
-    >
-      <div className="min-w-0 pl-0.5 md:pl-1">
-        <Link
-          href={`/i/${inbox.id}`}
-          className="text-[0.9375rem] font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
-        >
-          {inbox.name}
+    <div className="flex items-center justify-end gap-1.5">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={(event) => {
+          event.stopPropagation()
+          void onCopy(inbox.id, inbox.ingestUrl)
+        }}
+        aria-label={copied ? 'URL copied' : `Copy ingest URL for ${inbox.name}`}
+      >
+        <IconCopy className="size-3.5" aria-hidden />
+        <span className="sr-only sm:not-sr-only">{copied ? 'Copied' : 'Copy'}</span>
+      </Button>
+      <Button type="button" variant="ghost" size="sm" asChild>
+        <Link href={`/i/${inbox.id}`} aria-label={`Open ${inbox.name}`}>
+          <IconExternalLink className="size-3.5" aria-hidden />
+          <span className="sr-only sm:not-sr-only">Open</span>
         </Link>
-        <p className="mt-0.5 font-mono text-xs text-muted-foreground">/i/{inbox.id}</p>
-      </div>
-
-      <div className="text-sm tabular-nums text-foreground md:text-right">
-        <span className="text-muted-foreground md:hidden">Events </span>
-        {inbox.eventsCount}
-      </div>
-
-      <div className="text-sm text-muted-foreground md:text-right">
-        <span className="md:hidden">Last </span>
-        {formatRelativeTime(inbox.lastEventAt)}
-      </div>
-
-      <div className="min-w-0">
-        <code className="block truncate rounded-md bg-muted/50 px-2 py-1 font-mono text-[0.8125rem] text-foreground/85">
-          {ingestUrl}
-        </code>
-      </div>
-
-      <div className="flex items-center gap-1.5 md:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => onCopy(inbox.id, ingestUrl)}
-          aria-label={copied ? 'URL copied' : `Copy ingest URL for ${inbox.name}`}
-        >
-          <IconCopy className="size-3.5" aria-hidden />
-          <span className="sr-only sm:not-sr-only">{copied ? 'Copied' : 'Copy'}</span>
-        </Button>
-        <Button type="button" variant="ghost" size="sm" asChild>
-          <Link href={`/i/${inbox.id}`} aria-label={`Open ${inbox.name}`}>
-            <IconExternalLink className="size-3.5" aria-hidden />
-            <span className="sr-only sm:not-sr-only">Open</span>
-          </Link>
-        </Button>
-      </div>
-    </article>
-  )
-}
-
-function InboxSkeleton() {
-  return (
-    <div className="border-b border-border py-5 last:border-b-0">
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1.35fr)_4.5rem_6rem_minmax(0,1.5fr)_auto] md:items-center md:gap-5">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-36" />
-          <Skeleton className="h-3 w-28" />
-        </div>
-        <Skeleton className="hidden h-4 w-8 justify-self-end md:block" />
-        <Skeleton className="hidden h-4 w-14 justify-self-end md:block" />
-        <Skeleton className="hidden h-8 w-full md:block" />
-        <Skeleton className="hidden h-8 w-24 justify-self-end md:block" />
-      </div>
+      </Button>
     </div>
   )
 }
 
 export function InboxList({ token }: { token: string }) {
-  const [inboxes, setInboxes] = useState<InboxSummary[]>([])
-  const [state, setState] = useState<LoadState>('loading')
+  const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const loadInboxes = useCallback(async () => {
-    setState('loading')
-    setErrorMessage(null)
-
-    try {
-      const next = await fetchInboxes(token)
-      setInboxes(next)
-      setState(next.length === 0 ? 'empty' : 'ready')
-    } catch (error) {
-      setErrorMessage(
-        error instanceof ApiError ? error.message : 'Could not load your inboxes. Try again.'
-      )
-      setState('error')
-    }
-  }, [token])
-
-  useEffect(() => {
-    void loadInboxes()
-  }, [loadInboxes])
-
-  function handleInboxCreated(inbox: InboxSummary) {
-    setInboxes((current) => [inbox, ...current])
-    setState('ready')
-    setErrorMessage(null)
+  function handleInboxCreated() {
+    void queryClient.invalidateQueries({ queryKey: ['data-table', 'inboxes'] })
   }
 
   async function handleCopy(id: string, url: string) {
@@ -159,12 +79,7 @@ export function InboxList({ token }: { token: string }) {
           </p>
         </div>
 
-        <Button
-          type="button"
-          onClick={() => setCreateOpen(true)}
-          disabled={state === 'loading'}
-          className="shrink-0"
-        >
+        <Button type="button" onClick={() => setCreateOpen(true)} className="shrink-0">
           <IconPlus className="size-4" aria-hidden />
           New inbox
         </Button>
@@ -177,63 +92,28 @@ export function InboxList({ token }: { token: string }) {
         onCreated={handleInboxCreated}
       />
 
-      {errorMessage && (
-        <p className="mt-4 text-sm text-destructive" role="alert">
-          {errorMessage}
-        </p>
-      )}
-
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card md:mt-8">
-        {state === 'loading' && (
-          <div aria-busy="true" aria-label="Loading inboxes">
-            <InboxSkeleton />
-            <InboxSkeleton />
-            <InboxSkeleton />
-          </div>
-        )}
-
-        {state === 'empty' && (
-          <div className="flex flex-col items-center border-b border-dashed border-border py-16 text-center">
-            <p className="text-base font-medium text-foreground">No inboxes yet</p>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Create an inbox to get a public ingest URL. Events wait here until you replay them.
-            </p>
-            <Button type="button" className="mt-6" onClick={() => setCreateOpen(true)}>
-              <IconPlus className="size-4" aria-hidden />
-              Create inbox
-            </Button>
-          </div>
-        )}
-
-        {state === 'ready' && (
-          <>
-            <div
-              className={cn(
-                'hidden border-b border-border bg-muted/30 px-5 py-3 text-[0.6875rem] font-medium tracking-wider text-muted-foreground uppercase md:grid',
-                'md:grid-cols-[minmax(0,1.35fr)_4.5rem_6rem_minmax(0,1.5fr)_auto] md:gap-5'
-              )}
-            >
-              <span className="pl-1">Inbox</span>
-              <span className="text-right">Events</span>
-              <span className="text-right">Last seen</span>
-              <span>Ingest URL</span>
-              <span className="text-right">Actions</span>
+      <div className="mt-6 md:mt-8">
+        <DataTable
+          model="inboxes"
+          token={token}
+          cellRenderers={{
+            actions: (inbox) => (
+              <InboxActionsCell inbox={inbox} onCopy={handleCopy} copiedId={copiedId} />
+            ),
+          }}
+          emptyState={
+            <div className="space-y-2">
+              <p className="text-base font-medium text-foreground">No inboxes yet</p>
+              <p className="text-sm text-muted-foreground">
+                Create an inbox to get a public ingest URL.
+              </p>
+              <Button type="button" className="mt-2" onClick={() => setCreateOpen(true)}>
+                <IconPlus className="size-4" aria-hidden />
+                Create inbox
+              </Button>
             </div>
-
-            {inboxes.map((inbox) => (
-              <InboxRow key={inbox.id} inbox={inbox} onCopy={handleCopy} copiedId={copiedId} />
-            ))}
-          </>
-        )}
-
-        {state === 'error' && (
-          <div className="flex flex-col items-center gap-3 py-12">
-            <p className="text-sm text-muted-foreground">We could not reach your inboxes.</p>
-            <Button type="button" variant="outline" onClick={() => void loadInboxes()}>
-              Retry
-            </Button>
-          </div>
-        )}
+          }
+        />
       </div>
     </section>
   )

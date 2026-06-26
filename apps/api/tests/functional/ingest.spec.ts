@@ -3,6 +3,8 @@ import Event from '#models/event'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
+import { urlFor } from '@adonisjs/core/services/url_builder'
+import { appUrl } from '#config/app'
 
 test.group('Ingest', (group) => {
   group.each.setup(async () => {
@@ -29,7 +31,7 @@ test.group('Ingest', (group) => {
     response.assertBodyContains({
       data: {
         inbox: {
-          ingestUrl: `/i/${inboxIdValue}`,
+          ingestUrl: urlFor('ingest', { inboxId: inboxIdValue }, { prefixUrl: appUrl }),
         },
       },
     })
@@ -80,6 +82,24 @@ test.group('Ingest', (group) => {
 
     const count = await Event.query().where('inboxId', inboxIdValue).count('* as total')
     assert.equal(Number(count[0].$extras.total), 0)
+  })
+
+  test('filters inbox events with nested filters object', async ({ client, assert }) => {
+    const created = await client.post('/api/v1/inboxes').json({ name: 'Test inbox' })
+    const inboxIdValue = created.body().data.inbox.id
+
+    await client.post(`/i/${inboxIdValue}`).json({ source: 'post' })
+    await client.get(`/i/${inboxIdValue}`).qs({ probe: '1' })
+
+    const response = await client
+      .get(`/api/v1/inboxes/${inboxIdValue}/events`)
+      .qs({ filters: { method: 'POST' } })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.lengthOf(body.data.events, 1)
+    assert.equal(body.data.events[0].method, 'POST')
   })
 
   test('accepts GET requests with query string', async ({ client, assert }) => {

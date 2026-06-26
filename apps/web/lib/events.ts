@@ -1,4 +1,6 @@
+import type { DataTableParams } from '@/features/data-table/types'
 import { apiFetch } from '@/lib/api'
+import { buildListQueryString, parsePaginatedResponse } from '@/lib/list-query'
 
 export type EventSummary = {
   id: string
@@ -57,8 +59,26 @@ type ReplaysListResponse = {
 }
 
 export async function fetchInboxEvents(token: string | null, inboxId: string) {
-  const body = await apiFetch<EventsListResponse>(`/api/v1/inboxes/${inboxId}/events`, { token })
-  return body.data.events
+  const page = await fetchInboxEventsPage(token, inboxId, {
+    page: 1,
+    pageSize: 100,
+    sort: { id: 'receivedAt', desc: true },
+    filters: {},
+    search: '',
+  })
+  return page.rows
+}
+
+export async function fetchInboxEventsPage(
+  token: string | null,
+  inboxId: string,
+  params: DataTableParams
+) {
+  const body = await apiFetch<EventsListResponse & { data: { meta?: unknown } }>(
+    `/api/v1/inboxes/${inboxId}/events${buildListQueryString(params)}`,
+    { token }
+  )
+  return parsePaginatedResponse<'events', EventSummary>(body, 'events')
 }
 
 export async function fetchEvent(token: string | null, eventId: string) {

@@ -2,13 +2,13 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": ["WEB_URL", "NEXT_PUBLIC_API_URL"]
+      "env": ["API_URL", "WEB_URL", "NEXT_PUBLIC_API_URL"]
     },
     "dev": {
-      "env": ["WEB_URL", "NEXT_PUBLIC_API_URL"]
+      "env": ["API_URL", "WEB_URL", "NEXT_PUBLIC_API_URL"]
     },
     "lint": {
-      "env": ["WEB_URL", "NEXT_PUBLIC_API_URL"]
+      "env": ["API_URL", "WEB_URL", "NEXT_PUBLIC_API_URL"]
     }
   }
 }

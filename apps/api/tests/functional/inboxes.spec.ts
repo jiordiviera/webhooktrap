@@ -1,6 +1,8 @@
+import { appUrl } from '#config/app'
 import Inbox from '#models/inbox'
 import User from '#models/user'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { urlFor } from '@adonisjs/core/services/url_builder'
 import { test } from '@japa/runner'
 
 test.group('Inboxes API', (group) => {
@@ -37,7 +39,7 @@ test.group('Inboxes API', (group) => {
           {
             id: inbox.id,
             name: 'Stripe Integration',
-            ingestUrl: `/i/${inbox.id}`,
+            ingestUrl: urlFor('ingest', { inboxId: inbox.id }, { prefixUrl: appUrl }),
             eventsCount: 0,
           },
         ],
@@ -45,6 +47,45 @@ test.group('Inboxes API', (group) => {
     })
 
     assert.lengthOf(response.body().data.inboxes, 1)
+  })
+
+  test('paginates and filters inboxes list', async ({ client, assert }) => {
+    const user = await User.create({
+      fullName: 'Dev User',
+      email: 'paginate@hookscope.test',
+      password: 'password123',
+    })
+
+    const token = await User.accessTokens.create(user, ['*'], {
+      name: 'test-token',
+    })
+
+    await Inbox.create({
+      id: 'paginateinbx',
+      userId: user.id,
+      name: 'Alpha inbox',
+      expiresAt: null,
+    })
+
+    await Inbox.create({
+      id: 'paginateinb2',
+      userId: user.id,
+      name: 'Beta inbox',
+      expiresAt: null,
+    })
+
+    const response = await client
+      .get('/api/v1/inboxes')
+      .header('authorization', `Bearer ${token.value!.release()}`)
+      .qs({ page: 1, page_size: 1, search: 'Alpha', sort: 'name', sort_dir: 'asc' })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.lengthOf(body.data.inboxes, 1)
+    assert.equal(body.data.inboxes[0].name, 'Alpha inbox')
+    assert.property(body.data.meta, 'total')
+    assert.equal(body.data.meta.total, 1)
   })
 
   test('rejects inbox listing without auth', async ({ client }) => {

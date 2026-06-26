@@ -1,4 +1,6 @@
 import Inbox from '#models/inbox'
+import type { ListQuery } from '#support/list_query'
+import { resolveSortColumn } from '#support/list_query'
 import { inboxId } from '#support/ids'
 import { DateTime } from 'luxon'
 
@@ -22,14 +24,34 @@ export default class InboxService {
     })
   }
 
-  static async listForUser(userId: number) {
-    return Inbox.query()
+  static async listForUser(userId: number, query: ListQuery) {
+    const dbQuery = Inbox.query()
       .where('userId', userId)
       .withCount('events')
-      .preload('events', (query) => {
-        query.orderBy('receivedAt', 'desc').limit(1)
+      .preload('events', (eventsQuery) => {
+        eventsQuery.orderBy('receivedAt', 'desc').limit(1)
       })
-      .orderBy('createdAt', 'desc')
+
+    if (query.search) {
+      dbQuery.where((builder) => {
+        builder.whereILike('name', `%${query.search}%`).orWhereILike('id', `%${query.search}%`)
+      })
+    }
+
+    const sortColumn = resolveSortColumn(
+      query.sort,
+      {
+        name: 'name',
+        eventsCount: 'events_count',
+        lastEventAt: 'created_at',
+        createdAt: 'created_at',
+      },
+      'created_at'
+    )
+
+    dbQuery.orderBy(sortColumn, query.sortDir)
+
+    return dbQuery.paginate(query.page, query.pageSize)
   }
 
   static async update(
