@@ -12,6 +12,7 @@ export type ScannedRoutes = {
     'v1.inboxes.store': { paramsTuple?: []; params?: {} }
     'v1.inboxes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.inboxes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.index': { paramsTuple?: []; params?: {} }
     'v1.events.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -82,6 +83,7 @@ export type ScannedRoutes = {
   }
   DELETE: {
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
+    'v1.inboxes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.media.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }

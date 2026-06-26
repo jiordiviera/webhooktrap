@@ -2,12 +2,14 @@
 
 import { SidebarProvider } from '@workspace/ui/components/sidebar'
 import { DashboardNavProvider } from '@/features/dashboard/context/dashboard-nav-context'
+import { InboxPageProvider } from '@/features/inbox/context/inbox-page-context'
 import { AppSidebar } from './app-sidebar'
 import { DashboardHeader } from './dashboard-header'
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <DashboardNavProvider>
+      <InboxPageProvider>
       <SidebarProvider>
         <AppSidebar />
         <div className="h-svh w-full overflow-hidden">
@@ -18,7 +20,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </div>
-      </SidebarProvider>  
+      </SidebarProvider>
+      </InboxPageProvider>
     </DashboardNavProvider>
   )
 }

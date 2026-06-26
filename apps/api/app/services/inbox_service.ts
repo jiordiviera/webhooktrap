@@ -43,4 +43,8 @@ export default class InboxService {
     await inbox.save()
     return inbox
   }
+
+  static async delete(inbox: Inbox) {
+    await inbox.delete()
+  }
 }

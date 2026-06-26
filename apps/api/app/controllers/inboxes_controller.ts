@@ -56,4 +56,13 @@ export default class InboxesController {
       events: EventTransformer.transform(events),
     })
   }
+
+  async destroy({ auth, params, serialize }: HttpContext) {
+    const inbox = await InboxPolicy.authorizeManage(params.id, auth.getUserOrFail().id)
+    await InboxService.delete(inbox)
+
+    return serialize({
+      deleted: true,
+    })
+  }
 }

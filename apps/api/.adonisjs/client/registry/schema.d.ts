@@ -103,6 +103,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'v1.inboxes.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/inboxes/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['destroy']>>>
+    }
+  }
   'v1.inboxes.events': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/inboxes/:id/events'

@@ -14,13 +14,18 @@ import {
   type DashboardNavItem,
   useDashboardNav,
 } from '@/features/dashboard/context/dashboard-nav-context'
+import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
 
 type BreadcrumbCrumb = {
   label: string
   href?: string
 }
 
-function getBreadcrumbs(pathname: string, navItems: DashboardNavItem[]): BreadcrumbCrumb[] {
+function getBreadcrumbs(
+  pathname: string,
+  navItems: DashboardNavItem[],
+  inboxTitle: string | null | undefined
+): BreadcrumbCrumb[] {
   if (pathname === '/profile') {
     return [{ label: 'Profile' }]
   }
@@ -29,7 +34,7 @@ function getBreadcrumbs(pathname: string, navItems: DashboardNavItem[]): Breadcr
     const inboxId = pathname.slice(3).split('/')[0]
     return [
       { label: 'Inboxes', href: '/inboxes' },
-      { label: inboxId || 'Inbox' },
+      { label: inboxTitle ?? inboxId ?? 'Inbox' },
     ]
   }
 
@@ -44,7 +49,8 @@ function getBreadcrumbs(pathname: string, navItems: DashboardNavItem[]): Breadcr
 export function DashboardBreadcrumb() {
   const pathname = usePathname()
   const navItems = useDashboardNav()
-  const crumbs = getBreadcrumbs(pathname, navItems)
+  const inboxPage = useInboxPageTitle()
+  const crumbs = getBreadcrumbs(pathname, navItems, inboxPage?.title)
 
   return (
     <Breadcrumb className="w-full max-w-none">

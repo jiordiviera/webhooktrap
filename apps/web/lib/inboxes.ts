@@ -61,6 +61,13 @@ export async function updateInbox(
   return body.data.inbox
 }
 
+export async function deleteInbox(token: string, inboxId: string) {
+  await apiFetch<{ data: { deleted: boolean } }>(`/api/v1/inboxes/${inboxId}`, {
+    method: 'DELETE',
+    token,
+  })
+}
+
 export function inboxPublicUrl(ingestPath: string) {
   const webUrl = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:7777'
   return `${webUrl}${ingestPath}`

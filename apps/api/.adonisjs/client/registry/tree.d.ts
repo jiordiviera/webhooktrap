@@ -14,6 +14,7 @@ export interface ApiDefinition {
       store: typeof routes['v1.inboxes.store']
       show: typeof routes['v1.inboxes.show']
       update: typeof routes['v1.inboxes.update']
+      destroy: typeof routes['v1.inboxes.destroy']
       events: typeof routes['v1.inboxes.events']
       index: typeof routes['v1.inboxes.index']
     }

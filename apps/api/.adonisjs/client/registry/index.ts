@@ -54,6 +54,12 @@ const routes = {
     tokens: [{"old":"/api/v1/inboxes/:id","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"inboxes","end":""},{"old":"/api/v1/inboxes/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['v1.inboxes.update']['types'],
   },
+  'v1.inboxes.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/inboxes/:id',
+    tokens: [{"old":"/api/v1/inboxes/:id","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"inboxes","end":""},{"old":"/api/v1/inboxes/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['v1.inboxes.destroy']['types'],
+  },
   'v1.inboxes.events': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/inboxes/:id/events',

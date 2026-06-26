@@ -36,6 +36,11 @@ router
       .as('inboxes.update')
       .use(middleware.auth())
     router
+      .delete('inboxes/:id', [controllers.Inboxes, 'destroy'])
+      .where('id', /^[A-Za-z0-9]{12}$/)
+      .as('inboxes.destroy')
+      .use(middleware.auth())
+    router
       .get('inboxes/:id/events', [controllers.Inboxes, 'events'])
       .where('id', /^[A-Za-z0-9]{12}$/)
       .as('inboxes.events')
