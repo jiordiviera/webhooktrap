@@ -3,13 +3,14 @@ import type { BlobStorage } from '#media/blob_storage'
 import type { BlobPutResult } from '#media/types'
 
 function buildPublicUrl(pathname: string) {
-  const base = mediaConfig.cdnBaseUrl?.replace(/\/$/, '')
+  const base = mediaConfig.cdnBaseUrl
+  const bucket = mediaConfig.bucket
   if (!base) {
     throw new Error('MEDIA_CDN_BASE_URL is required for media storage')
   }
 
   const key = pathname.replace(/^\//, '')
-  return `${base}/${key}`
+  return `${base}/${bucket}/${key}`
 }
 
 export default class MemoryBlobStorage implements BlobStorage {

@@ -51,10 +51,9 @@ export default await Env.create(new URL('../../../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
-  | Media storage (Vercel Blob)
+  | Media storage (Cloudflare R2 via Drive)
   |----------------------------------------------------------
   */
-  BLOB_READ_WRITE_TOKEN: Env.schema.string.optional(),
   MEDIA_CDN_BASE_URL: Env.schema.string.optional(),
   MEDIA_MAX_FILE_SIZE_MB: Env.schema.number.optional(),
 

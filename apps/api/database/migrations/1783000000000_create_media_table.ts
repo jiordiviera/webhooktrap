@@ -11,7 +11,7 @@ export default class extends BaseSchema {
       table.string('model_id', 64).notNullable()
       table.string('collection', 64).notNullable()
 
-      table.string('disk', 32).notNullable().defaultTo('vercel_blob')
+      table.string('disk', 32).notNullable().defaultTo('r2')
       table.string('file_name', 255).notNullable()
       table.string('mime_type', 128).notNullable()
       table.bigInteger('size_bytes').notNullable()

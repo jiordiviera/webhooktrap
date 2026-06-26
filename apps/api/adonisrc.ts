@@ -55,7 +55,7 @@ export default defineConfig({
     () => import('#providers/api_provider'),
     () => import('@adonisjs/ally/ally_provider'),
     () => import('@nulix/adonis-2fa/two_factor_auth_provider'),
-    () => import('@adonisjs/drive/drive_provider')
+    () => import('@adonisjs/drive/drive_provider'),
   ],
 
   /*
@@ -115,5 +115,9 @@ export default defineConfig({
       }),
       generateRegistry(),
     ],
+  },
+
+  commandsAliases: {
+    migrate: 'migration:run',
   },
 })

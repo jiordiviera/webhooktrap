@@ -20,7 +20,11 @@ process.env.SESSION_DRIVER = 'memory'
 process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE = ':memory:'
 delete process.env.DATABASE_URL
-process.env.BLOB_READ_WRITE_TOKEN = 'test-blob-token'
+process.env.DRIVE_DISK = 'r2'
+process.env.R2_KEY = 'test-r2-key'
+process.env.R2_SECRET = 'test-r2-secret'
+process.env.R2_BUCKET = 'test-bucket'
+process.env.R2_ENDPOINT = 'https://test.r2.cloudflarestorage.com'
 process.env.MEDIA_CDN_BASE_URL = 'https://media.hookscope.test'
 
 import 'reflect-metadata'

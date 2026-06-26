@@ -4,6 +4,7 @@ import MediaService from '#media/media_service'
 import type { MediaCollectionName, MediaModelType } from '#media/types'
 import MediaTransformer from '#transformers/media_transformer'
 import { attachFromUrlValidator } from '#validators/media_validator'
+import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
 import { readFile } from 'node:fs/promises'
 
@@ -38,50 +39,100 @@ export default class MediaController {
     const modelId = request.input('model_id') as string
     const collection = request.input('collection') as MediaCollectionName
 
-    await MediaPolicy.authorize(user.id, modelType, modelId)
-
-    const uploaded = request.file('file', {
-      size: '20mb',
-      extnames: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
-    })
-
-    if (!uploaded) {
-      return response.status(422).send({
-        data: { message: 'File is required' },
-      })
-    }
-
-    if (!uploaded.isValid) {
-      return response.status(422).send({
-        data: {
-          message: uploaded.errors[0]?.message ?? 'Invalid file upload',
-        },
-      })
-    }
-
-    const buffer = await readFile(uploaded.tmpPath!)
-    const mimeType =
-      detectMimeType(buffer) ??
-      (uploaded.type && uploaded.type !== 'application/octet-stream' ? uploaded.type : null)
-
-    if (!mimeType) {
-      return response.status(422).send({
-        data: { message: 'Unsupported or undetectable file type' },
-      })
-    }
-
-    const media = await MediaService.attachFromMultipart({
+    console.log('[media:upload] request received', {
+      userId: user.id,
       modelType,
       modelId,
       collection,
-      fileName: uploaded.clientName,
-      mimeType,
-      buffer,
     })
 
-    return serialize({
-      media: MediaTransformer.transform(media),
-    })
+    try {
+      await MediaPolicy.authorize(user.id, modelType, modelId)
+      console.log('[media:upload] authorization passed')
+
+      const uploaded = request.file('file', {
+        size: '20mb',
+        extnames: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+      })
+
+      if (!uploaded) {
+        console.log('[media:upload] no file in request')
+        return response.status(422).send({
+          data: { message: 'File is required' },
+        })
+      }
+
+      console.log('[media:upload] file received', {
+        clientName: uploaded.clientName,
+        size: uploaded.size,
+        type: uploaded.type,
+        tmpPath: uploaded.tmpPath,
+        isValid: uploaded.isValid,
+        errors: uploaded.errors,
+      })
+
+      if (!uploaded.isValid) {
+        return response.status(422).send({
+          data: {
+            message: uploaded.errors[0]?.message ?? 'Invalid file upload',
+          },
+        })
+      }
+
+      const buffer = await readFile(uploaded.tmpPath!)
+      const mimeType =
+        detectMimeType(buffer) ??
+        (uploaded.type && uploaded.type !== 'application/octet-stream' ? uploaded.type : null)
+
+      console.log('[media:upload] mime detected', {
+        mimeType,
+        bufferSize: buffer.byteLength,
+      })
+
+      if (!mimeType) {
+        return response.status(422).send({
+          data: { message: 'Unsupported or undetectable file type' },
+        })
+      }
+
+      const media = await MediaService.attachFromMultipart({
+        modelType,
+        modelId,
+        collection,
+        fileName: uploaded.clientName,
+        mimeType,
+        buffer,
+      })
+
+      console.log('[media:upload] success', {
+        mediaId: media.id,
+        url: media.blobUrl,
+        pathname: media.blobPathname,
+      })
+
+      return serialize({
+        media: MediaTransformer.transform(media),
+      })
+    } catch (error) {
+      console.error('[media:upload] failed', {
+        userId: user.id,
+        modelType,
+        modelId,
+        collection,
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+      })
+
+      if (error instanceof Exception) {
+        throw error
+      }
+
+      return response.status(500).send({
+        data: {
+          message: error instanceof Error ? error.message : 'Upload failed',
+        },
+      })
+    }
   }
 
   async storeFromUrl({ auth, request, serialize }: HttpContext) {

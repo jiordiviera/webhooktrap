@@ -1,7 +1,7 @@
 import type { BlobStorage } from '#media/blob_storage'
+import DriveStorage from '#media/drive_storage'
 import MemoryBlobStorage from '#media/memory_blob_storage'
 import type { BlobPutResult } from '#media/types'
-import VercelBlobStorage from '#media/vercel_blob_storage'
 import env from '#start/env'
 
 function createBlobStorage(): BlobStorage {
@@ -9,7 +9,7 @@ function createBlobStorage(): BlobStorage {
     return new MemoryBlobStorage()
   }
 
-  return new VercelBlobStorage()
+  return new DriveStorage()
 }
 
 export default class BlobDisk {
