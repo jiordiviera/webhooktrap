@@ -123,7 +123,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     async function init() {
       setLoading(true)
       try {
-        const [inboxData, eventList] = await Promise.all([loadInbox(), loadEvents()])
+        const [, eventList] = await Promise.all([loadInbox(), loadEvents()])
         if (cancelled) return
         setErrorMessage(null)
         if (eventList[0]) {
@@ -293,7 +293,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
               Waiting for the first webhook. Send a POST to the ingest URL above.
             </div>
           ) : (
-            <div className="max-h-[32rem] overflow-y-auto">
+            <div className="max-h-128 overflow-y-auto">
               {events.map((event) => (
                 <EventListItem
                   key={event.id}
