@@ -17,50 +17,16 @@ function buildPublicUrl(pathname: string) {
 
 export default class DriveStorage implements BlobStorage {
   async put(pathname: string, buffer: Buffer, mimeType: string): Promise<BlobPutResult> {
-    console.log('[media:drive] put start', {
-      disk: mediaConfig.disk,
+    const disk = drive.use(mediaConfig.disk)
+    await disk.put(pathname, buffer, { contentType: mimeType })
+
+    return {
       pathname,
-      mimeType,
-      sizeBytes: buffer.byteLength,
-      cdnBaseUrl: mediaConfig.cdnBaseUrl,
-    })
-
-    try {
-      const disk = drive.use(mediaConfig.disk)
-      await disk.put(pathname, buffer, { contentType: mimeType })
-
-      const result = {
-        pathname,
-        url: buildPublicUrl(pathname),
-      }
-
-      console.log('[media:drive] put success', result)
-      return result
-    } catch (error) {
-      console.error('[media:drive] put failed', {
-        disk: mediaConfig.disk,
-        pathname,
-        mimeType,
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-      })
-      throw error
+      url: buildPublicUrl(pathname),
     }
   }
 
   async delete(pathname: string) {
-    console.log('[media:drive] delete start', { disk: mediaConfig.disk, pathname })
-
-    try {
-      await drive.use(mediaConfig.disk).delete(pathname)
-      console.log('[media:drive] delete success', { pathname })
-    } catch (error) {
-      console.error('[media:drive] delete failed', {
-        pathname,
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-      })
-      throw error
-    }
+    await drive.use(mediaConfig.disk).delete(pathname)
   }
 }

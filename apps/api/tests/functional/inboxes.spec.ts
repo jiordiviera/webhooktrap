@@ -84,4 +84,68 @@ test.group('Inboxes API', (group) => {
     assert.equal(inbox.name, 'Stripe checkout')
     assert.isNull(inbox.expiresAt)
   })
+
+  test('deletes inbox when owner is authenticated', async ({ client, assert }) => {
+    const user = await User.create({
+      fullName: 'Dev User',
+      email: 'delete@hookscope.test',
+      password: 'password123',
+    })
+
+    const token = await User.accessTokens.create(user, ['*'], {
+      name: 'test-token',
+    })
+
+    const inbox = await Inbox.create({
+      id: 'deleteinbox1',
+      userId: user.id,
+      name: 'To delete',
+      expiresAt: null,
+    })
+
+    const response = await client
+      .delete(`/api/v1/inboxes/${inbox.id}`)
+      .header('authorization', `Bearer ${token.value!.release()}`)
+
+    response.assertStatus(200)
+    response.assertBodyContains({
+      data: {
+        deleted: true,
+      },
+    })
+
+    const deleted = await Inbox.find(inbox.id)
+    assert.isNull(deleted)
+  })
+
+  test('rejects inbox deletion for another user', async ({ client }) => {
+    const owner = await User.create({
+      fullName: 'Owner',
+      email: 'inbox-owner@hookscope.test',
+      password: 'password123',
+    })
+
+    const other = await User.create({
+      fullName: 'Other',
+      email: 'inbox-other@hookscope.test',
+      password: 'password123',
+    })
+
+    const token = await User.accessTokens.create(other, ['*'], {
+      name: 'test-token',
+    })
+
+    const inbox = await Inbox.create({
+      id: 'notmineinbx1',
+      userId: owner.id,
+      name: 'Protected inbox',
+      expiresAt: null,
+    })
+
+    const response = await client
+      .delete(`/api/v1/inboxes/${inbox.id}`)
+      .header('authorization', `Bearer ${token.value!.release()}`)
+
+    response.assertStatus(403)
+  })
 })

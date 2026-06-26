@@ -39,16 +39,8 @@ export default class MediaController {
     const modelId = request.input('model_id') as string
     const collection = request.input('collection') as MediaCollectionName
 
-    console.log('[media:upload] request received', {
-      userId: user.id,
-      modelType,
-      modelId,
-      collection,
-    })
-
     try {
       await MediaPolicy.authorize(user.id, modelType, modelId)
-      console.log('[media:upload] authorization passed')
 
       const uploaded = request.file('file', {
         size: '20mb',
@@ -56,20 +48,10 @@ export default class MediaController {
       })
 
       if (!uploaded) {
-        console.log('[media:upload] no file in request')
         return response.status(422).send({
           data: { message: 'File is required' },
         })
       }
-
-      console.log('[media:upload] file received', {
-        clientName: uploaded.clientName,
-        size: uploaded.size,
-        type: uploaded.type,
-        tmpPath: uploaded.tmpPath,
-        isValid: uploaded.isValid,
-        errors: uploaded.errors,
-      })
 
       if (!uploaded.isValid) {
         return response.status(422).send({
@@ -83,11 +65,6 @@ export default class MediaController {
       const mimeType =
         detectMimeType(buffer) ??
         (uploaded.type && uploaded.type !== 'application/octet-stream' ? uploaded.type : null)
-
-      console.log('[media:upload] mime detected', {
-        mimeType,
-        bufferSize: buffer.byteLength,
-      })
 
       if (!mimeType) {
         return response.status(422).send({
@@ -104,25 +81,10 @@ export default class MediaController {
         buffer,
       })
 
-      console.log('[media:upload] success', {
-        mediaId: media.id,
-        url: media.blobUrl,
-        pathname: media.blobPathname,
-      })
-
       return serialize({
         media: MediaTransformer.transform(media),
       })
     } catch (error) {
-      console.error('[media:upload] failed', {
-        userId: user.id,
-        modelType,
-        modelId,
-        collection,
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-      })
-
       if (error instanceof Exception) {
         throw error
       }

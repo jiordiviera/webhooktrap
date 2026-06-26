@@ -53,73 +53,45 @@ export default class MediaService {
   }
 
   static async attachFromMultipart(input: AttachFromMultipartInput) {
-    console.log('[media:service] attachFromMultipart start', {
+    const collection = MediaCollectionRegistry.resolve(input.modelType, input.collection)
+
+    if (!collection.acceptsMime(input.mimeType)) {
+      throw new Error(`Mime type "${input.mimeType}" is not allowed for this collection`)
+    }
+
+    if (!collection.acceptsSize(input.buffer.byteLength)) {
+      throw new Error(`File exceeds maximum size for collection "${input.collection}"`)
+    }
+
+    const detectedMime = detectMimeType(input.buffer)
+    if (!detectedMime || detectedMime !== input.mimeType) {
+      throw new Error(`File content does not match expected type "${input.mimeType}"`)
+    }
+
+    if (collection.config.singleFile) {
+      await this.deleteForCollection(input.modelType, input.modelId, input.collection)
+    }
+
+    const extension = extname(input.fileName) || extensionFromMime(input.mimeType)
+    const pathname = `${input.modelType}/${input.modelId}/${input.collection}/${randomUUID()}${extension}`
+
+    const stored = await this.#disk.put(pathname, input.buffer, input.mimeType)
+
+    return Media.create({
+      id: randomUUID(),
       modelType: input.modelType,
       modelId: input.modelId,
       collection: input.collection,
+      disk: mediaConfig.disk,
       fileName: input.fileName,
       mimeType: input.mimeType,
       sizeBytes: input.buffer.byteLength,
-      disk: mediaConfig.disk,
+      blobUrl: stored.url,
+      blobPathname: stored.pathname,
+      customProps: {},
+      conversions: {},
+      orderColumn: 0,
     })
-
-    try {
-      const collection = MediaCollectionRegistry.resolve(input.modelType, input.collection)
-
-      if (!collection.acceptsMime(input.mimeType)) {
-        throw new Error(`Mime type "${input.mimeType}" is not allowed for this collection`)
-      }
-
-      if (!collection.acceptsSize(input.buffer.byteLength)) {
-        throw new Error(`File exceeds maximum size for collection "${input.collection}"`)
-      }
-
-      const detectedMime = detectMimeType(input.buffer)
-      if (!detectedMime || detectedMime !== input.mimeType) {
-        throw new Error(`File content does not match expected type "${input.mimeType}"`)
-      }
-
-      if (collection.config.singleFile) {
-        console.log('[media:service] replacing existing file in collection')
-        await this.deleteForCollection(input.modelType, input.modelId, input.collection)
-      }
-
-      const extension = extname(input.fileName) || extensionFromMime(input.mimeType)
-      const pathname = `${input.modelType}/${input.modelId}/${input.collection}/${randomUUID()}${extension}`
-
-      console.log('[media:service] uploading to disk', { pathname })
-      const stored = await this.#disk.put(pathname, input.buffer, input.mimeType)
-      console.log('[media:service] disk upload done', stored)
-
-      const media = await Media.create({
-        id: randomUUID(),
-        modelType: input.modelType,
-        modelId: input.modelId,
-        collection: input.collection,
-        disk: mediaConfig.disk,
-        fileName: input.fileName,
-        mimeType: input.mimeType,
-        sizeBytes: input.buffer.byteLength,
-        blobUrl: stored.url,
-        blobPathname: stored.pathname,
-        customProps: {},
-        conversions: {},
-        orderColumn: 0,
-      })
-
-      console.log('[media:service] media row created', { id: media.id, url: media.blobUrl })
-      return media
-    } catch (error) {
-      console.error('[media:service] attachFromMultipart failed', {
-        modelType: input.modelType,
-        modelId: input.modelId,
-        collection: input.collection,
-        fileName: input.fileName,
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-      })
-      throw error
-    }
   }
 
   static async attachFromUrl(input: AttachFromUrlInput) {

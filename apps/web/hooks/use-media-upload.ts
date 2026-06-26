@@ -27,23 +27,11 @@ export function useMediaUpload() {
       setError(null)
 
       try {
-        console.log('[media:upload] hook start', {
-          modelType: input.modelType,
-          modelId: input.modelId,
-          collection: input.collection,
-          fileName: input.file.name,
-          fileSize: input.file.size,
-        })
-
-        const media = await uploadMedia({
+        return await uploadMedia({
           token,
           ...input,
         })
-
-        console.log('[media:upload] hook success', media)
-        return media
       } catch (uploadError) {
-        console.error('[media:upload] hook failed', uploadError)
         setError(uploadError instanceof Error ? uploadError.message : 'Upload failed')
         return null
       } finally {
