@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { ApiError, apiFetch } from '@/lib/api'
+import { ApiError, apiFetch, SESSION_EXPIRED_EVENT } from '@/lib/api'
 import {
   type AuthPayload,
   type AuthUser,
@@ -88,6 +88,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null)
     setUser(null)
     setStatus('unauthenticated')
+  }, [])
+
+  useEffect(() => {
+    function onSessionExpired() {
+      setToken(null)
+      setUser(null)
+      setStatus('unauthenticated')
+    }
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired)
   }, [])
 
   useEffect(() => {

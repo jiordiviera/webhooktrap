@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   IconArrowLeft,
   IconCheck,
@@ -17,30 +18,28 @@ import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Loader } from '@workspace/ui/components/loader'
 import { Separator } from '@workspace/ui/components/separator'
+import { Skeleton } from '@workspace/ui/components/skeleton'
 import { cn } from '@workspace/ui/lib/utils'
 import {
   EventInspectorSkeleton,
-  InboxDetailSkeleton,
   ReplayPanelSkeleton,
 } from '@/app/components/inbox/inbox-detail-skeleton'
 import { DataTable } from '@/features/data-table/components/data-table'
+import {
+  eventReplaysQueryKey,
+  useEventDetailQuery,
+  useEventReplaysQuery,
+} from '@/features/inbox/hooks/use-event-queries'
+import { inboxQueryKey, useInboxQuery } from '@/features/inbox/hooks/use-inbox-query'
 import { ApiError } from '@/lib/api'
 import { useConfirm } from '@/contexts/confirm-context'
 import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
 import { buildEventCurl, buildEventJson } from '@/lib/event-copy'
-import {
-  fetchEvent,
-  fetchEventReplays,
-  replayEvent,
-  type EventDetail,
-  type ReplayRecord,
-} from '@/lib/events'
+import { replayEvent } from '@/lib/events'
 import {
   deleteInbox,
-  fetchInbox,
   formatRelativeTime,
   updateInbox,
-  type InboxSummary,
 } from '@/lib/inboxes'
 
 const POLL_INTERVAL_MS = 3000
@@ -63,7 +62,7 @@ function JsonBlock({ value }: { value: unknown }) {
   )
 }
 
-function ReplayStatus({ replay }: { replay: ReplayRecord }) {
+function ReplayStatus({ replay }: { replay: { statusCode: number | null; errorCode: string | null } }) {
   if (replay.statusCode) {
     const isSuccess = replay.statusCode >= 200 && replay.statusCode < 300
     const isError = replay.statusCode >= 400
@@ -114,20 +113,30 @@ function SectionPanel({
   )
 }
 
+function InboxHeaderSkeleton() {
+  return (
+    <div className="min-w-0 space-y-2" aria-busy="true">
+      <Skeleton className="h-8 w-24 rounded-lg" />
+      <Skeleton className="h-8 w-48 max-w-full rounded-lg" />
+      <Skeleton className="h-4 w-32 rounded-md" />
+    </div>
+  )
+}
+
 export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: string }) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const confirm = useConfirm()
   const inboxPage = useInboxPageTitle()
-  const [inbox, setInbox] = useState<InboxSummary | null>(null)
+
+  const inboxQuery = useInboxQuery(token, inboxId)
+  const inbox = inboxQuery.data ?? null
+
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [eventsTotal, setEventsTotal] = useState(0)
-  const [eventDetail, setEventDetail] = useState<EventDetail | null>(null)
-  const [replays, setReplays] = useState<ReplayRecord[]>([])
   const [replayUrl, setReplayUrl] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [detailLoading, setDetailLoading] = useState(false)
   const [replaying, setReplaying] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [copiedAction, setCopiedAction] = useState<'json' | 'curl' | null>(null)
   const [editingName, setEditingName] = useState(false)
@@ -135,53 +144,29 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
   const [savingName, setSavingName] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  const eventQuery = useEventDetailQuery(token, selectedEventId)
+  const replaysQuery = useEventReplaysQuery(token, selectedEventId)
+
+  const eventDetail = eventQuery.data ?? null
+  const replays = replaysQuery.data ?? []
+  const detailLoading = eventQuery.isLoading && !eventDetail
+  const replaysLoading = replaysQuery.isLoading && replays.length === 0 && Boolean(selectedEventId)
+
   const ingestUrl = inbox?.ingestUrl ?? ''
   const eventCount = inbox?.eventsCount || eventsTotal
-
-  const loadInbox = useCallback(async () => {
-    const next = await fetchInbox(token, inboxId)
-    setInbox(next)
-    setReplayUrl(next.defaultReplayUrl ?? '')
-    return next
-  }, [inboxId, token])
-
-  const refresh = useCallback(async () => {
-    try {
-      await loadInbox()
-      setErrorMessage(null)
-    } catch (error) {
-      setErrorMessage(
-        error instanceof ApiError ? error.message : 'Could not load inbox. Try again.'
-      )
-    }
-  }, [loadInbox])
+  const inboxLoading = inboxQuery.isLoading
+  const loadError =
+    actionError ??
+    (inboxQuery.isError
+      ? inboxQuery.error instanceof ApiError
+        ? inboxQuery.error.message
+        : 'Could not load inbox. Try again.'
+      : null)
 
   useEffect(() => {
-    let cancelled = false
-
-    async function init() {
-      setLoading(true)
-      try {
-        await loadInbox()
-        if (cancelled) return
-        setErrorMessage(null)
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(
-            error instanceof ApiError ? error.message : 'Could not load inbox. Try again.'
-          )
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    void init()
-
-    return () => {
-      cancelled = true
-    }
-  }, [loadInbox])
+    if (!inbox) return
+    setReplayUrl(inbox.defaultReplayUrl ?? '')
+  }, [inbox?.id, inbox?.defaultReplayUrl])
 
   useEffect(() => {
     if (!inboxPage || !inbox) return
@@ -193,46 +178,17 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     }
   }, [inbox, inboxPage])
 
-  useEffect(() => {
-    if (!selectedEventId) {
-      setEventDetail(null)
-      setReplays([])
-      setDetailLoading(false)
-      return
+  const refresh = useCallback(() => {
+    setActionError(null)
+    void inboxQuery.refetch()
+    void queryClient.invalidateQueries({
+      queryKey: ['data-table', 'inbox-events', { inboxId }],
+    })
+    if (selectedEventId) {
+      void eventQuery.refetch()
+      void replaysQuery.refetch()
     }
-
-    let cancelled = false
-
-    async function loadDetail(eventId: string) {
-      setDetailLoading(true)
-      setEventDetail(null)
-      setReplays([])
-
-      try {
-        const [detail, replayList] = await Promise.all([
-          fetchEvent(token, eventId),
-          fetchEventReplays(token, eventId),
-        ])
-        if (!cancelled) {
-          setEventDetail(detail)
-          setReplays(replayList)
-        }
-      } catch {
-        if (!cancelled) {
-          setEventDetail(null)
-          setReplays([])
-        }
-      } finally {
-        if (!cancelled) setDetailLoading(false)
-      }
-    }
-
-    void loadDetail(selectedEventId)
-
-    return () => {
-      cancelled = true
-    }
-  }, [selectedEventId, token])
+  }, [inboxId, inboxQuery, queryClient, selectedEventId, eventQuery, replaysQuery])
 
   async function handleSaveReplayUrl() {
     if (!inbox) return
@@ -241,10 +197,11 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
       const updated = await updateInbox(token, inbox.id, {
         defaultReplayUrl: replayUrl.trim() || null,
       })
-      setInbox(updated)
+      queryClient.setQueryData(inboxQueryKey(inbox.id), updated)
       setReplayUrl(updated.defaultReplayUrl ?? '')
+      setActionError(null)
     } catch (error) {
-      setErrorMessage(
+      setActionError(
         error instanceof ApiError ? error.message : 'Could not save replay URL.'
       )
     }
@@ -254,15 +211,18 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     if (!selectedEventId) return
 
     setReplaying(true)
-    setErrorMessage(null)
+    setActionError(null)
 
     try {
       const replay = await replayEvent(token, selectedEventId, {
         targetUrl: replayUrl.trim() || undefined,
       })
-      setReplays((current) => [replay, ...current])
+      queryClient.setQueryData(eventReplaysQueryKey(selectedEventId), (current: typeof replays | undefined) => [
+        replay,
+        ...(current ?? []),
+      ])
     } catch (error) {
-      setErrorMessage(error instanceof ApiError ? error.message : 'Replay failed.')
+      setActionError(error instanceof ApiError ? error.message : 'Replay failed.')
     } finally {
       setReplaying(false)
     }
@@ -302,7 +262,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
 
     const trimmed = nameDraft.trim()
     if (!trimmed) {
-      setErrorMessage('Inbox name cannot be empty.')
+      setActionError('Inbox name cannot be empty.')
       return
     }
 
@@ -312,15 +272,15 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     }
 
     setSavingName(true)
-    setErrorMessage(null)
+    setActionError(null)
 
     try {
       const updated = await updateInbox(token, inbox.id, { name: trimmed })
-      setInbox(updated)
+      queryClient.setQueryData(inboxQueryKey(inbox.id), updated)
       inboxPage?.setTitle(updated.name)
       cancelEditingName()
     } catch (error) {
-      setErrorMessage(
+      setActionError(
         error instanceof ApiError ? error.message : 'Could not rename inbox.'
       )
     } finally {
@@ -346,13 +306,13 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     if (!confirmed) return
 
     setDeleting(true)
-    setErrorMessage(null)
+    setActionError(null)
 
     try {
       await deleteInbox(token, inbox.id)
       router.push('/inboxes')
     } catch (error) {
-      setErrorMessage(
+      setActionError(
         error instanceof ApiError ? error.message : 'Could not delete inbox.'
       )
     } finally {
@@ -360,14 +320,10 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     }
   }
 
-  if (loading) {
-    return <InboxDetailSkeleton />
-  }
-
-  if (!inbox) {
+  if (!inboxLoading && !inbox) {
     return (
       <div className="mx-auto max-w-lg py-16 text-center">
-        <p className="text-sm text-muted-foreground">{errorMessage ?? 'Inbox not found.'}</p>
+        <p className="text-sm text-muted-foreground">{loadError ?? 'Inbox not found.'}</p>
         <Button variant="outline" className="mt-4" asChild>
           <Link href="/inboxes">Back to inboxes</Link>
         </Button>
@@ -378,72 +334,76 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 space-y-2">
-          <Button variant="ghost" size="sm" className="-ml-2 h-8 px-2" asChild>
-            <Link href="/inboxes">
-              <IconArrowLeft className="size-4" aria-hidden />
-              Inboxes
-            </Link>
-          </Button>
-          <div>
-            {editingName ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  value={nameDraft}
-                  onChange={(event) => setNameDraft(event.target.value)}
-                  className="h-9 max-w-sm font-ui text-lg font-semibold"
-                  autoFocus
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') void handleSaveName()
-                    if (event.key === 'Escape') cancelEditingName()
-                  }}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={savingName}
-                  onClick={() => void handleSaveName()}
-                >
-                  {savingName ? (
-                    <Loader size="sm" tone="inherit" />
-                  ) : (
-                    <IconCheck className="size-4" aria-hidden />
-                  )}
-                  Save
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={savingName}
-                  onClick={cancelEditingName}
-                >
-                  <IconX className="size-4" aria-hidden />
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <h1 className="font-ui text-2xl font-semibold tracking-tight text-foreground">
-                  {inbox.name}
-                </h1>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={startEditingName}
-                  aria-label="Rename inbox"
-                >
-                  <IconPencil className="size-4" aria-hidden />
-                </Button>
-              </div>
-            )}
-            <p className="mt-1 font-mono text-sm text-muted-foreground">/i/{inbox.id}</p>
+        {inboxLoading || !inbox ? (
+          <InboxHeaderSkeleton />
+        ) : (
+          <div className="min-w-0 space-y-2">
+            <Button variant="ghost" size="sm" className="-ml-2 h-8 px-2" asChild>
+              <Link href="/inboxes">
+                <IconArrowLeft className="size-4" aria-hidden />
+                Inboxes
+              </Link>
+            </Button>
+            <div>
+              {editingName ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    value={nameDraft}
+                    onChange={(event) => setNameDraft(event.target.value)}
+                    className="h-9 max-w-sm font-ui text-lg font-semibold"
+                    autoFocus
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') void handleSaveName()
+                      if (event.key === 'Escape') cancelEditingName()
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={savingName}
+                    onClick={() => void handleSaveName()}
+                  >
+                    {savingName ? (
+                      <Loader size="sm" tone="inherit" />
+                    ) : (
+                      <IconCheck className="size-4" aria-hidden />
+                    )}
+                    Save
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={savingName}
+                    onClick={cancelEditingName}
+                  >
+                    <IconX className="size-4" aria-hidden />
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h1 className="font-ui text-2xl font-semibold tracking-tight text-foreground">
+                    {inbox.name}
+                  </h1>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={startEditingName}
+                    aria-label="Rename inbox"
+                  >
+                    <IconPencil className="size-4" aria-hidden />
+                  </Button>
+                </div>
+              )}
+              <p className="mt-1 font-mono text-sm text-muted-foreground">/i/{inbox.id}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => void refresh()}>
+          <Button type="button" variant="outline" size="sm" onClick={refresh}>
             <IconRefresh className="size-3.5" aria-hidden />
             Refresh
           </Button>
@@ -452,7 +412,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
             variant="outline"
             size="sm"
             className="text-destructive hover:text-destructive"
-            disabled={deleting}
+            disabled={deleting || !inbox}
             onClick={() => void handleDeleteInbox()}
           >
             {deleting ? (
@@ -476,26 +436,35 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
           Your ingest URL
         </p>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <code className="min-w-0 flex-1 truncate rounded-lg border border-border bg-muted/30 px-3 py-2.5 font-mono text-sm text-foreground">
-            {ingestUrl}
-          </code>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => void handleCopyUrl()}
-            aria-label={copied ? 'URL copied' : 'Copy ingest URL'}
-          >
-            <IconCopy className="size-3.5" aria-hidden />
-            {copied ? 'Copied' : 'Copy URL'}
-          </Button>
+          {inboxLoading ? (
+            <>
+              <Skeleton className="h-10 flex-1 rounded-lg" />
+              <Skeleton className="h-9 w-28 shrink-0 rounded-lg" />
+            </>
+          ) : (
+            <>
+              <code className="min-w-0 flex-1 truncate rounded-lg border border-border bg-muted/30 px-3 py-2.5 font-mono text-sm text-foreground">
+                {ingestUrl}
+              </code>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => void handleCopyUrl()}
+                aria-label={copied ? 'URL copied' : 'Copy ingest URL'}
+              >
+                <IconCopy className="size-3.5" aria-hidden />
+                {copied ? 'Copied' : 'Copy URL'}
+              </Button>
+            </>
+          )}
         </div>
       </section>
 
-      {errorMessage ? (
+      {loadError ? (
         <p className="text-sm text-destructive" role="alert">
-          {errorMessage}
+          {loadError}
         </p>
       ) : null}
 
@@ -520,9 +489,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
               showPagination
               onDataChangeAction={({ rows, total }) => {
                 setEventsTotal(total)
-                if (!selectedEventId && rows[0]) {
-                  setSelectedEventId(rows[0].id)
-                }
+                setSelectedEventId((current) => current ?? rows[0]?.id ?? null)
               }}
             />
           </div>
@@ -601,7 +568,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
             </SectionPanel>
           )}
 
-          {detailLoading ? (
+          {replaysLoading ? (
             <ReplayPanelSkeleton />
           ) : (
             <SectionPanel

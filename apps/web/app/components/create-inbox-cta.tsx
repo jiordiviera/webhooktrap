@@ -27,6 +27,7 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
     try {
       const body = await apiFetch<InboxResponse>('/api/v1/inboxes', {
         method: 'POST',
+        skipAuth: true,
         body: JSON.stringify({ name: 'My inbox' }),
       })
       const url = body.data.inbox.ingestUrl.startsWith('http')

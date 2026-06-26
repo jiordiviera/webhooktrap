@@ -42,6 +42,7 @@ export function RegisterForm() {
     try {
       const body = await apiFetch<AuthPayload>('/api/v1/auth/signup', {
         method: 'POST',
+        skipAuth: true,
         body: JSON.stringify({
           fullName: values.fullName?.trim() || null,
           email: values.email,

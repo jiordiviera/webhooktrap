@@ -26,6 +26,11 @@ export default class InboxesController {
   async show({ auth, params, serialize }: HttpContext) {
     const inbox = await InboxPolicy.authorizeView(params.id, auth.user?.id)
 
+    await inbox.loadCount('events')
+    await inbox.load('events', (eventsQuery) => {
+      eventsQuery.orderBy('receivedAt', 'desc').limit(1)
+    })
+
     return serialize({
       inbox: InboxTransformer.transform(inbox),
     })

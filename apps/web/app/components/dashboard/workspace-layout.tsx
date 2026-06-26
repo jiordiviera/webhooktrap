@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader } from '@workspace/ui/components/loader'
 import { DashboardShell } from '@/app/components/dashboard/dashboard-shell'
+import { WorkspaceSkeleton } from '@/app/components/dashboard/workspace-skeleton'
 import { useAuth } from '@/contexts/auth-context'
 
 export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
@@ -17,22 +18,14 @@ export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   }, [status, router])
 
   if (status === 'loading') {
-    return (
-      <DashboardShell>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <Loader layout="centered" label="Loading workspace" />
-        </div>
-      </DashboardShell>
-    )
+    return <WorkspaceSkeleton />
   }
 
   if (!isAuthenticated) {
     return (
-      <DashboardShell>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <Loader layout="centered" label="Redirecting to sign in" />
-        </div>
-      </DashboardShell>
+      <div className="bg-background flex min-h-svh items-center justify-center">
+        <Loader layout="centered" label="Redirecting to sign in" />
+      </div>
     )
   }
 

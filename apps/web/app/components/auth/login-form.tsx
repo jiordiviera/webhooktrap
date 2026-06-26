@@ -41,6 +41,7 @@ export function LoginForm() {
     try {
       const body = await apiFetch<AuthPayload>('/api/v1/auth/login', {
         method: 'POST',
+        skipAuth: true,
         body: JSON.stringify(values),
       })
 
