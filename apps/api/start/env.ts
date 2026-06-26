@@ -57,4 +57,15 @@ export default await Env.create(new URL('../../../', import.meta.url), {
   BLOB_READ_WRITE_TOKEN: Env.schema.string.optional(),
   MEDIA_CDN_BASE_URL: Env.schema.string.optional(),
   MEDIA_MAX_FILE_SIZE_MB: Env.schema.number.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for configuring the drive package
+  |----------------------------------------------------------
+  */
+  DRIVE_DISK: Env.schema.enum(['r2'] as const),
+  R2_KEY: Env.schema.string(),
+  R2_SECRET: Env.schema.string(),
+  R2_BUCKET: Env.schema.string(),
+  R2_ENDPOINT: Env.schema.string()
 })
