@@ -4,12 +4,11 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { IconCopy, IconExternalLink, IconPlus } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
-import { Loader } from '@workspace/ui/components/loader'
 import { Skeleton } from '@workspace/ui/components/skeleton'
 import { cn } from '@workspace/ui/lib/utils'
 import { ApiError } from '@/lib/api'
+import { CreateInboxDialog } from '@/app/components/dashboard/create-inbox-dialog'
 import {
-  createInbox,
   fetchInboxes,
   formatRelativeTime,
   inboxPublicUrl,
@@ -39,7 +38,7 @@ function InboxRow({
     >
       <div className="min-w-0 pl-0.5 md:pl-1">
         <Link
-          href={inbox.ingestUrl}
+          href={`/i/${inbox.id}`}
           className="text-[0.9375rem] font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
         >
           {inbox.name}
@@ -75,7 +74,7 @@ function InboxRow({
           <span className="sr-only sm:not-sr-only">{copied ? 'Copied' : 'Copy'}</span>
         </Button>
         <Button type="button" variant="ghost" size="sm" asChild>
-          <Link href={inbox.ingestUrl} aria-label={`Open ${inbox.name}`}>
+          <Link href={`/i/${inbox.id}`} aria-label={`Open ${inbox.name}`}>
             <IconExternalLink className="size-3.5" aria-hidden />
             <span className="sr-only sm:not-sr-only">Open</span>
           </Link>
@@ -105,7 +104,7 @@ function InboxSkeleton() {
 export function InboxList({ token }: { token: string }) {
   const [inboxes, setInboxes] = useState<InboxSummary[]>([])
   const [state, setState] = useState<LoadState>('loading')
-  const [creating, setCreating] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -129,21 +128,10 @@ export function InboxList({ token }: { token: string }) {
     void loadInboxes()
   }, [loadInboxes])
 
-  async function handleCreate() {
-    setCreating(true)
+  function handleInboxCreated(inbox: InboxSummary) {
+    setInboxes((current) => [inbox, ...current])
+    setState('ready')
     setErrorMessage(null)
-
-    try {
-      const inbox = await createInbox(token)
-      setInboxes((current) => [inbox, ...current])
-      setState('ready')
-    } catch (error) {
-      setErrorMessage(
-        error instanceof ApiError ? error.message : 'Could not create an inbox. Try again.'
-      )
-    } finally {
-      setCreating(false)
-    }
   }
 
   async function handleCopy(id: string, url: string) {
@@ -173,23 +161,21 @@ export function InboxList({ token }: { token: string }) {
 
         <Button
           type="button"
-          onClick={() => void handleCreate()}
-          disabled={creating || state === 'loading'}
+          onClick={() => setCreateOpen(true)}
+          disabled={state === 'loading'}
           className="shrink-0"
         >
-          {creating ? (
-            <>
-              <Loader size="sm" tone="inherit" />
-              Creating…
-            </>
-          ) : (
-            <>
-              <IconPlus className="size-4" aria-hidden />
-              New inbox
-            </>
-          )}
+          <IconPlus className="size-4" aria-hidden />
+          New inbox
         </Button>
       </div>
+
+      <CreateInboxDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        token={token}
+        onCreated={handleInboxCreated}
+      />
 
       {errorMessage && (
         <p className="mt-4 text-sm text-destructive" role="alert">
@@ -212,18 +198,9 @@ export function InboxList({ token }: { token: string }) {
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
               Create an inbox to get a public ingest URL. Events wait here until you replay them.
             </p>
-            <Button type="button" className="mt-6" onClick={() => void handleCreate()} disabled={creating}>
-              {creating ? (
-                <>
-                  <Loader size="sm" tone="inherit" />
-                  Creating…
-                </>
-              ) : (
-                <>
-                  <IconPlus className="size-4" aria-hidden />
-                  Create inbox
-                </>
-              )}
+            <Button type="button" className="mt-6" onClick={() => setCreateOpen(true)}>
+              <IconPlus className="size-4" aria-hidden />
+              Create inbox
             </Button>
           </div>
         )}

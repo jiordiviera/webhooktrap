@@ -20,7 +20,7 @@ export default class MediaController {
     const media = await MediaService.list(modelType, modelId, collection)
 
     return serialize({
-      media: media.map((item) => MediaTransformer.transform(item)),
+      media: MediaTransformer.transform(media),
     })
   }
 

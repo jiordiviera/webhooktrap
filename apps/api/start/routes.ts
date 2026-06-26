@@ -26,7 +26,34 @@ router
   .group(() => {
     twoFactorAuthRoutes()
     router.post('inboxes', [controllers.Inboxes, 'store']).as('inboxes.store')
+    router
+      .get('inboxes/:id', [controllers.Inboxes, 'show'])
+      .where('id', /^[A-Za-z0-9]{12}$/)
+      .as('inboxes.show')
+    router
+      .patch('inboxes/:id', [controllers.Inboxes, 'update'])
+      .where('id', /^[A-Za-z0-9]{12}$/)
+      .as('inboxes.update')
+      .use(middleware.auth())
+    router
+      .get('inboxes/:id/events', [controllers.Inboxes, 'events'])
+      .where('id', /^[A-Za-z0-9]{12}$/)
+      .as('inboxes.events')
     router.get('inboxes', [controllers.Inboxes, 'index']).as('inboxes.index').use(middleware.auth())
+
+    router
+      .get('events/:id', [controllers.Events, 'show'])
+      .where('id', /^evt_[0-9A-Z]{26}$/)
+      .as('events.show')
+    router
+      .post('events/:id/replay', [controllers.Events, 'replay'])
+      .where('id', /^evt_[0-9A-Z]{26}$/)
+      .as('events.replay')
+      .use(middleware.auth())
+    router
+      .get('events/:id/replays', [controllers.Events, 'replays'])
+      .where('id', /^evt_[0-9A-Z]{26}$/)
+      .as('events.replays')
     router
       .group(() => {
         router.post('signup', [controllers.NewAccount, 'store'])

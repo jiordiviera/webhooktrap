@@ -12,13 +12,13 @@ test.group('Ingest', (group) => {
   })
 
   test('creates anonymous inbox', async ({ client, assert }) => {
-    const response = await client.post('/api/v1/inboxes')
+    const response = await client.post('/api/v1/inboxes').json({ name: 'Quick test inbox' })
 
     response.assertStatus(200)
     response.assertBodyContains({
       data: {
         inbox: {
-          name: 'Untitled inbox',
+          name: 'Quick test inbox',
         },
       },
     })
@@ -36,7 +36,7 @@ test.group('Ingest', (group) => {
   })
 
   test('stores webhook event and always returns 200', async ({ client, assert }) => {
-    const created = await client.post('/api/v1/inboxes')
+    const created = await client.post('/api/v1/inboxes').json({ name: 'Test inbox' })
     const inboxIdValue = created.body().data.inbox.id
 
     const response = await client
@@ -66,7 +66,7 @@ test.group('Ingest', (group) => {
   })
 
   test('returns 200 for expired inbox without storing', async ({ client, assert }) => {
-    const created = await client.post('/api/v1/inboxes')
+    const created = await client.post('/api/v1/inboxes').json({ name: 'Test inbox' })
     const inboxIdValue = created.body().data.inbox.id
 
     const inbox = await Inbox.findOrFail(inboxIdValue)
@@ -83,7 +83,7 @@ test.group('Ingest', (group) => {
   })
 
   test('accepts GET requests with query string', async ({ client, assert }) => {
-    const created = await client.post('/api/v1/inboxes')
+    const created = await client.post('/api/v1/inboxes').json({ name: 'Test inbox' })
     const inboxIdValue = created.body().data.inbox.id
 
     const response = await client.get(`/i/${inboxIdValue}`).qs({ challenge: 'abc123' })

@@ -12,7 +12,15 @@ export interface ApiDefinition {
     }
     inboxes: {
       store: typeof routes['v1.inboxes.store']
+      show: typeof routes['v1.inboxes.show']
+      update: typeof routes['v1.inboxes.update']
+      events: typeof routes['v1.inboxes.events']
       index: typeof routes['v1.inboxes.index']
+    }
+    events: {
+      show: typeof routes['v1.events.show']
+      replay: typeof routes['v1.events.replay']
+      replays: typeof routes['v1.events.replays']
     }
     auth: {
       newAccount: {

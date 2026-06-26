@@ -5,13 +5,28 @@
 
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
+import type EventTransformer from '#transformers/event_transformer'
+import type InboxTransformer from '#transformers/inbox_transformer'
 import type MediaTransformer from '#transformers/media_transformer'
+import type ReplayTransformer from '#transformers/replay_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 
 export namespace Data {
+  export type Event = InferData<EventTransformer>
+  export namespace Event {
+    export type Variants = InferVariants<EventTransformer>
+  }
+  export type Inbox = InferData<InboxTransformer>
+  export namespace Inbox {
+    export type Variants = InferVariants<InboxTransformer>
+  }
   export type Media = InferData<MediaTransformer>
   export namespace Media {
     export type Variants = InferVariants<MediaTransformer>
+  }
+  export type Replay = InferData<ReplayTransformer>
+  export namespace Replay {
+    export type Variants = InferVariants<ReplayTransformer>
   }
   export type User = InferData<UserTransformer>
   export namespace User {

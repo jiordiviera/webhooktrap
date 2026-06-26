@@ -31,4 +31,16 @@ export default class InboxService {
       })
       .orderBy('createdAt', 'desc')
   }
+
+  static async update(
+    inbox: Inbox,
+    data: {
+      name?: string
+      defaultReplayUrl?: string | null
+    }
+  ) {
+    inbox.merge(data)
+    await inbox.save()
+    return inbox
+  }
 }

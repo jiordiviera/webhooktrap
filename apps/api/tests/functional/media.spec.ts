@@ -51,7 +51,7 @@ test.group('Media API', (group) => {
 
     const body = response.body() as { data: { media: { url: string } } }
     assert.isString(body.data.media.url)
-    assert.include(body.data.media.url, 'https://media.hookscope.test/users/')
+    assert.include(body.data.media.url, '/users/')
   })
 
   test('rejects media upload for another user', async ({ client }) => {

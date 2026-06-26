@@ -10,7 +10,13 @@ export type ScannedRoutes = {
     'v1.2fa.generate_recovery_codes': { paramsTuple?: []; params?: {} }
     'v1.2fa.disable': { paramsTuple?: []; params?: {} }
     'v1.inboxes.store': { paramsTuple?: []; params?: {} }
+    'v1.inboxes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.inboxes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.inboxes.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.index': { paramsTuple?: []; params?: {} }
+    'v1.events.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.events.replay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.events.replays': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.auth.new_account.store': { paramsTuple?: []; params?: {} }
     'v1.auth.access_tokens.store': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.providers': { paramsTuple?: []; params?: {} }
@@ -27,7 +33,11 @@ export type ScannedRoutes = {
   }
   GET: {
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
+    'v1.inboxes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.inboxes.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.index': { paramsTuple?: []; params?: {} }
+    'v1.events.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.events.replays': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.auth.oauth.providers': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
@@ -36,7 +46,11 @@ export type ScannedRoutes = {
     'v1.media.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
+    'v1.inboxes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.inboxes.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.index': { paramsTuple?: []; params?: {} }
+    'v1.events.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.events.replays': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.auth.oauth.providers': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
@@ -51,6 +65,7 @@ export type ScannedRoutes = {
     'v1.2fa.generate_recovery_codes': { paramsTuple?: []; params?: {} }
     'v1.2fa.disable': { paramsTuple?: []; params?: {} }
     'v1.inboxes.store': { paramsTuple?: []; params?: {} }
+    'v1.events.replay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.auth.new_account.store': { paramsTuple?: []; params?: {} }
     'v1.auth.access_tokens.store': { paramsTuple?: []; params?: {} }
     'v1.profile.access_tokens.destroy': { paramsTuple?: []; params?: {} }
@@ -62,6 +77,7 @@ export type ScannedRoutes = {
   }
   PATCH: {
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
+    'v1.inboxes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.profile.profile.update': { paramsTuple?: []; params?: {} }
   }
   DELETE: {

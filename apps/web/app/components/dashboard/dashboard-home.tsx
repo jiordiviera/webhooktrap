@@ -11,11 +11,10 @@ import {
   type TablerIcon,
 } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
-import { Loader } from '@workspace/ui/components/loader'
 import { Skeleton } from '@workspace/ui/components/skeleton'
+import { CreateInboxDialog } from '@/app/components/dashboard/create-inbox-dialog'
 import { ApiError } from '@/lib/api'
 import {
-  createInbox,
   fetchInboxes,
   formatRelativeTime,
   inboxPublicUrl,
@@ -54,7 +53,7 @@ function StatCard({
 export function DashboardHome({ token }: { token: string }) {
   const [inboxes, setInboxes] = useState<InboxSummary[]>([])
   const [state, setState] = useState<LoadState>('loading')
-  const [creating, setCreating] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const loadInboxes = useCallback(async () => {
@@ -89,21 +88,10 @@ export function DashboardHome({ token }: { token: string }) {
     return { totalEvents, activeInboxes, latest: latest ?? null }
   }, [inboxes])
 
-  async function handleCreate() {
-    setCreating(true)
+  function handleInboxCreated(inbox: InboxSummary) {
+    setInboxes((current) => [inbox, ...current])
+    setState('ready')
     setErrorMessage(null)
-
-    try {
-      const inbox = await createInbox(token)
-      setInboxes((current) => [inbox, ...current])
-      setState('ready')
-    } catch (error) {
-      setErrorMessage(
-        error instanceof ApiError ? error.message : 'Could not create an inbox. Try again.'
-      )
-    } finally {
-      setCreating(false)
-    }
   }
 
   const recent = inboxes.slice(0, 4)
@@ -122,18 +110,9 @@ export function DashboardHome({ token }: { token: string }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={() => void handleCreate()} disabled={creating}>
-            {creating ? (
-              <>
-                <Loader size="sm" tone="inherit" />
-                Creating…
-              </>
-            ) : (
-              <>
-                <IconPlus className="size-4" aria-hidden />
-                New inbox
-              </>
-            )}
+          <Button type="button" onClick={() => setCreateOpen(true)}>
+            <IconPlus className="size-4" aria-hidden />
+            New inbox
           </Button>
           <Button type="button" variant="outline" asChild>
             <Link href="/inboxes">
@@ -212,18 +191,9 @@ export function DashboardHome({ token }: { token: string }) {
               Open an inbox, paste the ingest URL into Stripe or GitHub, and your first event lands
               here in seconds.
             </p>
-            <Button type="button" className="mt-6" onClick={() => void handleCreate()} disabled={creating}>
-              {creating ? (
-                <>
-                  <Loader size="sm" tone="inherit" />
-                  Creating…
-                </>
-              ) : (
-                <>
-                  <IconPlus className="size-4" aria-hidden />
-                  Create inbox
-                </>
-              )}
+            <Button type="button" className="mt-6" onClick={() => setCreateOpen(true)}>
+              <IconPlus className="size-4" aria-hidden />
+              Create inbox
             </Button>
           </div>
         )}
@@ -233,7 +203,7 @@ export function DashboardHome({ token }: { token: string }) {
             {recent.map((inbox) => (
               <li key={inbox.id}>
                 <Link
-                  href={inbox.ingestUrl}
+                  href={`/i/${inbox.id}`}
                   className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-muted/40"
                 >
                   <div className="min-w-0">
@@ -261,6 +231,13 @@ export function DashboardHome({ token }: { token: string }) {
           </div>
         )}
       </section>
+
+      <CreateInboxDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        token={token}
+        onCreated={handleInboxCreated}
+      />
     </div>
   )
 }

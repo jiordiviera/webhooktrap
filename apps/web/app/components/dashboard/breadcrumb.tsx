@@ -29,7 +29,7 @@ function getBreadcrumbs(pathname: string, navItems: DashboardNavItem[]): Breadcr
     const inboxId = pathname.slice(3).split('/')[0]
     return [
       { label: 'Inboxes', href: '/inboxes' },
-      { label: inboxId ? `/i/${inboxId}` : 'Inbox' },
+      { label: inboxId || 'Inbox' },
     ]
   }
 

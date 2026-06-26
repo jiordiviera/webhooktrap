@@ -66,13 +66,22 @@ test.group('Inboxes API', (group) => {
     const response = await client
       .post('/api/v1/inboxes')
       .header('authorization', `Bearer ${token.value!.release()}`)
+      .json({ name: 'Stripe checkout' })
 
     response.assertStatus(200)
+    response.assertBodyContains({
+      data: {
+        inbox: {
+          name: 'Stripe checkout',
+        },
+      },
+    })
 
     const inboxIdValue = response.body().data.inbox.id as string
     const inbox = await Inbox.findOrFail(inboxIdValue)
 
     assert.equal(inbox.userId, user.id)
+    assert.equal(inbox.name, 'Stripe checkout')
     assert.isNull(inbox.expiresAt)
   })
 })

@@ -26,7 +26,14 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
     setCopied(false)
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/inboxes`, { method: 'POST' })
+      const response = await fetch(`${API_URL}/api/v1/inboxes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ name: 'My inbox' }),
+      })
       if (!response.ok) throw new Error('Failed to create inbox')
 
       const body = (await response.json()) as InboxResponse

@@ -29,10 +29,34 @@ export async function fetchInboxes(token: string) {
   return body.data.inboxes
 }
 
-export async function createInbox(token: string) {
+export async function createInbox(token: string, input: { name: string }) {
   const body = await apiFetch<InboxCreateResponse>('/api/v1/inboxes', {
     method: 'POST',
     token,
+    body: JSON.stringify({ name: input.name }),
+  })
+  return body.data.inbox
+}
+
+export async function fetchInbox(token: string | null, inboxId: string) {
+  const body = await apiFetch<InboxCreateResponse>(`/api/v1/inboxes/${inboxId}`, { token })
+  return body.data.inbox
+}
+
+export async function updateInbox(
+  token: string,
+  inboxId: string,
+  input: { name?: string; defaultReplayUrl?: string | null }
+) {
+  const body = await apiFetch<InboxCreateResponse>(`/api/v1/inboxes/${inboxId}`, {
+    method: 'PATCH',
+    token,
+    body: JSON.stringify({
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.defaultReplayUrl !== undefined
+        ? { default_replay_url: input.defaultReplayUrl }
+        : {}),
+    }),
   })
   return body.data.inbox
 }

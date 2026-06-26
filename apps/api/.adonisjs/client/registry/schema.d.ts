@@ -71,12 +71,48 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/api/v1/inboxes'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/inbox_validator').createInboxValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/inbox_validator').createInboxValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'v1.inboxes.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/inboxes/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['show']>>>
+    }
+  }
+  'v1.inboxes.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/inboxes/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/inbox_validator').updateInboxValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/inbox_validator').updateInboxValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'v1.inboxes.events': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/inboxes/:id/events'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['events']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['events']>>>
     }
   }
   'v1.inboxes.index': {
@@ -89,6 +125,42 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inboxes_controller').default['index']>>>
+    }
+  }
+  'v1.events.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/events/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/events_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/events_controller').default['show']>>>
+    }
+  }
+  'v1.events.replay': {
+    methods: ["POST"]
+    pattern: '/api/v1/events/:id/replay'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/events_controller').default['replay']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/events_controller').default['replay']>>>
+    }
+  }
+  'v1.events.replays': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/events/:id/replays'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/events_controller').default['replays']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/events_controller').default['replays']>>>
     }
   }
   'v1.auth.new_account.store': {

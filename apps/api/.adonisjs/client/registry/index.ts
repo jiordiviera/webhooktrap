@@ -42,11 +42,47 @@ const routes = {
     tokens: [{"old":"/api/v1/inboxes","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes","type":0,"val":"inboxes","end":""}],
     types: placeholder as Registry['v1.inboxes.store']['types'],
   },
+  'v1.inboxes.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/inboxes/:id',
+    tokens: [{"old":"/api/v1/inboxes/:id","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"inboxes","end":""},{"old":"/api/v1/inboxes/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['v1.inboxes.show']['types'],
+  },
+  'v1.inboxes.update': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/inboxes/:id',
+    tokens: [{"old":"/api/v1/inboxes/:id","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes/:id","type":0,"val":"inboxes","end":""},{"old":"/api/v1/inboxes/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['v1.inboxes.update']['types'],
+  },
+  'v1.inboxes.events': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/inboxes/:id/events',
+    tokens: [{"old":"/api/v1/inboxes/:id/events","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes/:id/events","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes/:id/events","type":0,"val":"inboxes","end":""},{"old":"/api/v1/inboxes/:id/events","type":1,"val":"id","end":""},{"old":"/api/v1/inboxes/:id/events","type":0,"val":"events","end":""}],
+    types: placeholder as Registry['v1.inboxes.events']['types'],
+  },
   'v1.inboxes.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/inboxes',
     tokens: [{"old":"/api/v1/inboxes","type":0,"val":"api","end":""},{"old":"/api/v1/inboxes","type":0,"val":"v1","end":""},{"old":"/api/v1/inboxes","type":0,"val":"inboxes","end":""}],
     types: placeholder as Registry['v1.inboxes.index']['types'],
+  },
+  'v1.events.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/events/:id',
+    tokens: [{"old":"/api/v1/events/:id","type":0,"val":"api","end":""},{"old":"/api/v1/events/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/events/:id","type":0,"val":"events","end":""},{"old":"/api/v1/events/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['v1.events.show']['types'],
+  },
+  'v1.events.replay': {
+    methods: ["POST"],
+    pattern: '/api/v1/events/:id/replay',
+    tokens: [{"old":"/api/v1/events/:id/replay","type":0,"val":"api","end":""},{"old":"/api/v1/events/:id/replay","type":0,"val":"v1","end":""},{"old":"/api/v1/events/:id/replay","type":0,"val":"events","end":""},{"old":"/api/v1/events/:id/replay","type":1,"val":"id","end":""},{"old":"/api/v1/events/:id/replay","type":0,"val":"replay","end":""}],
+    types: placeholder as Registry['v1.events.replay']['types'],
+  },
+  'v1.events.replays': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/events/:id/replays',
+    tokens: [{"old":"/api/v1/events/:id/replays","type":0,"val":"api","end":""},{"old":"/api/v1/events/:id/replays","type":0,"val":"v1","end":""},{"old":"/api/v1/events/:id/replays","type":0,"val":"events","end":""},{"old":"/api/v1/events/:id/replays","type":1,"val":"id","end":""},{"old":"/api/v1/events/:id/replays","type":0,"val":"replays","end":""}],
+    types: placeholder as Registry['v1.events.replays']['types'],
   },
   'v1.auth.new_account.store': {
     methods: ["POST"],
