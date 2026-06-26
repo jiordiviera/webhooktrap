@@ -2,7 +2,15 @@ import axios, { isAxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { clearAuthToken, getAuthToken } from '@/lib/auth'
 import { toApiError } from '@/lib/api/errors'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333'
+/** Server-only API origin. Browser calls same-origin /api/v1 via proxy.ts. */
+const SERVER_APP_URL = process.env.APP_URL ?? 'http://localhost:3333'
+
+function resolveApiBaseUrl() {
+  if (typeof window !== 'undefined') return ''
+  return SERVER_APP_URL
+}
+
+export const APP_URL = SERVER_APP_URL
 
 export const SESSION_EXPIRED_EVENT = 'hookscope:session-expired'
 
@@ -46,7 +54,7 @@ function handleUnauthorized(config: InternalAxiosRequestConfig | undefined) {
 }
 
 export const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: resolveApiBaseUrl(),
   timeout: 30_000,
   headers: {
     Accept: 'application/json',
@@ -83,5 +91,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
-export { API_URL }

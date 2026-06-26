@@ -28,7 +28,7 @@ const steps = [
     title: 'Replay',
     description: 'Send the same event to localhost. See status, headers, latency, and response body.',
     code: `POST /replay
-  destination: http://localhost:3000/webhooks/stripe
+  destination: http://localhost:7777/webhooks/stripe
 
 → 200 OK · 142ms
 ← { "received": true }`,

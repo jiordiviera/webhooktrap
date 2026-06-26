@@ -166,7 +166,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
   useEffect(() => {
     if (!inbox) return
     setReplayUrl(inbox.defaultReplayUrl ?? '')
-  }, [inbox?.id, inbox?.defaultReplayUrl])
+  }, [inbox])
 
   useEffect(() => {
     if (!inboxPage || !inbox) return
@@ -580,7 +580,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
                   <Input
                     value={replayUrl}
                     onChange={(event) => setReplayUrl(event.target.value)}
-                    placeholder="http://localhost:3000/webhooks/stripe"
+                    placeholder="http://localhost:7777/webhooks/stripe"
                     className="font-mono text-sm"
                   />
                   <div className="flex shrink-0 gap-2">

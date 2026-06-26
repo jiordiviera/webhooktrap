@@ -202,7 +202,7 @@ Même stack qu'en prod — seule la `DATABASE_URL` change (branche Neon `dev`).
 // apps/api — config/cors.ts
 {
   origin: [
-    'http://localhost:3000',
+    'http://localhost:7777',
     'https://hookscope.dev',
     'https://www.hookscope.dev',
   ],

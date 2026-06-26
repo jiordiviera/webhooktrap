@@ -63,7 +63,7 @@
 │ ○ POST payment_intent    │  [Copy JSON]  [Copy as cURL]         │
 ├──────────────────────────┴──────────────────────────────────────┤
 │ REPLAY                                                          │
-│ Destination: [ http://localhost:3000/webhooks/stripe ]          │
+│ Destination: [ http://localhost:7777/webhooks/stripe ]          │
 │ [ ▶ Replay ]                                                    │
 │ ✓ 200 OK  142ms — Response body affiché                         │
 │ Replay history: 200 OK, Connection refused                      │
@@ -112,7 +112,7 @@ GET    /api/share/:token
   "success": false,
   "error": {
     "code": "CONNECTION_REFUSED",
-    "message": "Could not reach http://localhost:3000/webhooks"
+    "message": "Could not reach http://localhost:7777/webhooks"
   }
 }
 ```
@@ -122,7 +122,7 @@ GET    /api/share/:token
 ```bash
 npx @hookscope/cli inbox create
 npx @hookscope/cli events list --inbox xK9m2p
-npx @hookscope/cli replay evt_01HXXX --to http://localhost:3000/webhook
+npx @hookscope/cli replay evt_01HXXX --to http://localhost:7777/webhook
 ```
 
 ## Limites Free

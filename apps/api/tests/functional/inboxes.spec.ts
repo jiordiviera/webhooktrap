@@ -2,7 +2,6 @@ import { webUrl } from '#config/app'
 import Inbox from '#models/inbox'
 import User from '#models/user'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { urlFor } from '@adonisjs/core/services/url_builder'
 import { test } from '@japa/runner'
 
 test.group('Inboxes API', (group) => {
@@ -39,7 +38,7 @@ test.group('Inboxes API', (group) => {
           {
             id: inbox.id,
             name: 'Stripe Integration',
-            ingestUrl: urlFor('ingest', { inboxId: inbox.id }, { prefixUrl: webUrl }),
+            ingestUrl: new URL(`/hooks/${inbox.id}`, webUrl).toString(),
             eventsCount: 0,
           },
         ],

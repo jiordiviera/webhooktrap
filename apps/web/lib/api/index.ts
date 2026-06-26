@@ -1,7 +1,7 @@
 import type { AxiosRequestConfig } from 'axios'
 import { apiClient } from '@/lib/api/client'
 
-export { API_URL, apiClient, SESSION_EXPIRED_EVENT } from '@/lib/api/client'
+export { APP_URL, apiClient, SESSION_EXPIRED_EVENT } from '@/lib/api/client'
 export { ApiError, type ApiErrorBody } from '@/lib/api/errors'
 
 export type ApiFetchInit = Omit<AxiosRequestConfig, 'url' | 'baseURL'> & {

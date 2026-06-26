@@ -1,6 +1,5 @@
 import type Inbox from '#models/inbox'
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import { urlFor } from '@adonisjs/core/services/url_builder'
 import { webUrl } from '#config/app'
 
 export default class InboxTransformer extends BaseTransformer<Inbox> {
@@ -17,7 +16,7 @@ export default class InboxTransformer extends BaseTransformer<Inbox> {
         'createdAt',
         'updatedAt',
       ]),
-      ingestUrl: urlFor('ingest', { inboxId: this.resource.id }, { prefixUrl: webUrl }),
+      ingestUrl: new URL(`/hooks/${this.resource.id}`, webUrl).toString(),
       eventsCount,
       lastEventAt: lastEvent?.receivedAt ?? null,
     }

@@ -3,7 +3,6 @@ import Event from '#models/event'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
-import { urlFor } from '@adonisjs/core/services/url_builder'
 import { webUrl } from '#config/app'
 
 test.group('Ingest', (group) => {
@@ -31,7 +30,7 @@ test.group('Ingest', (group) => {
     response.assertBodyContains({
       data: {
         inbox: {
-          ingestUrl: urlFor('ingest', { inboxId: inboxIdValue }, { prefixUrl: webUrl }),
+          ingestUrl: new URL(`/hooks/${inboxIdValue}`, webUrl).toString(),
         },
       },
     })

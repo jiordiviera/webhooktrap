@@ -1,4 +1,4 @@
-import { API_URL } from '@/lib/api'
+import { inboxIngestUrl } from '@/lib/public-url'
 import type { EventDetail } from '@/lib/events'
 
 function shellEscape(value: string) {
@@ -10,9 +10,13 @@ export function eventRequestUrl(event: EventDetail) {
     return event.path
   }
 
-  const base = API_URL.replace(/\/$/, '')
-  const path = event.path.startsWith('/') ? event.path : `/${event.path}`
-  return `${base}${path}`
+  const url = new URL(inboxIngestUrl(event.inboxId))
+
+  for (const [key, value] of Object.entries(event.query)) {
+    url.searchParams.set(key, value)
+  }
+
+  return url.toString()
 }
 
 export function buildEventJson(event: EventDetail) {

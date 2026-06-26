@@ -40,7 +40,10 @@ export function clearAuthToken() {
 }
 
 export function getOAuthRedirectUrl(provider: 'github' | 'google', returnTo: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333'
+  const origin =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_WEB_URL ?? process.env.WEB_URL ?? 'http://localhost:7777')
   const params = new URLSearchParams({ return_to: returnTo })
-  return `${apiUrl}/api/v1/auth/oauth/${provider}/redirect?${params}`
+  return `${origin}/api/v1/auth/oauth/${provider}/redirect?${params}`
 }

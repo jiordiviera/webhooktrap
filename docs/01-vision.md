@@ -26,7 +26,7 @@ Provider → Hookscope inbox → Inspect → Replay → Voir la response
 1. Obtenir une URL : `https://hookscope.dev/i/abc123`
 2. Coller dans les settings webhook du provider
 3. Voir l'événement en temps réel
-4. Rejouer vers `http://localhost:3000/webhooks` (ou staging)
+4. Rejouer vers `http://localhost:7777/webhooks` (ou staging)
 5. Voir status code, headers, body et latence de la réponse
 
 ## Wedge produit

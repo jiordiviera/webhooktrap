@@ -28,7 +28,7 @@ const codeExamples = [
     label: 'Replay',
     code: `curl -X POST https://api.hookscope.dev/api/v1/events/evt_8f2a/replay \\
   -H "Authorization: Bearer <token>" \\
-  -d '{"destination":"http://localhost:3000/webhooks"}'`,
+  -d '{"destination":"http://localhost:7777/webhooks"}'`,
   },
 ]
 
