@@ -151,7 +151,7 @@ const nextConfig = {
     return [
       {
         source: '/i/:path*',
-        destination: `${process.env.API_URL || 'https://api.hookscope.dev'}/i/:path*`,
+        destination: `${process.env.APP_URL || 'https://api.hookscope.dev'}/i/:path*`,
       },
     ]
   },
@@ -161,7 +161,7 @@ const nextConfig = {
 Variable serveur (non publique) :
 
 ```env
-API_URL=https://api.hookscope.dev
+APP_URL=https://api.hookscope.dev
 ```
 
 ### Domaine custom

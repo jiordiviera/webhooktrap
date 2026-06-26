@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@workspace/ui/components/button'
 import { Loader } from '@workspace/ui/components/loader'
-import { API_URL, apiFetch } from '@/lib/api'
+import { apiFetch } from '@/lib/api'
 
 type InboxResponse = {
   data: {
@@ -30,10 +30,7 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
         skipAuth: true,
         body: JSON.stringify({ name: 'My inbox' }),
       })
-      const url = body.data.inbox.ingestUrl.startsWith('http')
-        ? body.data.inbox.ingestUrl
-        : `${API_URL}${body.data.inbox.ingestUrl}`
-      setIngestUrl(url)
+      setIngestUrl(body.data.inbox.ingestUrl)
       setStatus('ready')
     } catch {
       setStatus('error')

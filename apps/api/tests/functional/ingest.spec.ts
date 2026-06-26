@@ -4,7 +4,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 import { urlFor } from '@adonisjs/core/services/url_builder'
-import { appUrl } from '#config/app'
+import { webUrl } from '#config/app'
 
 test.group('Ingest', (group) => {
   group.each.setup(async () => {
@@ -31,7 +31,7 @@ test.group('Ingest', (group) => {
     response.assertBodyContains({
       data: {
         inbox: {
-          ingestUrl: urlFor('ingest', { inboxId: inboxIdValue }, { prefixUrl: appUrl }),
+          ingestUrl: urlFor('ingest', { inboxId: inboxIdValue }, { prefixUrl: webUrl }),
         },
       },
     })

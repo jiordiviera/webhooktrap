@@ -9,6 +9,9 @@ import { defineConfig } from '@adonisjs/core/http'
  */
 export const appUrl = env.get('APP_URL')
 
+/** Public web app URL — ingest links shown to users (proxied to API by Next.js). */
+export const webUrl = env.get('WEB_URL')
+
 /**
  * The configuration settings used by the HTTP server
  */
