@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { productName, productTagline } from '@/lib/config'
 
 export function DashboardFooter() {
   return (
@@ -7,21 +8,14 @@ export function DashboardFooter() {
         <p className="text-[0.6875rem] tracking-wide text-muted-foreground">
           &copy; {new Date().getFullYear()}{' '}
           <Link href="/" className="font-medium text-foreground hover:text-foreground/80">
-            Hookscope
+            {productName}
           </Link>
           . All rights reserved.
         </p>
 
         <div className="flex items-center gap-4">
-          <Link
-            href="https://hookscope.dev"
-            className="text-[0.6875rem] tracking-wide text-muted-foreground hover:text-foreground"
-          >
-            hookscope.dev
-          </Link>
-          <span className="text-[0.625rem] text-muted-foreground/40">&middot;</span>
           <span className="text-[0.6875rem] tracking-wide text-muted-foreground">
-            Webhook debugging, simplified.
+            {productTagline}
           </span>
         </div>
       </div>

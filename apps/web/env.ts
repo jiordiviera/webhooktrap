@@ -19,14 +19,18 @@ const envSchema = z.object({
 })
 
 function parseEnv() {
+  const isServer = typeof process !== 'undefined' && typeof process.exit === 'function'
   const result = envSchema.safeParse(process.env)
 
   if (!result.success) {
-    console.error('Invalid environment variables:')
-    for (const issue of result.error.issues) {
-      console.error(`  ${issue.path.join('.')}: ${issue.message}`)
+    if (isServer) {
+      console.error('Invalid environment variables:')
+      for (const issue of result.error.issues) {
+        console.error(`  ${issue.path.join('.')}: ${issue.message}`)
+      }
+      process.exit(1)
     }
-    process.exit(1)
+    return envSchema.parse({ NODE_ENV: process.env.NODE_ENV })
   }
 
   return result.data
