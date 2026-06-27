@@ -5,7 +5,9 @@
  */
 
 import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { TwoFactorSecret } from '@nulix/adonis-2fa/types'
 import { DateTime } from 'luxon'
+import encryption from '@adonisjs/core/services/encryption'
 
 export class AuthAccessTokenSchema extends BaseModel {
   static $columns = [
@@ -272,10 +274,18 @@ export class UserSchema extends BaseModel {
   declare isTwoFactorEnabled: boolean | null
   @column({ serializeAs: null })
   declare password: string
-  @column()
-  declare twoFactorRecoveryCodes: string | null
-  @column()
-  declare twoFactorSecret: string | null
+  @column({
+    serializeAs: null,
+    consume: (value: string) => (value ? encryption.decrypt(value) : []),
+    prepare: (value: string[]) => encryption.encrypt(value),
+  })
+  declare twoFactorRecoveryCodes: string[]
+  @column({
+    serializeAs: null,
+    consume: (value: string) => (value ? encryption.decrypt(value) : null),
+    prepare: (value: string) => encryption.encrypt(value),
+  })
+  declare twoFactorSecret: TwoFactorSecret | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

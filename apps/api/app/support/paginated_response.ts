@@ -10,7 +10,7 @@ export type PaginatedMeta = {
 export function paginatedPayload<T>(
   key: string,
   paginator: SimplePaginatorContract<T>,
-  rows: unknown[]
+  rows: unknown
 ) {
   return {
     [key]: rows,
