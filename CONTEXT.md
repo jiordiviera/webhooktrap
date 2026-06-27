@@ -19,7 +19,7 @@
 
 ## Statut
 
-MVP avancé. 20+ commits, 9 migrations. Backend complet : ingest (toujours 200), events listing/détail, replay synchrone avec timeout 30s, auth (access tokens + OAuth GitHub/Google), media (Cloudflare R2). Frontend : landing page, dashboard, inbox detail (events table + event inspector + replay panel), auth UI (login/register/OAuth). Share links en cours.
+MVP avancé. 20+ commits, 9 migrations. Backend complet : ingest (toujours 200), events listing/détail, replay synchrone avec timeout 30s, auth (access tokens + OAuth GitHub/Google), media (Cloudflare R2), two-factor auth (TOTP). Frontend : landing page, dashboard, inbox detail (events table + event inspector + replay panel), auth UI (login/register/OAuth), settings (sections tabulaires avec profil intégré).
 
 ## Branding
 

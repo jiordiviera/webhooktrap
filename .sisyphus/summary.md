@@ -1,15 +1,32 @@
 # Summary
 
-## API build - Fixé
+## Settings refactor — scroll-spy → sections tabulaires + intégration profile
 
-**Problème**: Build cassé sur 3 fichiers, 8 erreurs TypeScript.
+**Problème**: La page Settings scrollait toutes les sections (scroll-spy avec IntersectionObserver). Pas assez lisible, mélangeait `profile` et `settings`.
 
-**Fichiers modifiés:**
+**Changement d'architecture :**
+- Scroll-spy et IntersectionObserver retirés
+- Navigation par section **active unique** (une section visible à la fois)
+- URL hash (`#account`, `#security`, `#notifications`) pour navigation directe
+- Sidebar gauche sticky pour basculer entre sections
 
-1. **`apps/api/app/support/paginated_response.ts`** — `paginatedPayload` attendait `rows: unknown[]`, mais `InboxTransformer.transform()` retourne un `Collection` (descripteur, pas un array). `serialize()` sait résoudre ces descripteurs à runtime. Fix: `rows: unknown[]` → `rows: unknown`.
+**Route `/profile` supprimée :**
+- Le contenu de ProfilePage a été intégré dans la section **Account** des Settings
+- `features/profile/components/profile-page.tsx` supprimé
+- `app/(workspace)/profile/page.tsx` supprimé
+- Le dropdown utilisateur pointe maintenant vers `/settings#account`
 
-2. **`apps/api/app/controllers/inboxes_controller.ts`** — Retiré `.toArray()` (inexistant sur `Collection`). Les 2 appels à `paginatedPayload` passent maintenant directement les descripteurs `Collection`.
+**Account section** (nouveau) :
+- Avatar upload (via `useMediaUpload`, accepte jpg/png/webp)
+- Formulaire display name (react-hook-form + zod, validation `profileSchema`)
+- Email (readonly), Member since, User ID
+- Messages de succès/erreur inline
 
-3. **Schema (`database/schema.ts`)** — Régénéré par le codegen du build. Les colonnes `twoFactorSecret` et `twoFactorRecoveryCodes` ont maintenant les bons types (`TwoFactorSecret | null`, `string[]`) avec `consume`/`prepare` pour le chiffrement.
-
-**Aucun changement** dans `two_factor_auth_controller.ts` — le code original est correct une fois le schema à jour.
+**Fichiers modifiés :**
+| Fichier | Action |
+|---------|--------|
+| `apps/web/features/settings/components/settings-page.tsx` | Réécrit — sections tabulaires, contenu profile intégré |
+| `apps/web/app/components/dashboard/nav-user.tsx` | Lien `/profile` → `/settings#account` |
+| `apps/web/app/components/dashboard/breadcrumb.tsx` | Cas `/profile` supprimé |
+| `apps/web/app/(workspace)/profile/page.tsx` | Supprimé |
+| `apps/web/features/profile/` | Supprimé |

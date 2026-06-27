@@ -5,6 +5,7 @@ import { DashboardNavProvider } from "@/features/dashboard/context/dashboard-nav
 import { InboxPageProvider } from "@/features/inbox/context/inbox-page-context";
 import { AppSidebar } from "./app-sidebar";
 import { DashboardHeader } from "./dashboard-header";
+import { DashboardFooter } from "./dashboard-footer";
 import { MobileSearchFab } from "./mobile-search-fab";
 import { PropsWithChildren } from "react";
 
@@ -19,6 +20,7 @@ export function DashboardShell({ children }: PropsWithChildren) {
               <DashboardHeader />
               <div className="custom-scrollbar flex w-full flex-1 flex-col overflow-auto">
                 <main className="flex-1 p-4 sm:p-6">{children}</main>
+                <DashboardFooter />
               </div>
             </div>
           </div>
