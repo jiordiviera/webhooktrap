@@ -20,7 +20,7 @@ const lora = Lora({
 
 const albertSans = Albert_Sans({subsets:['latin'],variable:'--font-sans'})
 
-const siteUrl = process.env.WEB_URL ?? 'http://localhost:7777'
+const siteUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:7777'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
