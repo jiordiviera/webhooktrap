@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -13,11 +13,23 @@ import {
   FieldLabel,
   FieldSeparator,
 } from '@workspace/ui/components/field'
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+  REGEXP_ONLY_DIGITS,
+} from '@workspace/ui/components/input-otp'
 import { Input } from '@workspace/ui/components/input'
 import { useAuth } from '@/contexts/auth-context'
 import { ApiError, apiFetch } from '@/lib/api'
 import { type AuthPayload } from '@/lib/auth'
-import { type LoginValues, loginSchema } from '@/lib/schemas/auth'
+import {
+  type LoginValues,
+  loginSchema,
+  type OtpValues,
+  challengeOtpSchema,
+} from '@/lib/schemas/auth'
 import { verifyChallenge } from '@/lib/2fa'
 import { OAuthButtons } from './oauth-buttons'
 
@@ -29,27 +41,19 @@ export function LoginForm() {
 
   const [requires2fa, setRequires2fa] = useState(false)
   const [challengeToken, setChallengeToken] = useState<string | null>(null)
-  const [otp, setOtp] = useState('')
-  const [otpError, setOtpError] = useState<string | null>(null)
-  const [otpSubmitting, setOtpSubmitting] = useState(false)
-  const otpInputRef = useRef<HTMLInputElement>(null)
-  const [loginError, setLoginError] = useState<string | null>(null)
 
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginValues>({
+  const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   })
 
-  async function onSubmit(values: LoginValues) {
-    setLoginError(null)
+  const otpForm = useForm<OtpValues>({
+    resolver: zodResolver(challengeOtpSchema),
+    defaultValues: { otp: '' },
+  })
+
+  async function onSubmitLogin(values: LoginValues) {
+    loginForm.clearErrors()
     try {
       const body = await apiFetch<AuthPayload>('/api/v1/auth/login', {
         method: 'POST',
@@ -60,7 +64,6 @@ export function LoginForm() {
       if ('requires_2fa' in body.data) {
         setChallengeToken(body.data.challenge_token)
         setRequires2fa(true)
-        setTimeout(() => otpInputRef.current?.focus(), 150)
         return
       }
 
@@ -75,51 +78,49 @@ export function LoginForm() {
           fieldError?.field &&
           loginFields.includes(fieldError.field as (typeof loginFields)[number])
         ) {
-          setError(fieldError.field as keyof LoginValues, { message: fieldError.message })
+          loginForm.setError(fieldError.field as keyof LoginValues, {
+            message: fieldError.message,
+          })
           return
         }
-        setError('root', {
+        loginForm.setError('root', {
           message: fieldError?.message ?? err.message,
         })
       } else {
-        setLoginError('Could not reach the API. Is the server running on port 3333?')
+        loginForm.setError('root', {
+          message: 'Could not reach the API. Is the server running on port 3333?',
+        })
       }
     }
   }
 
-  const handleOtpSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!otp.trim() || !challengeToken) return
+  async function onSubmitOtp(values: OtpValues) {
+    if (!challengeToken) return
 
-      setOtpSubmitting(true)
-      setOtpError(null)
-      try {
-        const body = await verifyChallenge(otp.trim(), challengeToken)
-        signIn(body.data)
-        router.push(returnTo.startsWith('/') ? returnTo : '/')
-        router.refresh()
-      } catch (err) {
-        if (err instanceof ApiError) {
-          setOtpError(err.message || 'Invalid code. Try again.')
-        } else {
-          setOtpError('Verification failed. Please try again.')
-        }
-      } finally {
-        setOtpSubmitting(false)
+    try {
+      const body = await verifyChallenge(values.otp, challengeToken)
+      signIn(body.data)
+      router.push(returnTo.startsWith('/') ? returnTo : '/')
+      router.refresh()
+    } catch (err) {
+      if (err instanceof ApiError) {
+        otpForm.setError('otp', { message: err.message || 'Invalid code. Try again.' })
+      } else {
+        otpForm.setError('otp', { message: 'Verification failed. Please try again.' })
       }
-    },
-    [otp, challengeToken, signIn, router, returnTo]
-  )
+    }
+  }
 
-  const handleBackToLogin = useCallback(() => {
+  function handleBackToLogin() {
     setRequires2fa(false)
     setChallengeToken(null)
-    setOtp('')
-    setOtpError(null)
-  }, [])
+    otpForm.reset()
+  }
 
   if (requires2fa) {
+    const otpValue = otpForm.watch('otp')
+    const otpError = otpForm.formState.errors.otp?.message
+
     return (
       <div className="flex flex-col gap-6">
         <div className="text-center">
@@ -129,29 +130,49 @@ export function LoginForm() {
           </p>
         </div>
 
-        <form onSubmit={handleOtpSubmit}>
+        <form onSubmit={otpForm.handleSubmit(onSubmitOtp)}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="2fa-challenge-otp">Authentication code</FieldLabel>
-              <Input
-                ref={otpInputRef}
+              <InputOTP
+                pattern={REGEXP_ONLY_DIGITS}
+                inputMode="numeric"
                 id="2fa-challenge-otp"
-                placeholder="000 000"
-                value={otp}
-                onChange={(e) => {
-                  setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
-                  setOtpError(null)
-                }}
+                className='w-full'
                 maxLength={6}
-                className="font-mono tracking-[0.3em] text-center"
-              />
+                value={otpValue}
+                onChange={(v) => otpForm.setValue('otp', v, { shouldValidate: true })}
+                onComplete={() => otpForm.handleSubmit(onSubmitOtp)()}
+              >
+                <InputOTPGroup> 
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="size-12 text-2xl sm:size-16 sm:text-3xl"
+                    />
+                  ))}
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="size-12 text-2xl sm:size-16 sm:text-3xl"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
               <FieldError>{otpError}</FieldError>
             </Field>
 
-            {loginError && <FieldError>{loginError}</FieldError>}
-
-            <Button type="submit" className="font-ui h-10 w-full" disabled={otpSubmitting || otp.length < 6}>
-              {otpSubmitting ? 'Verifying…' : 'Verify'}
+            <Button
+              type="submit"
+              className="font-ui h-10 w-full"
+              disabled={otpForm.formState.isSubmitting || otpValue.length < 6}
+            >
+              {otpForm.formState.isSubmitting ? 'Verifying…' : 'Verify'}
             </Button>
           </FieldGroup>
         </form>
@@ -173,36 +194,54 @@ export function LoginForm() {
 
       <FieldSeparator>or with email</FieldSeparator>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} noValidate>
         <FieldGroup>
-          <Field data-invalid={!!errors.email}>
+          <Field data-invalid={!!loginForm.formState.errors.email}>
             <FieldLabel htmlFor="email">Email</FieldLabel>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              aria-invalid={!!errors.email}
-              {...register('email')}
+              aria-invalid={!!loginForm.formState.errors.email}
+              {...loginForm.register('email')}
             />
-            <FieldError errors={errors.email ? [errors.email] : undefined} />
+            <FieldError
+              errors={
+                loginForm.formState.errors.email
+                  ? [loginForm.formState.errors.email]
+                  : undefined
+              }
+            />
           </Field>
 
-          <Field data-invalid={!!errors.password}>
+          <Field data-invalid={!!loginForm.formState.errors.password}>
             <FieldLabel htmlFor="password">Password</FieldLabel>
             <Input
               id="password"
               type="password"
               autoComplete="current-password"
-              aria-invalid={!!errors.password}
-              {...register('password')}
+              aria-invalid={!!loginForm.formState.errors.password}
+              {...loginForm.register('password')}
             />
-            <FieldError errors={errors.password ? [errors.password] : undefined} />
+            <FieldError
+              errors={
+                loginForm.formState.errors.password
+                  ? [loginForm.formState.errors.password]
+                  : undefined
+              }
+            />
           </Field>
 
-          {errors.root && <FieldError>{errors.root.message}</FieldError>}
+          {loginForm.formState.errors.root && (
+            <FieldError>{loginForm.formState.errors.root.message}</FieldError>
+          )}
 
-          <Button type="submit" className="font-ui h-10 w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
+          <Button
+            type="submit"
+            className="font-ui h-10 w-full"
+            disabled={loginForm.formState.isSubmitting}
+          >
+            {loginForm.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
           </Button>
         </FieldGroup>
       </form>

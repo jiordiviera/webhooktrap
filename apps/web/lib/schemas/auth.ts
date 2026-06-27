@@ -20,5 +20,10 @@ export const registerSchema = z
     path: ['passwordConfirmation'],
   })
 
+export const challengeOtpSchema = z.object({
+  otp: z.string().length(6, 'Code must be exactly 6 digits'),
+})
+
 export type LoginValues = z.infer<typeof loginSchema>
 export type RegisterValues = z.infer<typeof registerSchema>
+export type OtpValues = z.infer<typeof challengeOtpSchema>
