@@ -1,60 +1,33 @@
 import type { DataTableParams } from '@/features/data-table/types'
+import type { EventSummaryDTO, EventDetailDTO, ReplayDTO } from '@workspace/types'
 import { apiFetch } from '@/lib/api'
 import { buildListQueryString, parsePaginatedResponse } from '@/lib/list-query'
 
-export type EventSummary = {
-  id: string
-  inboxId: string
-  method: string
-  path: string
-  contentType: string | null
-  sizeBytes: number
-  receivedAt: string
-}
-
-export type EventDetail = EventSummary & {
-  query: Record<string, string>
-  headers: Record<string, string | string[]>
-  bodyText: string | null
-  bodyJson: Record<string, unknown> | unknown[] | null
-  ip: string | null
-  createdAt: string
-}
-
-export type ReplayRecord = {
-  id: string
-  eventId: string
-  targetUrl: string
-  statusCode: number | null
-  responseHeaders: Record<string, string> | null
-  responseBody: string | null
-  durationMs: number | null
-  errorCode: string | null
-  errorMessage: string | null
-  createdAt: string
-}
+export type EventSummary = EventSummaryDTO
+export type EventDetail = EventDetailDTO
+export type ReplayRecord = ReplayDTO
 
 type EventsListResponse = {
   data: {
-    events: EventSummary[]
+    events: EventSummaryDTO[]
   }
 }
 
 type EventDetailResponse = {
   data: {
-    event: EventDetail
+    event: EventDetailDTO
   }
 }
 
 type ReplayResponse = {
   data: {
-    replay: ReplayRecord
+    replay: ReplayDTO
   }
 }
 
 type ReplaysListResponse = {
   data: {
-    replays: ReplayRecord[]
+    replays: ReplayDTO[]
   }
 }
 
@@ -76,7 +49,7 @@ export async function fetchInboxEventsPage(
   const body = await apiFetch<EventsListResponse & { data: { meta?: unknown } }>(
     `/api/v1/inboxes/${inboxId}/events${buildListQueryString(params)}`
   )
-  return parsePaginatedResponse<'events', EventSummary>(body, 'events')
+  return parsePaginatedResponse<'events', EventSummaryDTO>(body, 'events')
 }
 
 export async function fetchEvent(eventId: string) {

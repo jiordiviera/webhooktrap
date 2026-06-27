@@ -1,0 +1,10 @@
+{
+  "extends": "@workspace/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "lib": ["es2022"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}

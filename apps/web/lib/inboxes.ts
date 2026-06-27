@@ -1,28 +1,19 @@
 import type { DataTableParams } from '@/features/data-table/types'
+import type { InboxDTO } from '@workspace/types'
 import { apiFetch } from '@/lib/api'
 import { buildListQueryString, parsePaginatedResponse } from '@/lib/list-query'
 
-export type InboxSummary = {
-  id: string
-  name: string
-  expiresAt: string | null
-  ingestUrl: string
-  defaultReplayUrl: string | null
-  eventsCount: number
-  lastEventAt: string | null
-  createdAt: string
-  updatedAt: string | null
-}
+export type InboxSummary = InboxDTO
 
 type InboxListResponse = {
   data: {
-    inboxes: InboxSummary[]
+    inboxes: InboxDTO[]
   }
 }
 
 type InboxCreateResponse = {
   data: {
-    inbox: InboxSummary
+    inbox: InboxDTO
   }
 }
 
@@ -41,7 +32,7 @@ export async function fetchInboxesPage(params: DataTableParams) {
   const body = await apiFetch<InboxListResponse & { data: { meta?: unknown } }>(
     `/api/v1/inboxes${buildListQueryString(params)}`
   )
-  return parsePaginatedResponse<'inboxes', InboxSummary>(body, 'inboxes')
+  return parsePaginatedResponse<'inboxes', InboxDTO>(body, 'inboxes')
 }
 
 export async function createInbox(input: { name: string }) {

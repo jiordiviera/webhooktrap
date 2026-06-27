@@ -3,6 +3,8 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./*"],
+      "@workspace/types": ["../../packages/types/src/index.ts"],
+      "@workspace/types/*": ["../../packages/types/src/*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"]
     },
     "plugins": [

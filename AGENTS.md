@@ -25,7 +25,7 @@ hookscope/
 └── docs/             Vision, architecture, stack, hosting, ADRs
 ```
 
-- `apps/cli/` and `packages/types/` and `packages/validators/` are planned but not yet created.
+- `apps/cli/` and `packages/validators/` are planned but not yet created.
 
 ## API (`apps/api`)
 

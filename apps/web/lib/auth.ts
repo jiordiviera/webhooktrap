@@ -1,25 +1,18 @@
+import type { UserProfileDTO } from '@workspace/types'
 import { sanitizeAvatarUrl } from '@/lib/avatar'
 
 export const AUTH_TOKEN_KEY = 'hookscope_token'
 
-export type AuthUser = {
-  id: number
-  fullName: string | null
-  email: string
-  initials: string
-  avatar: string | null
-  createdAt?: string
-  updatedAt?: string | null
-}
+export type AuthUser = UserProfileDTO
 
 export type AuthPayload = {
   data: {
-    user: AuthUser
+    user: UserProfileDTO
     token: string
   }
 }
 
-export function normalizeAuthUser(user: AuthUser): AuthUser {
+export function normalizeAuthUser(user: UserProfileDTO): AuthUser {
   return {
     ...user,
     avatar: sanitizeAvatarUrl(user.avatar),
