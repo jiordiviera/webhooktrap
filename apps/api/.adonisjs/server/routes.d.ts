@@ -28,6 +28,9 @@ export type ScannedRoutes = {
     'v1.profile.profile.show': { paramsTuple?: []; params?: {} }
     'v1.profile.profile.update': { paramsTuple?: []; params?: {} }
     'v1.profile.access_tokens.destroy': { paramsTuple?: []; params?: {} }
+    'v1.profile.api_tokens.index': { paramsTuple?: []; params?: {} }
+    'v1.profile.api_tokens.store': { paramsTuple?: []; params?: {} }
+    'v1.profile.api_tokens.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.media.index': { paramsTuple?: []; params?: {} }
     'v1.media.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.media.store': { paramsTuple?: []; params?: {} }
@@ -46,6 +49,7 @@ export type ScannedRoutes = {
     'v1.auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.profile.profile.show': { paramsTuple?: []; params?: {} }
+    'v1.profile.api_tokens.index': { paramsTuple?: []; params?: {} }
     'v1.media.index': { paramsTuple?: []; params?: {} }
     'v1.media.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -60,6 +64,7 @@ export type ScannedRoutes = {
     'v1.auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.profile.profile.show': { paramsTuple?: []; params?: {} }
+    'v1.profile.api_tokens.index': { paramsTuple?: []; params?: {} }
     'v1.media.index': { paramsTuple?: []; params?: {} }
     'v1.media.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -75,6 +80,7 @@ export type ScannedRoutes = {
     'v1.auth.new_account.store': { paramsTuple?: []; params?: {} }
     'v1.auth.access_tokens.store': { paramsTuple?: []; params?: {} }
     'v1.profile.access_tokens.destroy': { paramsTuple?: []; params?: {} }
+    'v1.profile.api_tokens.store': { paramsTuple?: []; params?: {} }
     'v1.media.store': { paramsTuple?: []; params?: {} }
     'v1.media.from_url': { paramsTuple?: []; params?: {} }
   }
@@ -89,6 +95,7 @@ export type ScannedRoutes = {
   DELETE: {
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
     'v1.inboxes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.profile.api_tokens.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.media.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }

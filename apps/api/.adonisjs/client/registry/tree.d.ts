@@ -48,6 +48,11 @@ export interface ApiDefinition {
       accessTokens: {
         destroy: typeof routes['v1.profile.access_tokens.destroy']
       }
+      apiTokens: {
+        index: typeof routes['v1.profile.api_tokens.index']
+        store: typeof routes['v1.profile.api_tokens.store']
+        destroy: typeof routes['v1.profile.api_tokens.destroy']
+      }
     }
     media: {
       index: typeof routes['v1.media.index']

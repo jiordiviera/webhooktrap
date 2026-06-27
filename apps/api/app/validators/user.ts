@@ -31,3 +31,10 @@ export const loginValidator = vine.create({
 export const updateProfileValidator = vine.create({
   fullName: vine.string().trim().minLength(1).maxLength(255).nullable(),
 })
+
+/**
+ * Validator for creating a personal API token
+ */
+export const apiTokenValidator = vine.create({
+  name: vine.string().trim().minLength(1).maxLength(255),
+})

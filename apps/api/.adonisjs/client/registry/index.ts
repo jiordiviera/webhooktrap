@@ -150,6 +150,24 @@ const routes = {
     tokens: [{"old":"/api/v1/account/logout","type":0,"val":"api","end":""},{"old":"/api/v1/account/logout","type":0,"val":"v1","end":""},{"old":"/api/v1/account/logout","type":0,"val":"account","end":""},{"old":"/api/v1/account/logout","type":0,"val":"logout","end":""}],
     types: placeholder as Registry['v1.profile.access_tokens.destroy']['types'],
   },
+  'v1.profile.api_tokens.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/account/tokens',
+    tokens: [{"old":"/api/v1/account/tokens","type":0,"val":"api","end":""},{"old":"/api/v1/account/tokens","type":0,"val":"v1","end":""},{"old":"/api/v1/account/tokens","type":0,"val":"account","end":""},{"old":"/api/v1/account/tokens","type":0,"val":"tokens","end":""}],
+    types: placeholder as Registry['v1.profile.api_tokens.index']['types'],
+  },
+  'v1.profile.api_tokens.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/account/tokens',
+    tokens: [{"old":"/api/v1/account/tokens","type":0,"val":"api","end":""},{"old":"/api/v1/account/tokens","type":0,"val":"v1","end":""},{"old":"/api/v1/account/tokens","type":0,"val":"account","end":""},{"old":"/api/v1/account/tokens","type":0,"val":"tokens","end":""}],
+    types: placeholder as Registry['v1.profile.api_tokens.store']['types'],
+  },
+  'v1.profile.api_tokens.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/account/tokens/:id',
+    tokens: [{"old":"/api/v1/account/tokens/:id","type":0,"val":"api","end":""},{"old":"/api/v1/account/tokens/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/account/tokens/:id","type":0,"val":"account","end":""},{"old":"/api/v1/account/tokens/:id","type":0,"val":"tokens","end":""},{"old":"/api/v1/account/tokens/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['v1.profile.api_tokens.destroy']['types'],
+  },
   'v1.media.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/media',
