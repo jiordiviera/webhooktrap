@@ -12,7 +12,7 @@
   "devDependencies": {
     "prettier": "^3.7.4",
     "turbo": "^2.10.0",
-    "typescript": "7.0.1-rc"
+    "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {

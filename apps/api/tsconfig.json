@@ -4,5 +4,8 @@
     "rootDir": "./",
     "jsx": "react",
     "outDir": "./build"
-  }
+  },
+  "exclude": [
+    "tests/*"
+  ]
 }

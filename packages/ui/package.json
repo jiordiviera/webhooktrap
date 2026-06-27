@@ -33,7 +33,7 @@
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9",
     "tailwindcss": "^4",
-    "typescript": "7.0.1-rc"
+    "typescript": "^5"
   },
   "exports": {
     "./globals.css": "./src/styles/globals.css",
