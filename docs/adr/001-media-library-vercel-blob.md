@@ -6,7 +6,7 @@ Accepted — 2026-06-25 (updated 2026-06-25: Vercel Blob → R2)
 
 ## Context
 
-Hookscope needs a reusable way to attach images and files to domain models (users, inboxes) without coupling storage to PostgreSQL. The product should support CDN-backed public URLs and an API-centric upload flow.
+Hookvane needs a reusable way to attach images and files to domain models (users, inboxes) without coupling storage to PostgreSQL. The product should support CDN-backed public URLs and an API-centric upload flow.
 
 ## Decision
 

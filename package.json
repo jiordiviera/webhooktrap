@@ -1,5 +1,5 @@
 {
-  "name": "hookscope",
+  "name": "hookvane",
   "private": true,
   "scripts": {
     "build": "turbo run build",

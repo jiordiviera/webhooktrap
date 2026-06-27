@@ -21,7 +21,7 @@ export default class RequestOtpNotification extends BaseMail {
     this.message.htmlView('emails/otp', {
       title,
       code: this.code,
-      brandName: 'Hookscope',
+      brandName: 'Hookvane',
     })
   }
 }

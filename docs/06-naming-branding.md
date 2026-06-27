@@ -2,7 +2,7 @@
 
 Recherche effectuée le **22 juin 2026** (WHOIS via who.is).
 
-## Nom retenu : Hookscope
+## Nom retenu : Hookvane
 
 > *Microscope for your webhooks.*
 
@@ -40,7 +40,7 @@ Registrar recommandé : **Cloudflare Registrar**.
 
 | Nom | Score | Note |
 |-----|-------|------|
-| **Hookscope** | 34/40 | Recommandé |
+| **Hookvane** | 34/40 | Recommandé |
 | Hooktrace | 33/40 | Bon backup |
 | Deadletter | 33/40 | Mémorable, niche dev |
 | Replayhook | 30/40 | Conflit HookReplay |
@@ -48,7 +48,7 @@ Registrar recommandé : **Cloudflare Registrar**.
 
 ## Identité visuelle
 
-Direction actuelle : **serif classique, chaleureux, premium** (rendu DreamBell → Hookscope via Grok Imagine).
+Direction actuelle : **serif classique, chaleureux, premium** (rendu DreamBell → Hookvane via Grok Imagine).
 
 | | Valeur |
 |--|--------|

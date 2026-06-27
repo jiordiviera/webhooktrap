@@ -26,7 +26,7 @@
 
 ## Pourquoi ce business tient mieux que PulseSend
 
-| Critère | PulseSend | Hookscope |
+| Critère | PulseSend | Hookvane |
 |---------|-----------|-----------|
 | Concurrence | Red ocean (Resend, SendGrid…) | Serré mais niche debug |
 | Moat infra | Délivrabilité email | Faible — wedge = DX |
@@ -51,7 +51,7 @@
 | **B — Studio** | Portfolio, crédibilité, 10–50 users |
 | **C — Infra perso** | Outil interne pour tes propres apps |
 
-Hookscope convient à **A** ou **B**, pas besoin de levée de fonds.
+Hookvane convient à **A** ou **B**, pas besoin de levée de fonds.
 
 ## Test validation (48h avant code)
 

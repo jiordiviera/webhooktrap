@@ -1,4 +1,4 @@
-# Hookscope
+# Hookvane
 
 > Webhook debugging, simplified. Receive → Replay → See the response.
 

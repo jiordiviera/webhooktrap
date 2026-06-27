@@ -24,11 +24,11 @@ const siteUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:7777'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Hookscope — Webhook debugger',
+  title: 'Hookvane — Webhook debugger',
   description:
     'Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.',
   openGraph: {
-    title: 'Hookscope',
+    title: 'Hookvane',
     description: 'Receive. Inspect. Replay.',
     images: ['/logo.png'],
   },

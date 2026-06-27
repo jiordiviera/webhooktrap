@@ -4,7 +4,7 @@ import { AuthShell } from '@/features/auth/components/auth-shell'
 import { VerifyEmailForm } from '@/features/auth/components/verify-email-form'
 
 export const metadata: Metadata = {
-  title: 'Verify email — Hookscope',
+  title: 'Verify email — Hookvane',
   description: 'Verify your email address to access all features.',
 }
 

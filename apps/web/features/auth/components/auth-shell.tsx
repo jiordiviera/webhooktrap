@@ -17,7 +17,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
         <Link href="/" className="inline-flex w-fit">
           <Image
             src="/logo.png"
-            alt="Hookscope"
+            alt="Hookvane"
             width={132}
             height={36}
             className="h-auto w-18"

@@ -149,7 +149,7 @@ export function Navigation() {
           >
             <Image
               src="/logo.png"
-              alt="Hookscope"
+              alt="Hookvane"
               width={120}
               height={32}
               className={cn(

@@ -1,4 +1,4 @@
-# Stack technique — Hookscope
+# Stack technique — Hookvane
 
 Décisions pour le MVP et évolution V1+. Dernière révision : juin 2026.
 
@@ -341,7 +341,7 @@ Pas de OAuth social au MVP.
 
 ## Hébergement — c'est quoi ?
 
-Tu as **3 briques** à héberger pour Hookscope :
+Tu as **3 briques** à héberger pour Hookvane :
 
 | Brique | Rôle | Où ça tourne |
 |--------|------|----------------|
@@ -377,7 +377,7 @@ GitHub push → Railway détecte apps/api → node server.js → URL publique
 fly deploy → image Docker (ou buildpack) → VM Fly en région choisie
 ```
 
-### Comparaison rapide (API Hookscope)
+### Comparaison rapide (API Hookvane)
 
 | | **Railway** | **Fly.io** |
 |--|-------------|------------|
@@ -387,7 +387,7 @@ fly deploy → image Docker (ou buildpack) → VM Fly en région choisie
 | Docker requis | Non (souvent) | Parfois oui |
 | Bon pour | **Premier deploy, solo dev** | Scale régional plus tard |
 
-**Recommandation Hookscope** : **Railway** pour l'API au MVP — moins de friction. Fly reste une option si tu veux apprendre ou cibler une région précise.
+**Recommandation Hookvane** : **Railway** pour l'API au MVP — moins de friction. Fly reste une option si tu veux apprendre ou cibler une région précise.
 
 ### Neon — PostgreSQL managé
 
@@ -473,7 +473,7 @@ Pas obligatoire semaine 1.
 
 ## Alternatives globales (rappel)
 
-| Stack alternative | Pourquoi pas (pour Hookscope) |
+| Stack alternative | Pourquoi pas (pour Hookvane) |
 |-------------------|-------------------------------|
 | **Hono + Prisma** | Plus de assembly manuel, moins d'auth batteries |
 | **Remix + Express** | Moins aligné avec expérience récente |

@@ -1,8 +1,8 @@
-# Vision — Hookscope
+# Vision — Hookvane
 
 ## En une phrase
 
-**Hookscope** aide les développeurs à débugger les webhooks : recevoir n'importe quel événement (Stripe, GitHub, Shopify…), rejouer le payload vers leur app, et voir la réponse de leur serveur.
+**Hookvane** aide les développeurs à débugger les webhooks : recevoir n'importe quel événement (Stripe, GitHub, Shopify…), rejouer le payload vers leur app, et voir la réponse de leur serveur.
 
 ## Mission
 
@@ -18,7 +18,7 @@ Plateforme de **debug webhook** orientée développeurs — intégration en quel
 ## La solution
 
 ```
-Provider → Hookscope inbox → Inspect → Replay → Voir la response
+Provider → Hookvane inbox → Inspect → Replay → Voir la response
 ```
 
 ### Flux utilisateur
@@ -43,7 +43,7 @@ Provider → Hookscope inbox → Inspect → Replay → Voir la response
 
 **Hors cible** : équipes ops cherchant infra webhook prod (retries, SLA) → Hookdeck / Svix.
 
-## Ce que Hookscope est / n'est pas
+## Ce que Hookvane est / n'est pas
 
 | Est | N'est pas |
 |-----|-----------|

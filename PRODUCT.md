@@ -16,7 +16,7 @@ product
 
 ## Product Purpose
 
-Hookscope is a developer-first webhook debugger: capture any HTTP webhook, inspect it faithfully, replay it to a destination URL, and surface the app's response.
+Hookvane is a developer-first webhook debugger: capture any HTTP webhook, inspect it faithfully, replay it to a destination URL, and surface the app's response.
 
 **Wedge:** The Stripe CLI for every webhook provider, not just payload viewing but replay plus response visibility.
 

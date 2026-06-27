@@ -66,7 +66,7 @@ export function SecuritySection() {
               Share deliberately.
             </h2>
             <p className="mb-12 text-xl leading-relaxed text-muted-foreground">
-              Hookscope is a debugger, not production webhook infrastructure. Design around
+              Hookvane is a debugger, not production webhook infrastructure. Design around
               inspection, replay, and controlled sharing.
             </p>
             <div className="flex flex-wrap gap-3">

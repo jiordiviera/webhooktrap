@@ -96,7 +96,7 @@ export function HeroSection() {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >
-            Hookscope shows every webhook as it lands, then fires it back to your local server.
+            Hookvane shows every webhook as it lands, then fires it back to your local server.
             No tunnel maze. No dashboard bloat.
           </p>
 

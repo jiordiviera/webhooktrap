@@ -4,8 +4,8 @@ import { AuthShell } from '@/features/auth/components/auth-shell'
 import { RegisterForm } from '@/features/auth/components/register-form'
 
 export const metadata: Metadata = {
-  title: 'Create account — Hookscope',
-  description: 'Create a Hookscope account to keep your webhook inboxes beyond 48 hours.',
+  title: 'Create account — Hookvane',
+  description: 'Create a Hookvane account to keep your webhook inboxes beyond 48 hours.',
 }
 
 export default function RegisterPage() {

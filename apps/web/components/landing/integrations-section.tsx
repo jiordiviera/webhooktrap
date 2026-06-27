@@ -51,7 +51,7 @@ export function IntegrationsSection() {
             Every provider you already use.
           </h2>
           <p className="text-xl text-muted-foreground">
-            Point any webhook sender at Hookscope. No vendor-specific SDK required.
+            Point any webhook sender at Hookvane. No vendor-specific SDK required.
           </p>
         </div>
       </div>

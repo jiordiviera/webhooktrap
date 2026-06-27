@@ -22,7 +22,7 @@ const mailConfig = defineConfig({
    * the brand name to be used within the emails
    */
   globals: {
-    brandName: 'Hookscope',
+    brandName: 'Hookvane',
   },
 
   /**

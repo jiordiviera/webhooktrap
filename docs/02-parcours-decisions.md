@@ -44,13 +44,13 @@ Chronologie des décisions prises durant le brainstorming.
 - MVP 3–4 semaines
 - Recycle ~50 % des patterns (multi-tenant, API keys, events, dashboard)
 
-## 5. Naming — Hookscope retenu
+## 5. Naming — Hookvane retenu
 
 **Replayhook** abandonné comme nom principal :
 - Trop proche de **HookReplay** (concurrent direct)
 - `replayhook.com` déjà pris (fév. 2026)
 
-**Hookscope** recommandé :
+**Hookvane** recommandé :
 - Distinct, explicite (scope + hook)
 - `hookscope.dev` probablement disponible
 - Tagline : *Inspect. Replay. See the response.*
@@ -72,4 +72,4 @@ Produit cible : **marché global**, développeurs backend.
 | 1 | Registrar `hookscope.dev` | À faire |
 | 2 | Replay localhost (limitation vs tunnel V1) | Tunnel en V2 |
 | 3 | Inbox anonyme auto sur landing | Recommandé Oui |
-| 4 | SMTP provider (si besoin futur) | N/A pour Hookscope |
+| 4 | SMTP provider (si besoin futur) | N/A pour Hookvane |

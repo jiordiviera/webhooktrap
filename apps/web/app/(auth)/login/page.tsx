@@ -5,7 +5,7 @@ import { AuthShell } from '@/features/auth/components/auth-shell'
 import { LoginForm } from '@/features/auth/components/login-form'
 
 export const metadata: Metadata = {
-  title: 'Sign in — Hookscope',
+  title: 'Sign in — Hookvane',
   description: 'Sign in to save your webhook inboxes and replay events to localhost.',
 }
 

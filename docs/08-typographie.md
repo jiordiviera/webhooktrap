@@ -1,12 +1,12 @@
 # Typographie & wordmark
 
-Guide pour reproduire le rendu **DreamBell → Hookscope** en design et en code.
+Guide pour reproduire le rendu **DreamBell → Hookvane** en design et en code.
 
 ## Contexte
 
 Les fichiers PNG/JPG dans `../branding/` (`logo.png`, `icon.jpg`) ont été générés via **Grok Imagine**. Ils **ne contiennent pas de fichier de police** : le texte est dessiné en pixels.
 
-Le style visé (DreamBell → Hookscope) correspond à un **serif classique, chaleureux, premium** — pas à une police unique imposée par l’outil. Pour le site, Figma et le code, on utilise les équivalents listés ci-dessous.
+Le style visé (DreamBell → Hookvane) correspond à un **serif classique, chaleureux, premium** — pas à une police unique imposée par l’outil. Pour le site, Figma et le code, on utilise les équivalents listés ci-dessous.
 
 ## Style typographique (cible marque)
 
@@ -14,14 +14,14 @@ Le style visé (DreamBell → Hookscope) correspond à un **serif classique, cha
 |---------|----------------|
 | **Famille** | Serif transitoire / classique (lisible, un peu premium, pas Times cheap) |
 | **Graisse** | Regular ou Medium pour tout le mot ; parfois SemiBold sur « Hook » seulement |
-| **Casse** | `Hookscope` — H majuscule, reste en minuscules (ou title case selon préférence) |
+| **Casse** | `Hookvane` — H majuscule, reste en minuscules (ou title case selon préférence) |
 | **Interlettrage** | Légèrement ouvert : `letter-spacing: 0.02em` à `0.06em` |
 | **Couleur clair** | Brun terracotta ~ `#6B4A3A` – `#7D5A45` |
 | **Couleur dark mode** | Crème ~ `#F5F0E8` – `#E8E0D5` |
 
 ## Polices les plus proches
 
-### Gratuites (Google Fonts) — recommandé pour Hookscope
+### Gratuites (Google Fonts) — recommandé pour Hookvane
 
 | Police | Usage | Note |
 |--------|-------|------|
@@ -106,7 +106,7 @@ export const bodyFont = Lora({
 
 ```html
 <span class="font-[family-name:var(--font-wordmark)] font-semibold tracking-wide text-[#6B4A3A]">
-  Hookscope
+  Hookvane
 </span>
 ```
 
@@ -117,7 +117,7 @@ Si tu as le fichier source du logo DreamBell (SVG/Figma) ou une capture nette du
 1. [WhatTheFont (MyFonts)](https://www.myfonts.com/pages/whatthefont)
 2. [Font In Logo](https://www.fontinlogo.com/)
 
-Upload l’image du mot **DreamBell** ou **Hookscope** → nom commercial le plus probable.
+Upload l’image du mot **DreamBell** ou **Hookvane** → nom commercial le plus probable.
 
 ## Résumé
 

@@ -164,7 +164,7 @@ export function SettingsPage() {
                     Account
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Manage your display name and avatar across Hookscope.
+                    Manage your display name and avatar across Hookvane.
                   </p>
                 </div>
 
@@ -278,7 +278,7 @@ export function SettingsPage() {
                   Notifications
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Configure how and when you hear from Hookscope.
+                  Configure how and when you hear from Hookvane.
                 </p>
               </div>
               <div className="px-6 py-12 text-center">
