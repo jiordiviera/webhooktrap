@@ -5,6 +5,7 @@ import { DashboardNavProvider } from "@/features/dashboard/context/dashboard-nav
 import { InboxPageProvider } from "@/features/inbox/context/inbox-page-context";
 import { AppSidebar } from "./app-sidebar";
 import { DashboardHeader } from "./dashboard-header";
+import { MobileSearchFab } from "./mobile-search-fab";
 import { PropsWithChildren } from "react";
 
 export function DashboardShell({ children }: PropsWithChildren) {
@@ -21,6 +22,7 @@ export function DashboardShell({ children }: PropsWithChildren) {
               </div>
             </div>
           </div>
+          <MobileSearchFab />
         </SidebarProvider>
       </InboxPageProvider>
     </DashboardNavProvider>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { IconSearch } from '@tabler/icons-react'
 import {
@@ -9,18 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@workspace/ui/components/dialog'
+import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
-import { Kbd, KbdGroup } from '@workspace/ui/components/kbd'
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@workspace/ui/components/sidebar'
 import { useDashboardNav } from '@/features/dashboard/context/dashboard-nav-context'
 
-export function NavSearch() {
+export function MobileSearchFab() {
   const router = useRouter()
   const navItems = useDashboardNav()
 
-  const [searchQuery, setSearchQuery] = useState('')
   const [open, setOpen] = useState(false)
-  const [modifierKey, setModifierKey] = useState('Ctrl')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const allPages = navItems.map((item) => ({
     label: item.label,
@@ -43,40 +41,18 @@ export function NavSearch() {
     if (!value) setSearchQuery('')
   }
 
-  useEffect(() => {
-    setModifierKey(/Mac|iPhone|iPod|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl')
-  }, [])
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault()
-        setOpen(true)
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
   return (
     <>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            tooltip="Search pages"
-            onClick={() => setOpen(true)}
-            className="group-data-[collapsible=icon]:!p-0"
-          >
-            <IconSearch className="size-4" stroke={1.8} />
-            <span className="flex-1">Search pages</span>
-            <KbdGroup className="ml-auto">
-              <Kbd>{modifierKey}</Kbd>
-              <Kbd>K</Kbd>
-            </KbdGroup>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+      <Button
+        type="button"
+        variant="default"
+        size="icon"
+        className="fixed right-4 bottom-4 z-50 size-12 rounded-full shadow-lg md:hidden"
+        onClick={() => setOpen(true)}
+        aria-label="Search pages"
+      >
+        <IconSearch className="size-5" stroke={1.8} />
+      </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-md gap-0 overflow-hidden p-0 duration-200 ease-out sm:max-w-md">
