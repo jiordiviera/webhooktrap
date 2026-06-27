@@ -4,7 +4,7 @@ import * as React from "react"
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 
 import { cn } from "@workspace/ui/lib/utils"
-import { RiCheckLine, RiArrowRightSLine } from "@remixicon/react"
+import { IconCheck, IconChevronRight } from "@tabler/icons-react"
 
 function DropdownMenu({
   ...props
@@ -106,7 +106,7 @@ function DropdownMenuCheckboxItem({
         data-slot="dropdown-menu-checkbox-item-indicator"
       >
         <DropdownMenuPrimitive.ItemIndicator>
-          <RiCheckLine
+          <IconCheck
           />
         </DropdownMenuPrimitive.ItemIndicator>
       </span>
@@ -149,7 +149,7 @@ function DropdownMenuRadioItem({
         data-slot="dropdown-menu-radio-item-indicator"
       >
         <DropdownMenuPrimitive.ItemIndicator>
-          <RiCheckLine
+          <IconCheck
           />
         </DropdownMenuPrimitive.ItemIndicator>
       </span>
@@ -232,7 +232,7 @@ function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <RiArrowRightSLine className="ml-auto" />
+      <IconChevronRight className="ml-auto" />
     </DropdownMenuPrimitive.SubTrigger>
   )
 }
