@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAuth } from '@/contexts/auth-context'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   IconArrowLeft,
@@ -104,7 +105,8 @@ function InboxHeaderSkeleton() {
   )
 }
 
-export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: string }) {
+export function InboxDetailPage({ inboxId }: { inboxId: string }) {
+  const { token } = useAuth()
   const router = useRouter()
   const queryClient = useQueryClient()
   const confirm = useConfirm()
@@ -178,7 +180,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     if (!inbox) return
 
     try {
-      const updated = await updateInbox(token, inbox.id, {
+      const updated = await updateInbox(inbox.id, {
         defaultReplayUrl: replayUrl.trim() || null,
       })
       queryClient.setQueryData(inboxQueryKey(inbox.id), updated)
@@ -198,7 +200,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     setActionError(null)
 
     try {
-      const replay = await replayEvent(token, selectedEventId, {
+      const replay = await replayEvent(selectedEventId, {
         targetUrl: replayUrl.trim() || undefined,
       })
       queryClient.setQueryData(eventReplaysQueryKey(selectedEventId), (current: typeof replays | undefined) => [
@@ -237,7 +239,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     setActionError(null)
 
     try {
-      const shareToken = await generateShareToken(token, selectedEventId)
+      const shareToken = await generateShareToken(selectedEventId)
       const origin = window.location.origin
       setShareUrl(`${origin}/s/${shareToken}`)
     } catch (error) {
@@ -291,7 +293,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     setActionError(null)
 
     try {
-      const updated = await updateInbox(token, inbox.id, { name: trimmed })
+      const updated = await updateInbox(inbox.id, { name: trimmed })
       queryClient.setQueryData(inboxQueryKey(inbox.id), updated)
       inboxPage?.setTitle(updated.name)
       cancelEditingName()
@@ -325,7 +327,7 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     setActionError(null)
 
     try {
-      await deleteInbox(token, inbox.id)
+      await deleteInbox(inbox.id)
       router.push('/inboxes')
     } catch (error) {
       setActionError(
@@ -496,13 +498,12 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
         <div className="max-h-128 overflow-y-auto rounded-xl">
           <DataTable
             model="inbox-events"
-            token={token}
             context={{ inboxId }}
             refetchInterval={POLL_INTERVAL_MS}
             selectedRowId={selectedEventId}
             onRowClickAction={(event) => setSelectedEventId(event.id)}
             showPagination
-            onDataChangeAction={({ rows, total }) => {
+            onDataChangeAction={({ total }) => {
               setEventsTotal(total)
             }}
           />

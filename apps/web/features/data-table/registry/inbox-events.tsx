@@ -13,8 +13,8 @@ function formatBytes(bytes: number) {
 
 export const inboxEventsDataTableModel: DataTableModel<EventSummary, InboxEventsContext> = {
   id: 'inbox-events',
-  fetch: ({ token, context, params }) =>
-    fetchInboxEventsPage(token, context.inboxId, params),
+  fetch: ({ context, params }) =>
+    fetchInboxEventsPage(context.inboxId, params),
   getRowId: (row) => row.id,
   defaultSort: { id: 'receivedAt', desc: true },
   defaultPageSize: 25,

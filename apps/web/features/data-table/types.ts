@@ -47,7 +47,6 @@ export type DataTableFilterDef = {
 }
 
 export type DataTableFetchArgs<TContext> = {
-  token: string
   context: TContext
   params: DataTableParams
 }

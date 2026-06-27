@@ -7,10 +7,10 @@ export function inboxQueryKey(inboxId: string) {
   return ['inbox', inboxId] as const
 }
 
-export function useInboxQuery(token: string, inboxId: string) {
+export function useInboxQuery(token: string | null, inboxId: string) {
   return useQuery({
     queryKey: inboxQueryKey(inboxId),
-    queryFn: () => fetchInbox(token, inboxId),
+    queryFn: () => fetchInbox(inboxId),
     enabled: Boolean(token && inboxId),
   })
 }

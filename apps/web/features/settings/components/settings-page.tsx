@@ -1,6 +1,6 @@
 'use client'
 
-export function SettingsPage({ token: _token }: { token: string }) {
+export function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-5xl">
       <div className="mb-8">

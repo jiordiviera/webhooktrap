@@ -30,7 +30,6 @@ import { getResponsiveClass } from '@/features/data-table/utils'
 
 type DataTableProps<TModel extends DataTableModelId> = {
   model: TModel
-  token: string
   context?: DataTableModelContextMap[TModel]
   cellRenderers?: DataTableCellRenderers<DataTableRowMap[TModel]>
   selectedRowId?: string | null
@@ -80,7 +79,6 @@ function TableSkeleton({ columns }: { columns: number }) {
 
 export function DataTable<TModel extends DataTableModelId>({
   model: modelId,
-  token,
   context,
   cellRenderers,
   selectedRowId,
@@ -98,7 +96,6 @@ export function DataTable<TModel extends DataTableModelId>({
 
   const table = useDataTableQuery({
     model: modelId,
-    token,
     context,
     refetchInterval,
     enabled,

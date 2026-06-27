@@ -13,7 +13,6 @@ import { createInitialParams } from '@/features/data-table/utils'
 
 type UseDataTableQueryOptions<TModel extends DataTableModelId> = {
   model: TModel
-  token: string
   context?: DataTableModelContextMap[TModel]
   refetchInterval?: number
   enabled?: boolean
@@ -21,7 +20,6 @@ type UseDataTableQueryOptions<TModel extends DataTableModelId> = {
 
 export function useDataTableQuery<TModel extends DataTableModelId>({
   model: modelId,
-  token,
   context,
   refetchInterval,
   enabled = true,
@@ -35,12 +33,11 @@ export function useDataTableQuery<TModel extends DataTableModelId>({
   const [params, setParams] = useState<DataTableParams>(() => createInitialParams(model))
 
   const query = useQuery({
-    queryKey: ['data-table', modelId, resolvedContext, params, token],
-    enabled: enabled && Boolean(token),
+    queryKey: ['data-table', modelId, resolvedContext, params],
+    enabled,
     refetchInterval,
     queryFn: () =>
       model.fetch({
-        token,
         context: resolvedContext as never,
         params,
       }),

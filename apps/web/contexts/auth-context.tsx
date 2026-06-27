@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveAuthToken(nextToken)
     setToken(nextToken)
 
-    const profile = await loadProfile(nextToken)
+    const profile = await loadProfile()
     setUser(profile)
     setStatus('authenticated')
   }, [])
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const currentToken = getAuthToken()
     if (!currentToken) return null
 
-    const profile = await loadProfile(currentToken)
+    const profile = await loadProfile()
     setUser(profile)
     return profile
   }, [])
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const profile = await loadProfile(storedToken)
+        const profile = await loadProfile()
         if (cancelled) return
         setToken(storedToken)
         setUser(profile)

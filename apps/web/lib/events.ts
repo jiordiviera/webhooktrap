@@ -58,8 +58,8 @@ type ReplaysListResponse = {
   }
 }
 
-export async function fetchInboxEvents(token: string | null, inboxId: string) {
-  const page = await fetchInboxEventsPage(token, inboxId, {
+export async function fetchInboxEvents(inboxId: string) {
+  const page = await fetchInboxEventsPage(inboxId, {
     page: 1,
     pageSize: 100,
     sort: { id: 'receivedAt', desc: true },
@@ -70,30 +70,26 @@ export async function fetchInboxEvents(token: string | null, inboxId: string) {
 }
 
 export async function fetchInboxEventsPage(
-  token: string | null,
   inboxId: string,
   params: DataTableParams
 ) {
   const body = await apiFetch<EventsListResponse & { data: { meta?: unknown } }>(
-    `/api/v1/inboxes/${inboxId}/events${buildListQueryString(params)}`,
-    { token }
+    `/api/v1/inboxes/${inboxId}/events${buildListQueryString(params)}`
   )
   return parsePaginatedResponse<'events', EventSummary>(body, 'events')
 }
 
-export async function fetchEvent(token: string | null, eventId: string) {
-  const body = await apiFetch<EventDetailResponse>(`/api/v1/events/${eventId}`, { token })
+export async function fetchEvent(eventId: string) {
+  const body = await apiFetch<EventDetailResponse>(`/api/v1/events/${eventId}`)
   return body.data.event
 }
 
 export async function replayEvent(
-  token: string,
   eventId: string,
   input?: { targetUrl?: string }
 ) {
   const body = await apiFetch<ReplayResponse>(`/api/v1/events/${eventId}/replay`, {
     method: 'POST',
-    token,
     body: JSON.stringify(
       input?.targetUrl ? { target_url: input.targetUrl } : {}
     ),
@@ -101,8 +97,8 @@ export async function replayEvent(
   return body.data.replay
 }
 
-export async function fetchEventReplays(token: string | null, eventId: string) {
-  const body = await apiFetch<ReplaysListResponse>(`/api/v1/events/${eventId}/replays`, { token })
+export async function fetchEventReplays(eventId: string) {
+  const body = await apiFetch<ReplaysListResponse>(`/api/v1/events/${eventId}/replays`)
   return body.data.replays
 }
 
@@ -112,10 +108,9 @@ type ShareTokenResponse = {
   }
 }
 
-export async function generateShareToken(token: string, eventId: string) {
+export async function generateShareToken(eventId: string) {
   const body = await apiFetch<ShareTokenResponse>(`/api/v1/events/${eventId}/share`, {
     method: 'POST',
-    token,
   })
   return body.data.token
 }

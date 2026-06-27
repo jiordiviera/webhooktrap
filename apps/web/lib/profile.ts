@@ -5,18 +5,16 @@ type ProfileResponse = {
   data: AuthUser
 }
 
-export async function fetchProfile(token: string): Promise<AuthUser> {
-  const body = await apiFetch<ProfileResponse>('/api/v1/account/profile', { token })
+export async function fetchProfile(): Promise<AuthUser> {
+  const body = await apiFetch<ProfileResponse>('/api/v1/account/profile')
   return normalizeAuthUser(body.data)
 }
 
 export async function updateProfile(
-  token: string,
   payload: { fullName: string }
 ): Promise<AuthUser> {
   const body = await apiFetch<ProfileResponse>('/api/v1/account/profile', {
     method: 'PATCH',
-    token,
     body: JSON.stringify(payload),
   })
   return normalizeAuthUser(body.data)

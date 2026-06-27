@@ -27,14 +27,12 @@ import { type CreateInboxValues, createInboxSchema } from '@/lib/schemas/inbox'
 type CreateInboxDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  token: string
   onCreated: (inbox: InboxSummary) => void
 }
 
 export function CreateInboxDialog({
   open,
   onOpenChange,
-  token,
   onCreated,
 }: CreateInboxDialogProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -53,7 +51,7 @@ export function CreateInboxDialog({
     setSubmitError(null)
 
     try {
-      const inbox = await createInbox(token, { name: values.name.trim() })
+      const inbox = await createInbox({ name: values.name.trim() })
       onCreated(inbox)
       reset()
       onOpenChange(false)

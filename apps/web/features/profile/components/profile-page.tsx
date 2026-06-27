@@ -31,7 +31,7 @@ function formatMemberSince(createdAt?: string) {
 }
 
 export function ProfilePage() {
-  const { user, token, setUser, refreshProfile } = useAuth()
+  const { user, setUser, refreshProfile } = useAuth()
   const { upload, isUploading, error: uploadError } = useMediaUpload()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
@@ -48,7 +48,7 @@ export function ProfilePage() {
     },
   })
 
-  if (!user || !token) return null
+  if (!user) return null
 
   const displayName = user.fullName ?? user.email
   const avatarSrc = resolveAvatarSrc(user.avatar)
@@ -58,7 +58,7 @@ export function ProfilePage() {
     setSaveError(null)
 
     try {
-      const updated = await updateProfile(token!, { fullName: values.fullName })
+      const updated = await updateProfile({ fullName: values.fullName })
       setUser(updated)
       setSaveMessage('Profile updated.')
     } catch (error) {

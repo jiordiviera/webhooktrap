@@ -26,8 +26,8 @@ type InboxCreateResponse = {
   }
 }
 
-export async function fetchInboxes(token: string) {
-  const page = await fetchInboxesPage(token, {
+export async function fetchInboxes() {
+  const page = await fetchInboxesPage({
     page: 1,
     pageSize: 100,
     sort: null,
@@ -37,36 +37,32 @@ export async function fetchInboxes(token: string) {
   return page.rows
 }
 
-export async function fetchInboxesPage(token: string, params: DataTableParams) {
+export async function fetchInboxesPage(params: DataTableParams) {
   const body = await apiFetch<InboxListResponse & { data: { meta?: unknown } }>(
-    `/api/v1/inboxes${buildListQueryString(params)}`,
-    { token }
+    `/api/v1/inboxes${buildListQueryString(params)}`
   )
   return parsePaginatedResponse<'inboxes', InboxSummary>(body, 'inboxes')
 }
 
-export async function createInbox(token: string, input: { name: string }) {
+export async function createInbox(input: { name: string }) {
   const body = await apiFetch<InboxCreateResponse>('/api/v1/inboxes', {
     method: 'POST',
-    token,
     body: JSON.stringify({ name: input.name }),
   })
   return body.data.inbox
 }
 
-export async function fetchInbox(token: string | null, inboxId: string) {
-  const body = await apiFetch<InboxCreateResponse>(`/api/v1/inboxes/${inboxId}`, { token })
+export async function fetchInbox(inboxId: string) {
+  const body = await apiFetch<InboxCreateResponse>(`/api/v1/inboxes/${inboxId}`)
   return body.data.inbox
 }
 
 export async function updateInbox(
-  token: string,
   inboxId: string,
   input: { name?: string; defaultReplayUrl?: string | null }
 ) {
   const body = await apiFetch<InboxCreateResponse>(`/api/v1/inboxes/${inboxId}`, {
     method: 'PATCH',
-    token,
     body: JSON.stringify({
       ...(input.name !== undefined ? { name: input.name } : {}),
       ...(input.defaultReplayUrl !== undefined
@@ -77,10 +73,9 @@ export async function updateInbox(
   return body.data.inbox
 }
 
-export async function deleteInbox(token: string, inboxId: string) {
+export async function deleteInbox(inboxId: string) {
   await apiFetch<{ data: { deleted: boolean } }>(`/api/v1/inboxes/${inboxId}`, {
     method: 'DELETE',
-    token,
   })
 }
 

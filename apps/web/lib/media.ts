@@ -15,7 +15,6 @@ export type MediaRecord = {
 }
 
 type UploadMediaInput = {
-  token: string
   modelType: 'users' | 'inboxes'
   modelId: string
   collection: 'avatar' | 'icon' | 'attachments'
@@ -35,9 +34,7 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRecord>
   formData.append('model_id', input.modelId)
   formData.append('collection', input.collection)
 
-  const response = await apiClient.post<UploadMediaResponse>('/api/v1/media', formData, {
-    token: input.token,
-  })
+  const response = await apiClient.post<UploadMediaResponse>('/api/v1/media', formData)
 
   return response.data.data.media
 }

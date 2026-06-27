@@ -49,7 +49,7 @@ function StatCard({
   )
 }
 
-export function DashboardHome({ token }: { token: string }) {
+export function DashboardHome() {
   const [inboxes, setInboxes] = useState<InboxSummary[]>([])
   const [state, setState] = useState<LoadState>('loading')
   const [createOpen, setCreateOpen] = useState(false)
@@ -60,7 +60,7 @@ export function DashboardHome({ token }: { token: string }) {
     setErrorMessage(null)
 
     try {
-      const next = await fetchInboxes(token)
+      const next = await fetchInboxes()
       setInboxes(next)
       setState('ready')
     } catch (error) {
@@ -69,7 +69,7 @@ export function DashboardHome({ token }: { token: string }) {
       )
       setState('error')
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     void loadInboxes()
@@ -234,7 +234,6 @@ export function DashboardHome({ token }: { token: string }) {
       <CreateInboxDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        token={token}
         onCreated={handleInboxCreated}
       />
     </div>

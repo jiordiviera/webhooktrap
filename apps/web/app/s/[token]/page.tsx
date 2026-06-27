@@ -3,7 +3,7 @@
 import { use, useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { IconCheck, IconCopy, IconExternalLink } from '@tabler/icons-react'
+import { IconCopy, IconExternalLink } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { Skeleton } from '@workspace/ui/components/skeleton'
 import { cn } from '@workspace/ui/lib/utils'

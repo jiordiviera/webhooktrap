@@ -45,7 +45,7 @@ function InboxActionsCell({
   )
 }
 
-export function InboxList({ token }: { token: string }) {
+export function InboxList() {
   const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -88,14 +88,12 @@ export function InboxList({ token }: { token: string }) {
       <CreateInboxDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        token={token}
         onCreated={handleInboxCreated}
       />
 
       <div className="mt-6 md:mt-8">
         <DataTable
           model="inboxes"
-          token={token}
           cellRenderers={{
             actions: (inbox) => (
               <InboxActionsCell inbox={inbox} onCopy={handleCopy} copiedId={copiedId} />

@@ -4,7 +4,7 @@ import { fetchInboxesPage, formatRelativeTime, type InboxSummary } from '@/lib/i
 
 export const inboxesDataTableModel: DataTableModel<InboxSummary> = {
   id: 'inboxes',
-  fetch: ({ token, params }) => fetchInboxesPage(token, params),
+  fetch: ({ params }) => fetchInboxesPage(params),
   getRowId: (row) => row.id,
   defaultSort: { id: 'lastEventAt', desc: true },
   defaultPageSize: 10,
