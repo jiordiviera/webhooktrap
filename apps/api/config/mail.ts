@@ -22,7 +22,7 @@ const mailConfig = defineConfig({
    * the brand name to be used within the emails
    */
   globals: {
-    brandName: 'Acme'
+    brandName: 'Acme',
   },
 
   /**
@@ -30,12 +30,11 @@ const mailConfig = defineConfig({
    * each using a different transport or same transport with different
    * options.
    */
-  mailers: {      
+  mailers: {
     resend: transports.resend({
       key: env.get('RESEND_API_KEY'),
       baseUrl: 'https://api.resend.com',
     }),
-    
   },
 })
 

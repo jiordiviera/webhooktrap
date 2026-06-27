@@ -57,7 +57,8 @@ export default defineConfig({
     () => import('@adonisjs/ally/ally_provider'),
     () => import('@nulix/adonis-2fa/two_factor_auth_provider'),
     () => import('@adonisjs/drive/drive_provider'),
-    () => import('@adonisjs/mail/mail_provider')
+    () => import('@adonisjs/mail/mail_provider'),
+    () => import('@adonisjs/core/providers/edge_provider')
   ],
 
   /*
@@ -108,7 +109,10 @@ export default defineConfig({
   | the production build.
   |
   */
-  metaFiles: [],
+  metaFiles: [{
+    pattern: 'resources/views/**/*.edge',
+    reloadServer: false,
+  }],
 
   hooks: {
     init: [
