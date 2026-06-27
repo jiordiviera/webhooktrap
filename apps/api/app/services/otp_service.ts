@@ -21,8 +21,7 @@ export default class OtpService {
   }
 
   static async create(user: User, type: OtpType): Promise<Otp> {
-    const trx = await db.transaction()
-    try {
+    return db.transaction(async (trx) => {
       await Otp.query({ client: trx })
         .where('user_id', user.id)
         .where('type', type)
@@ -30,27 +29,20 @@ export default class OtpService {
         .where('expires_at', '>', DateTime.now().toSQL()!)
         .delete()
 
-      const otp = await Otp.create(
-        {
-          userId: user.id,
-          type,
-          code: this.generateCode(),
-          expiresAt: DateTime.now().plus({ minutes: 10 }),
-        },
-        { client: trx }
-      )
+      const otp = new Otp()
+      otp.userId = user.id
+      otp.type = type
+      otp.code = this.generateCode()
+      otp.expiresAt = DateTime.now().plus({ minutes: 10 })
+      otp.useTransaction(trx)
+      await otp.save()
 
-      await trx.commit()
       return otp
-    } catch (error) {
-      await trx.rollback()
-      throw error
-    }
+    })
   }
 
   static async verify(user: User, type: OtpType, code: string): Promise<VerifyResult> {
-    const trx = await db.transaction()
-    try {
+    return db.transaction(async (trx) => {
       const otp = await Otp.query({ client: trx })
         .where('user_id', user.id)
         .where('type', type)
@@ -59,20 +51,16 @@ export default class OtpService {
         .where('expires_at', '>', DateTime.now().toSQL()!)
         .first()
 
-      if (!otp) {
-        await trx.rollback()
-        return { verified: false }
-      }
+      if (!otp) return { verified: false }
 
       const resetToken = type === 'password_reset' ? this.generateToken() : undefined
 
-      await otp.useTransaction(trx).merge({ usedAt: DateTime.now(), verifiedToken: resetToken ?? null }).save()
+      otp.useTransaction(trx)
+      otp.usedAt = DateTime.now()
+      otp.verifiedToken = resetToken ?? null
+      await otp.save()
 
-      await trx.commit()
       return { verified: true, resetToken }
-    } catch (error) {
-      await trx.rollback()
-      throw error
-    }
+    })
   }
 }

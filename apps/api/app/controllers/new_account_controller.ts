@@ -1,3 +1,4 @@
+import db from '@adonisjs/lucid/services/db'
 import User from '#models/user'
 import OtpService from '#services/otp_service'
 import { signupValidator } from '#validators/user'
@@ -10,7 +11,16 @@ export default class NewAccountController {
   async store({ request, serialize }: HttpContext) {
     const { fullName, email, password } = await request.validateUsing(signupValidator)
 
-    const user = await User.create({ fullName, email, password })
+    const user = await db.transaction(async (trx) => {
+      const user = new User()
+      user.fullName = fullName
+      user.email = email
+      user.password = password
+      user.useTransaction(trx)
+      await user.save()
+      return user
+    })
+
     const token = await User.accessTokens.create(user)
 
     const otp = await OtpService.create(user, 'email_verify')

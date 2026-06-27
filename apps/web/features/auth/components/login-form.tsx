@@ -161,8 +161,8 @@ export function LoginForm() {
                 <InputOTPGroup>
                   {Array.from({ length: 3 }).map((_, index) => (
                     <InputOTPSlot
-                      key={index}
-                      index={index}
+                      key={index + 3}
+                      index={index + 3}
                       className="size-12 text-2xl sm:size-16 sm:text-3xl"
                     />
                   ))}

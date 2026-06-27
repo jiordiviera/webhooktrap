@@ -13,10 +13,12 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "test": "turbo run test --filter=api"
+    "test": "turbo run test --filter=api",
+    "worker:dev": "tsx apps/api/workers/mail_worker.ts"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
+    "tsx": "^4.22.4",
     "turbo": "^2.10.0",
     "typescript": "5.9.2"
   },
