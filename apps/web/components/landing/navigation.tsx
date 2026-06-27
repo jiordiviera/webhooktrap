@@ -124,15 +124,6 @@ export function Navigation() {
             style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
             <AuthNav />
-            <Button className="h-14 rounded-full text-base" asChild>
-              <a
-                href="#cta"
-                onClick={closeMobileMenu}
-                tabIndex={isMobileMenuOpen ? 0 : -1}
-              >
-                Open inbox
-              </a>
-            </Button>
           </div>
         </div>
       </div>

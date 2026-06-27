@@ -123,7 +123,19 @@ export function SettingsPage() {
         </p>
       </div>
 
-      <div className="mt-8 flex gap-10 lg:gap-14">
+      <select
+        value={activeSection}
+        onChange={(e) => handleNavClick(e.target.value as SectionId)}
+        className="sm:hidden mt-6 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+      >
+        {sections.map((section) => (
+          <option key={section.id} value={section.id}>
+            {section.label}
+          </option>
+        ))}
+      </select>
+
+      <div className="mt-4 flex gap-10 lg:gap-14 sm:mt-8">
         <nav className="sticky top-24 hidden h-fit w-44 shrink-0 space-y-1 sm:block">
           {sections.map((section) => {
             const Icon = section.icon

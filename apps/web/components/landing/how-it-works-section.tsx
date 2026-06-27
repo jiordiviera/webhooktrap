@@ -59,11 +59,11 @@ export function HowItWorksSection() {
   }, [])
 
   return (
-    <section
-      id="how-it-works"
-      ref={sectionRef}
-      className="relative scroll-mt-24 overflow-hidden bg-primary py-24 text-primary-foreground lg:py-32"
-    >
+      <section
+        id="how-it-works"
+        ref={sectionRef}
+        className="relative scroll-mt-24 overflow-hidden bg-primary py-16 text-primary-foreground lg:py-32"
+      >
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]">
         <div
           className="absolute inset-0"
@@ -80,13 +80,15 @@ export function HowItWorksSection() {
             Process
           </span>
           <h2
-            className={`font-heading text-4xl tracking-tight transition-all duration-700 lg:text-6xl ${
+            className={`font-heading text-3xl tracking-tight transition-all duration-700 sm:text-4xl lg:text-6xl ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >
             Three moves.
-            <br />
-            <span className="text-primary-foreground/55">The whole product.</span>
+            <br className="hidden sm:inline" />
+            <span className="text-primary-foreground/55">
+              {' '}The whole product.
+            </span>
           </h2>
         </div>
 
@@ -97,15 +99,15 @@ export function HowItWorksSection() {
                 key={step.number}
                 type="button"
                 onClick={() => setActiveStep(index)}
-                className={`w-full border-b border-primary-foreground/15 py-8 text-left transition-all duration-500 ${
+                className={`w-full border-b border-primary-foreground/15 py-6 text-left transition-all duration-500 sm:py-8 ${
                   activeStep === index ? 'opacity-100' : 'opacity-45 hover:opacity-70'
                 }`}
               >
                 <div className="flex items-start gap-6">
-                  <span className="font-heading text-3xl text-primary-foreground/30">{step.number}</span>
+                  <span className="font-heading text-2xl text-primary-foreground/30 sm:text-3xl">{step.number}</span>
                   <div className="flex-1">
-                    <h3 className="font-heading mb-3 text-2xl lg:text-3xl">{step.title}</h3>
-                    <p className="leading-relaxed text-primary-foreground/70">{step.description}</p>
+                    <h3 className="font-heading mb-2 text-xl sm:mb-3 sm:text-2xl lg:text-3xl">{step.title}</h3>
+                    <p className="text-sm leading-relaxed text-primary-foreground/70 sm:text-base">{step.description}</p>
                     {activeStep === index && (
                       <div className="mt-4 h-px overflow-hidden bg-primary-foreground/20">
                         <div
@@ -122,19 +124,19 @@ export function HowItWorksSection() {
 
           <div className="lg:sticky lg:top-32 lg:self-start">
             <div className="overflow-hidden border border-primary-foreground/15">
-              <div className="flex items-center justify-between border-b border-primary-foreground/15 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-primary-foreground/15 px-4 py-3 sm:px-6 sm:py-4">
                 <div className="flex gap-2">
-                  <div className="size-3 rounded-full bg-primary-foreground/20" />
-                  <div className="size-3 rounded-full bg-primary-foreground/20" />
-                  <div className="size-3 rounded-full bg-primary-foreground/20" />
+                  <div className="size-2.5 rounded-full bg-primary-foreground/20 sm:size-3" />
+                  <div className="size-2.5 rounded-full bg-primary-foreground/20 sm:size-3" />
+                  <div className="size-2.5 rounded-full bg-primary-foreground/20 sm:size-3" />
                 </div>
-                <span className="font-ui text-xs text-primary-foreground/45">inbox.ts</span>
+                <span className="font-ui text-[0.625rem] text-primary-foreground/45 sm:text-xs">inbox.ts</span>
               </div>
-              <div className="min-h-[280px] p-8 font-mono text-sm">
+              <div className="min-h-[200px] overflow-x-auto p-3 font-mono text-[0.625rem] sm:min-h-[280px] sm:p-8 sm:text-sm">
                 <pre className="text-primary-foreground/75">
                   {(steps[activeStep] ?? steps[0]!).code.split('\n').map((line, lineIndex) => (
-                    <div key={`${activeStep}-${lineIndex}`} className="leading-loose">
-                      <span className="inline-block w-8 select-none text-primary-foreground/25">
+                    <div key={`${activeStep}-${lineIndex}`} className="whitespace-pre leading-loose">
+                      <span className="inline-block w-6 select-none text-primary-foreground/25 sm:w-8">
                         {lineIndex + 1}
                       </span>
                       {line}
@@ -142,9 +144,9 @@ export function HowItWorksSection() {
                   ))}
                 </pre>
               </div>
-              <div className="flex items-center gap-3 border-t border-primary-foreground/15 px-6 py-4">
-                <span className="size-2 animate-pulse rounded-full bg-signal" />
-                <span className="font-ui text-xs text-primary-foreground/45">Live capture</span>
+              <div className="flex items-center gap-3 border-t border-primary-foreground/15 px-4 py-3 sm:px-6 sm:py-4">
+                <span className="size-1.5 animate-pulse rounded-full bg-signal sm:size-2" />
+                <span className="font-ui text-[0.625rem] text-primary-foreground/45 sm:text-xs">Live capture</span>
               </div>
             </div>
           </div>
