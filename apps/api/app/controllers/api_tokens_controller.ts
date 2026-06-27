@@ -1,7 +1,6 @@
 import User from '#models/user'
 import { apiTokenValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
-import { Secret } from '@adonisjs/core/helpers'
 
 export default class ApiTokensController {
   async index({ auth, serialize }: HttpContext) {
