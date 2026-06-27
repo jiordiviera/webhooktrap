@@ -12,9 +12,9 @@ export const controllers = {
   Media: () => import('#controllers/media_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
   Oauth: () => import('#controllers/oauth_controller'),
+  Otp: () => import('#controllers/otp_controller'),
   Profile: () => import('#controllers/profile_controller'),
+  ResetPassword: () => import('#controllers/reset_password_controller'),
   Share: () => import('#controllers/share_controller'),
   TwoFactorAuth: () => import('#controllers/two_factor_auth_controller'),
-  Otp: () => import('#controllers/otp_controller'),
-  ResetPassword: () => import('#controllers/reset_password_controller'),
 }
