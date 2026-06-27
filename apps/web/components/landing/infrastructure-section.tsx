@@ -105,6 +105,38 @@ export function InfrastructureSection() {
                 ))}
               </ul>
             </div>
+
+            <div className="mt-8">
+              <svg viewBox="0 0 400 80" className="w-full max-w-md text-primary" aria-label="Webhook flow diagram">
+                <defs>
+                  <marker id="infra-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+                  </marker>
+                </defs>
+                <g className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0 }}>
+                  <rect x="0" y="20" width="70" height="36" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="transition-all duration-500" style={{ opacity: isVisible ? 0.7 : 0 }} />
+                  <text x="35" y="43" textAnchor="middle" className="font-ui" fontSize="9" fill="currentColor">Provider</text>
+
+                  <line x1="72" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#infra-arrow)" className="transition-all duration-500" style={{ opacity: isVisible ? 0.35 : 0 }} />
+
+                  <rect x="115" y="14" width="80" height="48" rx="8" fill="none" stroke="currentColor" strokeWidth="2" className="transition-all duration-500" style={{ opacity: isVisible ? 1 : 0 }}>
+                    <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite" />
+                  </rect>
+                  <text x="155" y="34" textAnchor="middle" className="font-ui" fontSize="9" fontWeight="600" fill="currentColor">Hookvane</text>
+                  <text x="155" y="50" textAnchor="middle" className="font-ui" fontSize="7" fill="currentColor" opacity="0.6">/i/&hellip; inbox</text>
+
+                  <line x1="197" y1="38" x2="235" y2="38" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#infra-arrow)" className="transition-all duration-500" style={{ opacity: isVisible ? 0.35 : 0 }} />
+
+                  <rect x="240" y="20" width="62" height="36" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 2" className="transition-all duration-500" style={{ opacity: isVisible ? 0.7 : 0 }} />
+                  <text x="271" y="43" textAnchor="middle" className="font-ui" fontSize="9" fill="currentColor">Inspect</text>
+
+                  <line x1="304" y1="38" x2="330" y2="38" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#infra-arrow)" className="transition-all duration-500" style={{ opacity: isVisible ? 0.35 : 0 }} />
+
+                  <rect x="335" y="20" width="58" height="36" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="transition-all duration-500" style={{ opacity: isVisible ? 0.7 : 0 }} />
+                  <text x="364" y="43" textAnchor="middle" className="font-ui" fontSize="9" fill="currentColor">Replay</text>
+                </g>
+              </svg>
+            </div>
           </div>
         </div>
       </div>

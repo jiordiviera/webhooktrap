@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
 import { FeaturesSection } from "@/components/landing/features-section";
@@ -13,9 +14,49 @@ import { CtaSection } from "@/components/landing/cta-section";
 import { FooterSection } from "@/components/landing/footer-section";
 import "@/styles/landing-v2.css";
 
+export const metadata: Metadata = {
+  title: 'Hookvane — Webhook debugger',
+  description:
+    'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
+  openGraph: {
+    title: 'Hookvane — Webhook debugger',
+    description:
+      'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
+  },
+  twitter: {
+    title: 'Hookvane — Webhook debugger',
+    description:
+      'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
+  },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Hookvane',
+  url: 'https://hookscope.dev',
+  description:
+    'Webhook debugging tool. Receive, inspect, replay, and share webhook payloads.',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'All',
+  author: {
+    '@type': 'Person',
+    name: 'Jiordi Viera',
+  },
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+}
+
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-x-hidden noise-overlay">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navigation />
       <HeroSection />
       <FeaturesSection />

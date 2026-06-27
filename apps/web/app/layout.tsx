@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Lora, Albert_Sans } from 'next/font/google'
 import { Providers } from '@/app/components/providers'
 import '@workspace/ui/globals.css'
 import { cn } from '@workspace/ui/lib/utils'
+import { siteUrl } from '@/lib/config'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -20,18 +21,37 @@ const lora = Lora({
 
 const albertSans = Albert_Sans({subsets:['latin'],variable:'--font-sans'})
 
-const siteUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:7777'
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Hookvane — Webhook debugger',
+  title: {
+    default: 'Hookvane — Webhook debugger',
+    template: '%s — Hookvane',
+  },
   description:
     'Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.',
   openGraph: {
-    title: 'Hookvane',
-    description: 'Receive. Inspect. Replay.',
-    images: ['/logo.png'],
+    type: 'website',
+    siteName: 'Hookvane',
+    title: 'Hookvane — Webhook debugger',
+    description:
+      'Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Hookvane — Webhook debugging, simplified.',
+      },
+    ],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hookvane — Webhook debugger',
+    description:
+      'Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.',
+    images: ['/opengraph-image.png'],
+  },
+  robots: { index: true, follow: true },
 }
 
 export default function RootLayout({
