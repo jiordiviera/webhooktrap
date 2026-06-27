@@ -1,43 +1,73 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
-import { ScrollArea } from '@workspace/ui/components/scroll-area'
-import { Sidebar, SidebarContent, useSidebar } from '@workspace/ui/components/sidebar'
+import { IconHelp, IconSettings } from '@tabler/icons-react'
+import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from '@workspace/ui/components/sidebar'
 import { useDashboardNav } from '@/features/dashboard/context/dashboard-nav-context'
 import { NavMain } from './nav-main'
-import { DashboardSidebarFooter } from './sidebar/sidebar-footer'
+import { NavDocuments } from './nav-documents'
+import { NavSearch } from './nav-search'
+import { NavSecondary } from './nav-secondary'
+import { NavUser } from './nav-user'
 import { DashboardSidebarHeader } from './sidebar/sidebar-header'
+
+const navDocuments = [
+  {
+    name: 'API Tokens',
+    url: '/api-tokens',
+    icon: IconSettings,
+  },
+]
+
+const navSecondary = [
+  {
+    title: 'Settings',
+    url: '/settings',
+    icon: IconSettings,
+  },
+  {
+    title: 'Help',
+    url: '#',
+    icon: IconHelp,
+  },
+]
 
 export function AppSidebar() {
   const navItems = useDashboardNav()
   const pathname = usePathname()
   const { setOpenMobile } = useSidebar()
 
+  const primaryNav = useMemo(
+    () => navItems.filter((item) => item.label === 'Dashboard' || item.label === 'Inboxes'),
+    [navItems],
+  )
+
   useEffect(() => {
     setOpenMobile(false)
   }, [pathname, setOpenMobile])
 
   return (
-    <Sidebar
-      variant="floating"
-      collapsible="offcanvas"
-      // className="h-full px-0 [--sidebar-width:15.5rem] **:data-[slot=sidebar-inner]:h-full"
-    >
+    <Sidebar variant="floating" collapsible="offcanvas">
       <div className="flex h-full flex-col">
         <DashboardSidebarHeader />
 
+        <div className="px-3 py-2">
+          <NavSearch />
+        </div>
+
         <SidebarContent className="flex-1 overflow-hidden px-0">
-          <ScrollArea className="h-full">
-            <div className="px-3 py-3">
-              <NavMain items={navItems} />
-            </div>
-          </ScrollArea>
+          <div className="px-3 py-3">
+            <NavMain items={primaryNav} />
+          </div>
+
+          <NavDocuments items={navDocuments} />
+          <NavSecondary items={navSecondary} className="mt-auto" />
         </SidebarContent>
 
-        <div className="shrink-0">
-          <DashboardSidebarFooter />
-        </div>
+        <SidebarFooter>
+          <NavUser />
+        </SidebarFooter>
       </div>
     </Sidebar>
   )

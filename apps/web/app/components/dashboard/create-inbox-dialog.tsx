@@ -26,14 +26,14 @@ import { type CreateInboxValues, createInboxSchema } from '@/lib/schemas/inbox'
 
 type CreateInboxDialogProps = {
   open: boolean
-  onOpenChange: (open: boolean) => void
-  onCreated: (inbox: InboxSummary) => void
+  onOpenChangeAction: (open: boolean) => void
+  onCreatedAction: (inbox: InboxSummary) => void
 }
 
 export function CreateInboxDialog({
   open,
-  onOpenChange,
-  onCreated,
+  onOpenChangeAction,
+  onCreatedAction,
 }: CreateInboxDialogProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -52,9 +52,9 @@ export function CreateInboxDialog({
 
     try {
       const inbox = await createInbox({ name: values.name.trim() })
-      onCreated(inbox)
+      onCreatedAction(inbox)
       reset()
-      onOpenChange(false)
+      onOpenChangeAction(false)
     } catch (error) {
       setSubmitError(
         error instanceof ApiError ? error.message : 'Could not create inbox. Try again.'
@@ -67,7 +67,7 @@ export function CreateInboxDialog({
       reset()
       setSubmitError(null)
     }
-    onOpenChange(next)
+    onOpenChangeAction(next)
   }
 
   return (

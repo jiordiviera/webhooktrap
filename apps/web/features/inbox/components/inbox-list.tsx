@@ -87,8 +87,8 @@ export function InboxList() {
 
       <CreateInboxDialog
         open={createOpen}
-        onOpenChange={setCreateOpen}
-        onCreated={handleInboxCreated}
+        onOpenChangeAction={setCreateOpen}
+        onCreatedAction={handleInboxCreated}
       />
 
       <div className="mt-6 md:mt-8">

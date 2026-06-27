@@ -242,8 +242,8 @@ export function DashboardHome() {
 
       <CreateInboxDialog
         open={createOpen}
-        onOpenChange={setCreateOpen}
-        onCreated={handleInboxCreated}
+        onOpenChangeAction={setCreateOpen}
+        onCreatedAction={handleInboxCreated}
       />
     </div>
   )

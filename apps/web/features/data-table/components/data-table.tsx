@@ -1,8 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
-import { IconArrowDown, IconArrowUp, IconArrowsSort } from '@tabler/icons-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { IconArrowDown, IconArrowUp, IconArrowsSort, IconLayoutColumns } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@workspace/ui/components/dropdown-menu'
 import { Skeleton } from '@workspace/ui/components/skeleton'
 import {
   Table,
@@ -42,6 +48,9 @@ type DataTableProps<TModel extends DataTableModelId> = {
   className?: string
   emptyState?: React.ReactNode
   onDataChangeAction?: (data: { rows: DataTableRowMap[TModel][]; total: number }) => void
+  enableRowSelection?: boolean
+  onSelectedRowsChangeAction?: (selectedIds: string[]) => void
+  enableColumnVisibility?: boolean
 }
 
 function SortIcon({ active, desc }: { active: boolean; desc: boolean }) {
@@ -53,12 +62,32 @@ function SortIcon({ active, desc }: { active: boolean; desc: boolean }) {
 function renderCell<T>(
   row: T,
   column: DataTableColumnDef<T>,
-  cellRenderers?: DataTableCellRenderers<T>
+  cellRenderers?: DataTableCellRenderers<T>,
 ) {
   if (cellRenderers?.[column.id]) return cellRenderers[column.id]!(row)
   if (column.cell) return column.cell(row)
   if (column.accessorKey) return String(row[column.accessorKey] ?? '')
   return null
+}
+
+function ColumnCheckbox({
+  checked,
+  onCheckedChange,
+  label,
+}: {
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+  label: string
+}) {
+  return (
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(event) => onCheckedChange(event.target.checked)}
+      aria-label={label}
+      className="size-4 rounded border-border bg-background text-primary ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+    />
+  )
 }
 
 function TableSkeleton({ columns }: { columns: number }) {
@@ -91,6 +120,9 @@ export function DataTable<TModel extends DataTableModelId>({
   className,
   emptyState,
   onDataChangeAction,
+  enableRowSelection = false,
+  onSelectedRowsChangeAction,
+  enableColumnVisibility = false,
 }: DataTableProps<TModel>) {
   type TRow = DataTableRowMap[TModel]
 
@@ -121,19 +153,118 @@ export function DataTable<TModel extends DataTableModelId>({
     onDataChangeAction(query.data)
   }, [onDataChangeAction, query.data])
 
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
+
+  const currentPageIds = useMemo(() => new Set(rows.map((r) => model.getRowId(r))), [rows, model])
+
+  const allPageSelected = rows.length > 0 && rows.every((r) => selectedRowIds.has(model.getRowId(r)))
+  const somePageSelected = rows.some((r) => selectedRowIds.has(model.getRowId(r)))
+
+  const toggleRowSelection = useCallback(
+    (rowId: string) => {
+      setSelectedRowIds((prev) => {
+        const next = new Set(prev)
+        if (next.has(rowId)) next.delete(rowId)
+        else next.add(rowId)
+        return next
+      })
+    },
+    [],
+  )
+
+  const toggleAllPage = useCallback(() => {
+    setSelectedRowIds((prev) => {
+      const next = new Set(prev)
+      if (allPageSelected) {
+        for (const id of currentPageIds) next.delete(id)
+      } else {
+        for (const id of currentPageIds) next.add(id)
+      }
+      return next
+    })
+  }, [allPageSelected, currentPageIds])
+
+  useEffect(() => {
+    if (!onSelectedRowsChangeAction) return
+    onSelectedRowsChangeAction(Array.from(selectedRowIds))
+  }, [onSelectedRowsChangeAction, selectedRowIds])
+
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
+
+  const visibleColumns = useMemo(
+    () =>
+      enableColumnVisibility
+        ? model.columns.filter((col) => columnVisibility[col.id] !== false)
+        : model.columns,
+    [model.columns, columnVisibility, enableColumnVisibility],
+  )
+
+  const toggleColumnVisibility = useCallback((columnId: string) => {
+    setColumnVisibility((prev) => ({ ...prev, [columnId]: prev[columnId] === false ? true : false }))
+  }, [])
+
+  const checkboxColumnStyle = 'w-10 px-3 py-2.5'
+
+  const allColumns = useMemo(() => {
+    const cols: Array<{ column: DataTableColumnDef<TRow>; type: 'data' | 'checkbox' }> = []
+    if (enableRowSelection) {
+      cols.push({
+        column: {
+          id: '__select__',
+          header: '',
+          className: checkboxColumnStyle,
+          headerClassName: checkboxColumnStyle,
+        },
+        type: 'checkbox',
+      })
+    }
+    for (const col of enableColumnVisibility ? visibleColumns : model.columns) {
+      cols.push({ column: col, type: 'data' })
+    }
+    return cols
+  }, [enableRowSelection, enableColumnVisibility, visibleColumns, model.columns])
+
+  const visibleColumnCount = allColumns.length
+
   return (
     <div className={cn('overflow-hidden rounded-2xl border border-border bg-card', className)}>
       {showToolbar ? (
         <div className="border-b border-border px-4 py-3">
-          <DataTableToolbar
-            search={params.search}
-            onSearchChange={setSearch}
-            searchPlaceholder={model.searchPlaceholder}
-            filters={model.filters}
-            filterValues={params.filters}
-            onFilterChange={setFilter}
-            actions={toolbarActions}
-          />
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <DataTableToolbar
+                search={params.search}
+                onSearchChange={setSearch}
+                searchPlaceholder={model.searchPlaceholder}
+                filters={model.filters}
+                filterValues={params.filters}
+                onFilterChange={setFilter}
+                actions={toolbarActions}
+              />
+            </div>
+
+            {enableColumnVisibility ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="shrink-0">
+                    <IconLayoutColumns className="size-4" />
+                    <span className="hidden sm:inline">Columns</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  {model.columns.map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={columnVisibility[column.id] !== false}
+                      onCheckedChange={() => toggleColumnVisibility(column.id)}
+                    >
+                      {column.header}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </div>
         </div>
       ) : null}
 
@@ -149,41 +280,55 @@ export function DataTable<TModel extends DataTableModelId>({
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
-                {model.columns.map((column) => (
-                  <TableHead
-                    key={column.id}
-                    className={cn(
-                      'text-[0.6875rem] tracking-wider text-muted-foreground uppercase',
-                      getResponsiveClass(column.hidden),
-                      column.headerClassName
-                    )}
-                  >
-                    {column.sortable ? (
-                      <button
-                        type="button"
-                        onClick={() => toggleSort(column.id)}
-                        className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                      >
-                        {column.header}
-                        <SortIcon
-                          active={params.sort?.id === column.id}
-                          desc={params.sort?.desc ?? false}
+                {allColumns.map(({ column, type }) => {
+                  if (type === 'checkbox') {
+                    return (
+                      <TableHead key={column.id} className={cn(checkboxColumnStyle)}>
+                        <ColumnCheckbox
+                          checked={allPageSelected}
+                          onCheckedChange={toggleAllPage}
+                          label="Select all rows"
                         />
-                      </button>
-                    ) : (
-                      column.header
-                    )}
-                  </TableHead>
-                ))}
+                      </TableHead>
+                    )
+                  }
+
+                  return (
+                    <TableHead
+                      key={column.id}
+                      className={cn(
+                        'text-[0.6875rem] tracking-wider text-muted-foreground uppercase',
+                        getResponsiveClass(column.hidden),
+                        column.headerClassName,
+                      )}
+                    >
+                      {column.sortable ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(column.id)}
+                          className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                        >
+                          {column.header}
+                          <SortIcon
+                            active={params.sort?.id === column.id}
+                            desc={params.sort?.desc ?? false}
+                          />
+                        </button>
+                      ) : (
+                        column.header
+                      )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {isLoading ? (
-                <TableSkeleton columns={model.columns.length} />
+                <TableSkeleton columns={visibleColumnCount} />
               ) : isEmpty ? (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={model.columns.length} className="h-32 text-center">
+                  <TableCell colSpan={visibleColumnCount} className="h-32 text-center">
                     {emptyState && !hasActiveFilters ? (
                       emptyState
                     ) : (
@@ -202,17 +347,34 @@ export function DataTable<TModel extends DataTableModelId>({
                     <TableRow
                       key={rowId}
                       data-state={selected ? 'selected' : undefined}
-                      className={onRowClickAction ? 'cursor-pointer' : undefined}
+                      className={cn(
+                        onRowClickAction ? 'cursor-pointer' : undefined,
+                        enableRowSelection && selectedRowIds.has(rowId) ? 'bg-muted/40' : undefined,
+                      )}
                       onClick={onRowClickAction ? () => onRowClickAction(row) : undefined}
                     >
-                      {model.columns.map((column) => (
-                        <TableCell
-                          key={column.id}
-                          className={cn(getResponsiveClass(column.hidden), column.className)}
-                        >
-                          {renderCell(row, column as DataTableColumnDef<TRow>, cellRenderers)}
-                        </TableCell>
-                      ))}
+                      {allColumns.map(({ column, type }) => {
+                        if (type === 'checkbox') {
+                          return (
+                            <TableCell key={column.id} className={checkboxColumnStyle}>
+                              <ColumnCheckbox
+                                checked={selectedRowIds.has(rowId)}
+                                onCheckedChange={() => toggleRowSelection(rowId)}
+                                label={`Select row ${rowId}`}
+                              />
+                            </TableCell>
+                          )
+                        }
+
+                        return (
+                          <TableCell
+                            key={column.id}
+                            className={cn(getResponsiveClass(column.hidden), column.className)}
+                          >
+                            {renderCell(row, column as DataTableColumnDef<TRow>, cellRenderers)}
+                          </TableCell>
+                        )
+                      })}
                     </TableRow>
                   )
                 })
@@ -229,6 +391,7 @@ export function DataTable<TModel extends DataTableModelId>({
               pageSizeOptions={model.pageSizeOptions}
               onPageChangeAction={setPage}
               onPageSizeChangeAction={setPageSize}
+              selectedCount={enableRowSelection ? selectedRowIds.size : undefined}
             />
           ) : null}
         </>
