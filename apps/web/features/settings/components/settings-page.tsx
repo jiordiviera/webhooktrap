@@ -2,6 +2,7 @@
 
 import { IconBell, IconBuilding, IconSettings } from '@tabler/icons-react'
 import { useAuth } from '@/contexts/auth-context'
+import { TwoFactorSection } from '@/features/settings/components/two-factor-section'
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '—'
@@ -57,6 +58,8 @@ export function SettingsPage() {
             </div>
           </dl>
         </section>
+
+        <TwoFactorSection />
 
         <section className="rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-6 py-5">

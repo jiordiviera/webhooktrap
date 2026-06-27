@@ -11,6 +11,7 @@ export default class UserTransformer extends BaseTransformer<User> {
         'createdAt',
         'updatedAt',
         'initials',
+        'isTwoFactorEnabled',
       ]),
       avatar: this.resource.$extras.avatar ?? null,
     }

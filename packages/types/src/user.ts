@@ -4,6 +4,7 @@ export interface UserProfileDTO {
   fullName: string | null
   initials: string
   avatar: string | null
+  isTwoFactorEnabled: boolean | null
   createdAt: string
   updatedAt: string | null
 }
