@@ -5,16 +5,13 @@ import { existsSync } from 'node:fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-// Walk up to find monorepo root (where .env lives)
-// source: apps/api/start/env.ts → 3 levels up
-// build:  apps/api/build/start/env.js → 4 levels up
-let rootDir = __dirname
-while (rootDir !== dirname(rootDir)) {
-  if (existsSync(join(rootDir, '.env'))) break
-  rootDir = dirname(rootDir)
+let dir = __dirname
+while (dir !== dirname(dir)) {
+  if (existsSync(join(dir, '.env'))) break
+  dir = dirname(dir)
 }
 
-export default await Env.create(new URL(rootDir + '/'), {
+export default await Env.create(new URL(dir + '/', import.meta.url), {
   // Node
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
   PORT: Env.schema.number(),

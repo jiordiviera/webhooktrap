@@ -6,7 +6,7 @@
     "dev": "turbo run dev",
     "pm2:start": "pnpm build --filter=api && pm2 start ecosystem.config.cjs",
     "pm2:stop": "pm2 stop hookscope-api",
-    "pm2:restart": "pm2 restart hookscope-api",
+    "pm2:restart": "pnpm build --filter=api && pm2 restart hookscope-api",
     "pm2:logs": "pm2 logs hookscope-api",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
