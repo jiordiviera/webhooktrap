@@ -69,7 +69,7 @@ export function InboxList() {
           </p>
           <h1
             id="inboxes-heading"
-            className="font-heading text-[clamp(1.75rem,3vw,2.25rem)] font-semibold tracking-wide text-foreground"
+            className="text-[clamp(1.75rem,3vw,2.25rem)] font-semibold tracking-tight text-foreground"
           >
             Inboxes
           </h1>

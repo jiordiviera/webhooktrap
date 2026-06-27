@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Geist, Lora } from 'next/font/google'
+import { Cormorant_Garamond, Geist, Lora, Space_Grotesk } from 'next/font/google'
 import { Providers } from '@/app/components/providers'
 import '@workspace/ui/globals.css'
 import { cn } from '@workspace/ui/lib/utils'
@@ -18,10 +18,7 @@ const lora = Lora({
   display: 'swap',
 })
 
-const geist = Geist({
-  subsets: ['latin'],
-  variable: '--font-sans'
-})
+const spaceGrotesk = Space_Grotesk({subsets:['latin'],variable:'--font-sans'})
 
 const siteUrl = process.env.WEB_URL ?? 'http://localhost:7777'
 
@@ -43,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={cn(cormorant.variable, lora.variable, geist.variable)} suppressHydrationWarning>
+    <html lang="en" className={cn(cormorant.variable, lora.variable, "font-sans", spaceGrotesk.variable)} suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
       </body>

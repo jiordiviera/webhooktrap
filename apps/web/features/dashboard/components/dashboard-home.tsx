@@ -99,7 +99,7 @@ export function DashboardHome() {
     <div className="mx-auto w-full max-w-5xl">
       <section className="mb-10 flex flex-wrap items-end justify-between gap-6">
         <div className="max-w-2xl">
-          <h1 className="font-heading text-[clamp(2rem,4vw,2.75rem)] leading-tight font-semibold tracking-wide text-foreground">
+          <h1 className="text-[clamp(2rem,4vw,2.75rem)] font-semibold tracking-tight text-foreground">
             Your webhook bench is ready.
           </h1>
           <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-muted-foreground">
