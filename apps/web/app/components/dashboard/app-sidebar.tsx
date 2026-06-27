@@ -22,7 +22,7 @@ export function AppSidebar() {
     <Sidebar
       variant="floating"
       collapsible="offcanvas"
-      className="h-full px-0 [--sidebar-width:15.5rem] **:data-[slot=sidebar-inner]:h-full"
+      // className="h-full px-0 [--sidebar-width:15.5rem] **:data-[slot=sidebar-inner]:h-full"
     >
       <div className="flex h-full flex-col">
         <DashboardSidebarHeader />

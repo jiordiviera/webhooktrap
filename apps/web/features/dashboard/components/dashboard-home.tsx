@@ -162,11 +162,11 @@ export function DashboardHome() {
         )}
       </section>
 
-      {state === 'ready' && stats.totalEvents > 0 && (
-        <div className="mb-10">
-          <EventsChart inboxes={inboxes} />
-        </div>
-      )}
+{state === 'ready' && inboxes.length > 0 && (
+          <div className="mb-10">
+            <EventsChart inboxes={inboxes} />
+          </div>
+        )}
 
       <section aria-labelledby="recent-inboxes-heading">
         <div className="mb-4 flex items-center justify-between gap-4">
