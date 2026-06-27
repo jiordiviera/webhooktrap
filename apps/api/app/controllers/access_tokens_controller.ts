@@ -22,6 +22,7 @@ export default class AccessTokensController {
     return serialize({
       user: await serializeUserProfile(user),
       token: token.value!.release(),
+      email_verified: !!user.emailVerifiedAt,
     })
   }
 

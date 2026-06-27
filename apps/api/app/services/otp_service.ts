@@ -9,6 +9,12 @@ export default class OtpService {
     return String(Math.floor(100000 + Math.random() * 900000))
   }
 
+  static generateToken(): string {
+    const bytes = new Uint8Array(32)
+    crypto.getRandomValues(bytes)
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+  }
+
   static async create(user: User, type: OtpType): Promise<Otp> {
     await Otp.query()
       .where('user_id', user.id)
@@ -25,7 +31,7 @@ export default class OtpService {
     })
   }
 
-  static async verify(user: User, type: OtpType, code: string): Promise<boolean> {
+  static async verify(user: User, type: OtpType, code: string): Promise<string | null> {
     const otp = await Otp.query()
       .where('user_id', user.id)
       .where('type', type)
@@ -34,9 +40,11 @@ export default class OtpService {
       .where('expires_at', '>', DateTime.now().toSQL()!)
       .first()
 
-    if (!otp) return false
+    if (!otp) return null
 
-    await otp.merge({ usedAt: DateTime.now() }).save()
-    return true
+    const verifiedToken = type === 'password_reset' ? this.generateToken() : null
+
+    await otp.merge({ usedAt: DateTime.now(), verifiedToken }).save()
+    return verifiedToken
   }
 }

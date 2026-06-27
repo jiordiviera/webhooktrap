@@ -72,6 +72,7 @@ router
 
         router.post('request-otp', [controllers.Otp, 'request'])
         router.post('verify-otp', [controllers.Otp, 'verify'])
+        router.post('reset-password', [controllers.ResetPassword, 'store'])
 
         router.get('oauth/providers', [controllers.Oauth, 'providers'])
         router.get('oauth/:provider/redirect', [controllers.Oauth, 'redirect'])

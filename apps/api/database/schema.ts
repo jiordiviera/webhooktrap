@@ -118,7 +118,7 @@ export class MediaSchema extends BaseModel {
 }
 
 export class OtpSchema extends BaseModel {
-  static $columns = ['code', 'createdAt', 'expiresAt', 'id', 'type', 'updatedAt', 'usedAt', 'userId'] as const
+  static $columns = ['code', 'createdAt', 'expiresAt', 'id', 'type', 'updatedAt', 'usedAt', 'userId', 'verifiedToken'] as const
   $columns = OtpSchema.$columns
   @column()
   declare code: string
@@ -136,6 +136,8 @@ export class OtpSchema extends BaseModel {
   declare usedAt: DateTime | null
   @column()
   declare userId: number | null
+  @column()
+  declare verifiedToken: string | null
 }
 
 export class ReplaySchema extends BaseModel {

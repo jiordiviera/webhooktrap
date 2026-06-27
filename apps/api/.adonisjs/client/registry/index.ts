@@ -132,6 +132,12 @@ const routes = {
     tokens: [{"old":"/api/v1/auth/verify-otp","type":0,"val":"api","end":""},{"old":"/api/v1/auth/verify-otp","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/verify-otp","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/verify-otp","type":0,"val":"verify-otp","end":""}],
     types: placeholder as Registry['v1.auth.otp.verify']['types'],
   },
+  'v1.auth.reset_password.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/auth/reset-password',
+    tokens: [{"old":"/api/v1/auth/reset-password","type":0,"val":"api","end":""},{"old":"/api/v1/auth/reset-password","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/reset-password","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/reset-password","type":0,"val":"reset-password","end":""}],
+    types: placeholder as Registry['v1.auth.reset_password.store']['types'],
+  },
   'v1.auth.oauth.providers': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/auth/oauth/providers',

@@ -259,6 +259,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'v1.auth.reset_password.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/auth/reset-password'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/reset_password').resetPasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/reset_password').resetPasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/reset_password_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/reset_password_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'v1.auth.oauth.providers': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/auth/oauth/providers'

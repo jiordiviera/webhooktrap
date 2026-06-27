@@ -33,8 +33,8 @@ export default class OtpController {
       return response.badRequest({ message: 'Invalid or expired OTP' })
     }
 
-    const valid = await OtpService.verify(user, type, code)
-    if (!valid) {
+    const verifiedToken = await OtpService.verify(user, type, code)
+    if (!verifiedToken && verifiedToken !== '') {
       return response.badRequest({ message: 'Invalid or expired OTP' })
     }
 
@@ -43,6 +43,9 @@ export default class OtpController {
       await user.save()
     }
 
-    return serialize({ message: 'OTP verified successfully' })
+    return serialize({
+      message: 'OTP verified successfully',
+      ...(verifiedToken ? { reset_token: verifiedToken } : {}),
+    })
   }
 }

@@ -39,6 +39,9 @@ export interface ApiDefinition {
         request: typeof routes['v1.auth.otp.request']
         verify: typeof routes['v1.auth.otp.verify']
       }
+      resetPassword: {
+        store: typeof routes['v1.auth.reset_password.store']
+      }
       oauth: {
         providers: typeof routes['v1.auth.oauth.providers']
         redirect: typeof routes['v1.auth.oauth.redirect']
