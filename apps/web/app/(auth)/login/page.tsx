@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { AuthShell } from '@/app/components/auth/auth-shell'
-import { LoginForm } from '@/app/components/auth/login-form'
+import { AuthShell } from '@/features/auth/components/auth-shell'
+import { LoginForm } from '@/features/auth/components/login-form'
 
 export const metadata: Metadata = {
   title: 'Sign in — Hookscope',

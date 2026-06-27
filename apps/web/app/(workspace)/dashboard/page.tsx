@@ -1,6 +1,6 @@
 'use client'
 
-import { DashboardHome } from '@/app/components/dashboard/dashboard-home'
+import { DashboardHome } from '@/features/dashboard/components/dashboard-home'
 import { useAuth } from '@/contexts/auth-context'
 
 export default function DashboardPage() {

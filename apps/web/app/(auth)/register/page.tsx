@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { AuthShell } from '@/app/components/auth/auth-shell'
-import { RegisterForm } from '@/app/components/auth/register-form'
+import { AuthShell } from '@/features/auth/components/auth-shell'
+import { RegisterForm } from '@/features/auth/components/register-form'
 
 export const metadata: Metadata = {
   title: 'Create account — Hookscope',

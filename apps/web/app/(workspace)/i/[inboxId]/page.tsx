@@ -1,8 +1,8 @@
 'use client'
 
 import { use } from 'react'
-import { InboxDetailPage } from '@/app/components/inbox/inbox-detail-page'
-import { InboxDetailSkeleton } from '@/app/components/inbox/inbox-detail-skeleton'
+import { InboxDetailPage } from '@/features/inbox/components/inbox-detail-page'
+import { InboxDetailSkeleton } from '@/features/inbox/components/inbox-detail-skeleton'
 import { useAuth } from '@/contexts/auth-context'
 
 export default function InboxPage({ params }: { params: Promise<{ inboxId: string }> }) {
