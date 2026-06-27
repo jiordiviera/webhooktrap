@@ -2,11 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { IconCheck, IconCopy } from '@tabler/icons-react'
+import { apiUrl, siteUrl } from '@/lib/config'
+
+const apiOrigin = apiUrl.replace(/\/$/, '')
+const webOrigin = siteUrl.replace(/\/$/, '')
 
 const codeExamples = [
   {
     label: 'Create inbox',
-    code: `curl -X POST https://api.hookscope.dev/api/v1/inboxes
+    code: `curl -X POST ${apiOrigin}/api/v1/inboxes
 
 {
   "data": {
@@ -19,14 +23,14 @@ const codeExamples = [
   },
   {
     label: 'Send webhook',
-    code: `curl -X POST https://hookscope.dev/i/xK9m2pQ7nR4a \\
+    code: `curl -X POST ${webOrigin}/i/xK9m2pQ7nR4a \\
   -H "Content-Type: application/json" \\
   -H "X-Provider: stripe" \\
   -d @payload.json`,
   },
   {
     label: 'Replay',
-    code: `curl -X POST https://api.hookscope.dev/api/v1/events/evt_8f2a/replay \\
+    code: `curl -X POST ${apiOrigin}/api/v1/events/evt_8f2a/replay \\
   -H "Authorization: Bearer <token>" \\
   -d '{"destination":"http://localhost:7777/webhooks"}'`,
   },

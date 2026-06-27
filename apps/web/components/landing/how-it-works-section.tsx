@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { siteUrl as webOrigin } from '@/lib/config'
 
 const steps = [
   {
     number: 'I',
     title: 'Receive',
     description: 'Drop the ingest URL into Stripe, GitHub, Shopify, or curl. Every byte lands in one inbox.',
-    code: `curl -X POST https://hookscope.dev/i/xK9m2pQ7nR4a \\
+    code: `curl -X POST ${webOrigin}/i/xK9m2pQ7nR4a \\
   -H "Content-Type: application/json" \\
   -d '{"type":"checkout.session.completed"}'`,
   },
