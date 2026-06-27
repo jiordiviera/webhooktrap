@@ -24,6 +24,22 @@ export const challengeOtpSchema = z.object({
   otp: z.string().length(6, 'Code must be exactly 6 digits'),
 })
 
+export const forgotPasswordSchema = z.object({
+  email,
+})
+
+export const resetPasswordSchema = z
+  .object({
+    password,
+    passwordConfirmation: password,
+  })
+  .refine((data) => data.password === data.passwordConfirmation, {
+    message: 'Passwords do not match',
+    path: ['passwordConfirmation'],
+  })
+
 export type LoginValues = z.infer<typeof loginSchema>
 export type RegisterValues = z.infer<typeof registerSchema>
 export type OtpValues = z.infer<typeof challengeOtpSchema>
+export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>
+export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>

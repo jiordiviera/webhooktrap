@@ -11,6 +11,7 @@ import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 import { controllers } from '#generated/controllers'
 import { twoFactorAuthRoutes } from '#start/routes/2fa'
+import { otpRequestThrottle, otpVerifyThrottle } from '#start/limiter'
 
 router.get('/', () => {
   return { hello: 'world' }
@@ -70,8 +71,8 @@ router
         router.post('signup', [controllers.NewAccount, 'store'])
         router.post('login', [controllers.AccessTokens, 'store'])
 
-        router.post('request-otp', [controllers.Otp, 'request'])
-        router.post('verify-otp', [controllers.Otp, 'verify'])
+        router.post('request-otp', [controllers.Otp, 'request']).use(otpRequestThrottle)
+        router.post('verify-otp', [controllers.Otp, 'verify']).use(otpVerifyThrottle)
         router.post('reset-password', [controllers.ResetPassword, 'store'])
 
         router.get('oauth/providers', [controllers.Oauth, 'providers'])

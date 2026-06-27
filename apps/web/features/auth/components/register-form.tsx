@@ -52,7 +52,7 @@ export function RegisterForm() {
       })
 
       signIn(body.data)
-      router.push('/')
+      router.push('/verify-email')
       router.refresh()
     } catch (err) {
       if (err instanceof ApiError) {

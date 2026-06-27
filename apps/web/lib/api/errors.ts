@@ -2,6 +2,7 @@ import type { AxiosError } from 'axios'
 
 export type ApiErrorBody = {
   message?: string
+  retryAfter?: number
   errors?: Array<{ message: string; field?: string }>
 }
 

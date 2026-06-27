@@ -21,5 +21,23 @@ module.exports = {
       kill_timeout: 10000,
       listen_timeout: 8000,
     },
+    {
+      name: 'hookscope-mail-worker',
+      cwd: __dirname,
+      script: 'apps/api/build/workers/mail_worker.js',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+      },
+      error_file: 'logs/mail-worker-error.log',
+      out_file: 'logs/mail-worker-out.log',
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_restarts: 10,
+      restart_delay: 5000,
+      shutdown_with_message: true,
+      kill_timeout: 10000,
+    },
   ],
 }

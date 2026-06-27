@@ -27,11 +27,13 @@ type AuthContextValue = {
   token: string | null
   status: AuthStatus
   isAuthenticated: boolean
+  emailVerified: boolean
   signIn: (payload: AuthData) => void
   signInWithToken: (token: string) => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<AuthUser | null>
   setUser: (user: AuthUser) => void
+  setEmailVerified: (v: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -40,11 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [status, setStatus] = useState<AuthStatus>('loading')
+  const [emailVerified, setEmailVerified] = useState(true)
 
   const signIn = useCallback((payload: AuthData) => {
     saveAuthToken(payload.token)
     setToken(payload.token)
     setUser(normalizeAuthUser(payload.user))
+    setEmailVerified(payload.email_verified ?? true)
     setStatus('authenticated')
   }, [])
 
@@ -142,13 +146,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token,
       status,
       isAuthenticated: status === 'authenticated' && user !== null,
+      emailVerified,
       signIn,
       signInWithToken,
       signOut,
       refreshProfile,
       setUser: setUserState,
+      setEmailVerified,
     }),
-    [user, token, status, signIn, signInWithToken, signOut, refreshProfile, setUserState]
+    [user, token, status, emailVerified, signIn, signInWithToken, signOut, refreshProfile, setUserState]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

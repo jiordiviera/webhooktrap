@@ -68,7 +68,11 @@ export function LoginForm() {
       }
 
       signIn(body.data)
-      router.push(returnTo.startsWith('/') ? returnTo : '/')
+      if (body.data.email_verified === false) {
+        router.push('/verify-email')
+      } else {
+        router.push(returnTo.startsWith('/') ? returnTo : '/')
+      }
       router.refresh()
     } catch (err) {
       if (err instanceof ApiError) {
@@ -230,6 +234,14 @@ export function LoginForm() {
                   : undefined
               }
             />
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="font-ui text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </Field>
 
           {loginForm.formState.errors.root && (

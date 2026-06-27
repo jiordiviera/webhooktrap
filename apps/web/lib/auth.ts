@@ -8,6 +8,7 @@ export type AuthUser = UserProfileDTO
 export type AuthData = {
   user: UserProfileDTO
   token: string
+  email_verified?: boolean
 }
 
 export type ChallengeData = {
