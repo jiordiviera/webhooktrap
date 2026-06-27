@@ -10,18 +10,7 @@ import { DateTime } from 'luxon'
 import encryption from '@adonisjs/core/services/encryption'
 
 export class AuthAccessTokenSchema extends BaseModel {
-  static $columns = [
-    'abilities',
-    'createdAt',
-    'expiresAt',
-    'hash',
-    'id',
-    'lastUsedAt',
-    'name',
-    'tokenableId',
-    'type',
-    'updatedAt',
-  ] as const
+  static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
   $columns = AuthAccessTokenSchema.$columns
   @column()
   declare abilities: string
@@ -46,21 +35,7 @@ export class AuthAccessTokenSchema extends BaseModel {
 }
 
 export class EventSchema extends BaseModel {
-  static $columns = [
-    'bodyJson',
-    'bodyText',
-    'contentType',
-    'createdAt',
-    'headers',
-    'id',
-    'inboxId',
-    'ip',
-    'method',
-    'path',
-    'query',
-    'receivedAt',
-    'sizeBytes',
-  ] as const
+  static $columns = ['bodyJson', 'bodyText', 'contentType', 'createdAt', 'headers', 'id', 'inboxId', 'ip', 'method', 'path', 'query', 'receivedAt', 'sizeBytes'] as const
   $columns = EventSchema.$columns
   @column()
   declare bodyJson: any | null
@@ -91,15 +66,7 @@ export class EventSchema extends BaseModel {
 }
 
 export class InboxSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'defaultReplayUrl',
-    'expiresAt',
-    'id',
-    'name',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['createdAt', 'defaultReplayUrl', 'expiresAt', 'id', 'name', 'updatedAt', 'userId'] as const
   $columns = InboxSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -118,23 +85,7 @@ export class InboxSchema extends BaseModel {
 }
 
 export class MediaSchema extends BaseModel {
-  static $columns = [
-    'blobPathname',
-    'blobUrl',
-    'collection',
-    'conversions',
-    'createdAt',
-    'customProps',
-    'disk',
-    'fileName',
-    'id',
-    'mimeType',
-    'modelId',
-    'modelType',
-    'orderColumn',
-    'sizeBytes',
-    'updatedAt',
-  ] as const
+  static $columns = ['blobPathname', 'blobUrl', 'collection', 'conversions', 'createdAt', 'customProps', 'disk', 'fileName', 'id', 'mimeType', 'modelId', 'modelType', 'orderColumn', 'sizeBytes', 'updatedAt'] as const
   $columns = MediaSchema.$columns
   @column()
   declare blobPathname: string
@@ -168,19 +119,29 @@ export class MediaSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class OtpSchema extends BaseModel {
+  static $columns = ['code', 'createdAt', 'expiresAt', 'id', 'type', 'updatedAt', 'usedAt', 'userId'] as const
+  $columns = OtpSchema.$columns
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column.dateTime()
+  declare usedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
 export class ReplaySchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'durationMs',
-    'errorCode',
-    'errorMessage',
-    'eventId',
-    'id',
-    'responseBody',
-    'responseHeaders',
-    'statusCode',
-    'targetUrl',
-  ] as const
+  static $columns = ['createdAt', 'durationMs', 'errorCode', 'errorMessage', 'eventId', 'id', 'responseBody', 'responseHeaders', 'statusCode', 'targetUrl'] as const
   $columns = ReplaySchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -220,16 +181,7 @@ export class ShareTokenSchema extends BaseModel {
 }
 
 export class UserOauthAccountSchema extends BaseModel {
-  static $columns = [
-    'avatarUrl',
-    'createdAt',
-    'id',
-    'provider',
-    'providerEmail',
-    'providerUserId',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['avatarUrl', 'createdAt', 'id', 'provider', 'providerEmail', 'providerUserId', 'updatedAt', 'userId'] as const
   $columns = UserOauthAccountSchema.$columns
   @column()
   declare avatarUrl: string | null
@@ -250,22 +202,14 @@ export class UserOauthAccountSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'email',
-    'fullName',
-    'id',
-    'isTwoFactorEnabled',
-    'password',
-    'twoFactorRecoveryCodes',
-    'twoFactorSecret',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'email', 'emailVerifiedAt', 'fullName', 'id', 'isTwoFactorEnabled', 'password', 'twoFactorRecoveryCodes', 'twoFactorSecret', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
   declare email: string
+  @column.dateTime()
+  declare emailVerifiedAt: DateTime | null
   @column()
   declare fullName: string | null
   @column({ isPrimary: true })

@@ -120,6 +120,18 @@ const routes = {
     tokens: [{"old":"/api/v1/auth/login","type":0,"val":"api","end":""},{"old":"/api/v1/auth/login","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/login","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/login","type":0,"val":"login","end":""}],
     types: placeholder as Registry['v1.auth.access_tokens.store']['types'],
   },
+  'v1.auth.otp.request': {
+    methods: ["POST"],
+    pattern: '/api/v1/auth/request-otp',
+    tokens: [{"old":"/api/v1/auth/request-otp","type":0,"val":"api","end":""},{"old":"/api/v1/auth/request-otp","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/request-otp","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/request-otp","type":0,"val":"request-otp","end":""}],
+    types: placeholder as Registry['v1.auth.otp.request']['types'],
+  },
+  'v1.auth.otp.verify': {
+    methods: ["POST"],
+    pattern: '/api/v1/auth/verify-otp',
+    tokens: [{"old":"/api/v1/auth/verify-otp","type":0,"val":"api","end":""},{"old":"/api/v1/auth/verify-otp","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/verify-otp","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/verify-otp","type":0,"val":"verify-otp","end":""}],
+    types: placeholder as Registry['v1.auth.otp.verify']['types'],
+  },
   'v1.auth.oauth.providers': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/auth/oauth/providers',

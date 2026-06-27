@@ -235,6 +235,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/access_tokens_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'v1.auth.otp.request': {
+    methods: ["POST"]
+    pattern: '/api/v1/auth/request-otp'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/request_otp').requestOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/request_otp').requestOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['request']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['request']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'v1.auth.otp.verify': {
+    methods: ["POST"]
+    pattern: '/api/v1/auth/verify-otp'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/verify_otp').verifyOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/verify_otp').verifyOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'v1.auth.oauth.providers': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/auth/oauth/providers'

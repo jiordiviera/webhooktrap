@@ -23,6 +23,8 @@ export type ScannedRoutes = {
     'v1.share.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'v1.auth.new_account.store': { paramsTuple?: []; params?: {} }
     'v1.auth.access_tokens.store': { paramsTuple?: []; params?: {} }
+    'v1.auth.otp.request': { paramsTuple?: []; params?: {} }
+    'v1.auth.otp.verify': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.providers': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
@@ -81,6 +83,8 @@ export type ScannedRoutes = {
     'v1.events.share': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.auth.new_account.store': { paramsTuple?: []; params?: {} }
     'v1.auth.access_tokens.store': { paramsTuple?: []; params?: {} }
+    'v1.auth.otp.request': { paramsTuple?: []; params?: {} }
+    'v1.auth.otp.verify': { paramsTuple?: []; params?: {} }
     'v1.profile.access_tokens.destroy': { paramsTuple?: []; params?: {} }
     'v1.profile.api_tokens.store': { paramsTuple?: []; params?: {} }
     'v1.media.store': { paramsTuple?: []; params?: {} }

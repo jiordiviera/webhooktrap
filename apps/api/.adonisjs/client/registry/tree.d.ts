@@ -35,6 +35,10 @@ export interface ApiDefinition {
       accessTokens: {
         store: typeof routes['v1.auth.access_tokens.store']
       }
+      otp: {
+        request: typeof routes['v1.auth.otp.request']
+        verify: typeof routes['v1.auth.otp.verify']
+      }
       oauth: {
         providers: typeof routes['v1.auth.oauth.providers']
         redirect: typeof routes['v1.auth.oauth.redirect']

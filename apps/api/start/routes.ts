@@ -70,6 +70,9 @@ router
         router.post('signup', [controllers.NewAccount, 'store'])
         router.post('login', [controllers.AccessTokens, 'store'])
 
+        router.post('request-otp', [controllers.Otp, 'request'])
+        router.post('verify-otp', [controllers.Otp, 'verify'])
+
         router.get('oauth/providers', [controllers.Oauth, 'providers'])
         router.get('oauth/:provider/redirect', [controllers.Oauth, 'redirect'])
         router.get('oauth/:provider/callback', [controllers.Oauth, 'callback'])
