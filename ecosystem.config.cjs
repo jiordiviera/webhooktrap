@@ -1,0 +1,25 @@
+module.exports = {
+  apps: [
+    {
+      name: 'hookscope-api',
+      cwd: __dirname,
+      script: 'apps/api/build/bin/server.js',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3333,
+        HOST: '0.0.0.0',
+      },
+      error_file: 'logs/api-error.log',
+      out_file: 'logs/api-out.log',
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_restarts: 10,
+      restart_delay: 5000,
+      shutdown_with_message: true,
+      kill_timeout: 10000,
+      listen_timeout: 8000,
+    },
+  ],
+}

@@ -1,20 +1,20 @@
-/*
-|--------------------------------------------------------------------------
-| Environment variables service
-|--------------------------------------------------------------------------
-|
-| The `Env.create` method creates an instance of the Env service. The
-| service validates the environment variables and also cast values
-| to JavaScript data types.
-|
-*/
-
 import { Env } from '@adonisjs/core/env'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+import { existsSync } from 'node:fs'
 
-/**
- * Charge .env depuis la racine du monorepo (hookscope/.env), pas apps/api/.
- */
-export default await Env.create(new URL('../../../', import.meta.url), {
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// Walk up to find monorepo root (where .env lives)
+// source: apps/api/start/env.ts → 3 levels up
+// build:  apps/api/build/start/env.js → 4 levels up
+let rootDir = __dirname
+while (rootDir !== dirname(rootDir)) {
+  if (existsSync(join(rootDir, '.env'))) break
+  rootDir = dirname(rootDir)
+}
+
+export default await Env.create(new URL(rootDir + '/'), {
   // Node
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
   PORT: Env.schema.number(),

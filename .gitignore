@@ -37,3 +37,7 @@ yarn-error.log*
 .DS_Store
 *.pem
 .playwright-mcp/
+apps/api/build/
+
+# PM2 logs
+logs/

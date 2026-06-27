@@ -137,7 +137,7 @@ Source of truth: `DESIGN.md` (OKLCH tokens, typography, spacing, component specs
 | Service | Platform | What |
 |---------|----------|------|
 | Web | Vercel | `apps/web` — Next.js |
-| API | Railway | `apps/api` — AdonisJS long-running |
+| API | VPS + PM2 | `apps/api` — AdonisJS long-running |
 | DB | Neon | PostgreSQL 16 |
 | Media | Cloudflare R2 | Via `@adonisjs/drive` |
 

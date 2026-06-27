@@ -137,6 +137,11 @@ R2_KEY=xxx
 R2_SECRET=xxx
 R2_BUCKET=xxx
 R2_ENDPOINT=xxx
+
+# Redis — BullMQ queue
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
 ```
 
 ### Caddyfile
@@ -152,30 +157,38 @@ api.hookscope.dev {
 sudo systemctl reload caddy
 ```
 
-### systemd — service api
-
-```ini
-# /etc/systemd/system/hookscope-api.service
-[Unit]
-Description=Hookscope API — AdonisJS 6
-After=network.target
-
-[Service]
-Type=simple
-User=deploy
-WorkingDirectory=/home/deploy/hookscope/apps/api
-ExecStart=/home/deploy/hookscope/apps/api/bin/server.js
-Restart=always
-RestartSec=5
-Environment=NODE_ENV=production
-
-[Install]
-WantedBy=multi-user.target
-```
+### PM2 — process manager
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now hookscope-api
+# Install PM2
+pnpm add -g pm2
+
+# Create log directory
+sudo mkdir -p /var/log/hookscope
+sudo chown deploy:deploy /var/log/hookscope
+```
+
+L'ecosystem config est à la racine du monorepo (`ecosystem.config.cjs`) :
+
+- `apps/api/build/bin/server.js` — serveur AdonisJS (port 3333)
+- Logs dans `logs/` (créé automatiquement par PM2 à la racine du projet)
+
+```bash
+# Démarrer (depuis la racine du repo)
+pnpm pm2:start
+
+# Sauvegarder la liste pour redémarrage auto au boot
+pm2 save
+pm2 startup
+```
+
+### Scripts PM2 disponibles (depuis la racine)
+
+```bash
+pnpm pm2:start      # build api + démarre
+pnpm pm2:stop       # stop hookscope-api
+pnpm pm2:restart    # restart hookscope-api
+pnpm pm2:logs       # logs en temps réel
 ```
 
 ### Script deploy
@@ -189,8 +202,8 @@ cd /home/deploy/hookscope
 git pull origin main
 pnpm install
 pnpm build --filter=api
-cd apps/api && node ace migration:run --force && cd ../..
-sudo systemctl restart hookscope-api
+node apps/api/ace migration:run --force
+pnpm pm2:restart
 ```
 
 ## 3. Vercel — Web Next.js

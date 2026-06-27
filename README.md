@@ -11,7 +11,7 @@
 | Auth | Adonis Auth (access tokens + GitHub/Google OAuth), TOTP 2FA |
 | Media | Cloudflare R2 via Adonis Drive |
 | Monorepo | pnpm + Turborepo |
-| Hosting | Vercel (web), Railway (api), Neon (Postgres) |
+| Hosting | Vercel (web), VPS + PM2 (api), Neon (Postgres) |
 
 ## Quick start
 
