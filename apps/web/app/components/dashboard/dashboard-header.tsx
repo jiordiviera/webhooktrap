@@ -8,7 +8,7 @@ export function DashboardHeader() {
   return (
     <>
       <header className="bg-background/80 sticky top-0 z-10 flex w-full items-center justify-between border-b px-3 py-2 backdrop-blur-sm sm:px-6 sm:py-3">
-        <SidebarTrigger className="md:hidden" />
+        <SidebarTrigger />
         <div className="ml-auto">
           <ThemeToggle />
         </div>
