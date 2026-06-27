@@ -22,6 +22,10 @@ export interface ApiDefinition {
       show: typeof routes['v1.events.show']
       replay: typeof routes['v1.events.replay']
       replays: typeof routes['v1.events.replays']
+      share: typeof routes['v1.events.share']
+    }
+    share: {
+      show: typeof routes['v1.share.show']
     }
     auth: {
       newAccount: {

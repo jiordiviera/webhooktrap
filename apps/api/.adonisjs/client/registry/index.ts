@@ -90,6 +90,18 @@ const routes = {
     tokens: [{"old":"/api/v1/events/:id/replays","type":0,"val":"api","end":""},{"old":"/api/v1/events/:id/replays","type":0,"val":"v1","end":""},{"old":"/api/v1/events/:id/replays","type":0,"val":"events","end":""},{"old":"/api/v1/events/:id/replays","type":1,"val":"id","end":""},{"old":"/api/v1/events/:id/replays","type":0,"val":"replays","end":""}],
     types: placeholder as Registry['v1.events.replays']['types'],
   },
+  'v1.events.share': {
+    methods: ["POST"],
+    pattern: '/api/v1/events/:id/share',
+    tokens: [{"old":"/api/v1/events/:id/share","type":0,"val":"api","end":""},{"old":"/api/v1/events/:id/share","type":0,"val":"v1","end":""},{"old":"/api/v1/events/:id/share","type":0,"val":"events","end":""},{"old":"/api/v1/events/:id/share","type":1,"val":"id","end":""},{"old":"/api/v1/events/:id/share","type":0,"val":"share","end":""}],
+    types: placeholder as Registry['v1.events.share']['types'],
+  },
+  'v1.share.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/s/:token',
+    tokens: [{"old":"/api/v1/s/:token","type":0,"val":"api","end":""},{"old":"/api/v1/s/:token","type":0,"val":"v1","end":""},{"old":"/api/v1/s/:token","type":0,"val":"s","end":""},{"old":"/api/v1/s/:token","type":1,"val":"token","end":""}],
+    types: placeholder as Registry['v1.share.show']['types'],
+  },
   'v1.auth.new_account.store': {
     methods: ["POST"],
     pattern: '/api/v1/auth/signup',

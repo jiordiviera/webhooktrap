@@ -60,6 +60,12 @@ router
       .where('id', /^evt_[0-9A-Z]{26}$/)
       .as('events.replays')
     router
+      .post('events/:id/share', [controllers.Share, 'store'])
+      .where('id', /^evt_[0-9A-Z]{26}$/)
+      .as('events.share')
+      .use(middleware.auth())
+    router.get('s/:token', [controllers.Share, 'show']).as('share.show')
+    router
       .group(() => {
         router.post('signup', [controllers.NewAccount, 'store'])
         router.post('login', [controllers.AccessTokens, 'store'])

@@ -12,5 +12,6 @@ export const controllers = {
   NewAccount: () => import('#controllers/new_account_controller'),
   Oauth: () => import('#controllers/oauth_controller'),
   Profile: () => import('#controllers/profile_controller'),
+  Share: () => import('#controllers/share_controller'),
   TwoFactorAuth: () => import('#controllers/two_factor_auth_controller'),
 }

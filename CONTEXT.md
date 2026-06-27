@@ -10,25 +10,26 @@
 
 ## Stack
 
-**pnpm + Turborepo** · **AdonisJS 6** (API) · **Next.js 15** (web) · **PostgreSQL 16** · **TypeScript strict**
+**pnpm + Turborepo** · **AdonisJS 6.3** (API) · **Next.js 16.2** (web) · **PostgreSQL 16** · **TypeScript 6.0 strict**
 
 - **Pas de Docker** — Postgres natif ou Neon ; **pas de Redis** au MVP
 - Realtime : **polling** · Replay **synchrone** · BullMQ/Redis seulement au scale
 - Hébergement : **Vercel** (web) · **Railway** (api) · **Neon** (postgres) — voir [docs/10-hebergement.md](./docs/10-hebergement.md)
-- **Greenfield** — pas de code `pulse-send`
 - Détail : [docs/09-stack.md](./docs/09-stack.md)
 
 ## Statut
 
-Pré-développement. Spec validée, code non démarré.
+MVP avancé. 20+ commits, 9 migrations. Backend complet : ingest (toujours 200), events listing/détail, replay synchrone avec timeout 30s, auth (access tokens + OAuth GitHub/Google), media (Cloudflare R2). Frontend : landing page, dashboard, inbox detail (events table + event inspector + replay panel), auth UI (login/register/OAuth). Share links en cours.
 
 ## Branding
 
 - Assets : `branding/logo.png`, `branding/icon.jpg` (Grok Imagine)
-- Typo prod : Cormorant Garamond 600 + `branding/brand.css` — voir [docs/08-typographie.md](./docs/08-typographie.md)
+- Typo prod : Cormorant Garamond 600 + Lora 400 + `branding/brand.css` — voir [docs/08-typographie.md](./docs/08-typographie.md)
+- Palette Terracotta (hue ~46–78), signal green pour succès webhook, jamais de noir/blanc pur
 
 ## Prochaine action
 
-1. Registrar `hookscope.dev`
-2. Scaffold monorepo `apps/api` + `apps/web` + `apps/cli`
-3. Slice vertical : ingest → event list → replay → response view
+1. Share links (Epic D) — API controller + routes + web public page
+2. CLI light (Epic E) — npx @hookscope/cli
+3. Tests — couverture pour ingest, replay, auth, share
+4. Landing page polish — copy, illustrations, SEO

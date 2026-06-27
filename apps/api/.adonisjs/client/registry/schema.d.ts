@@ -175,6 +175,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/events_controller').default['replays']>>>
     }
   }
+  'v1.events.share': {
+    methods: ["POST"]
+    pattern: '/api/v1/events/:id/share'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/share_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/share_controller').default['store']>>>
+    }
+  }
+  'v1.share.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/s/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/share_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/share_controller').default['show']>>>
+    }
+  }
   'v1.auth.new_account.store': {
     methods: ["POST"]
     pattern: '/api/v1/auth/signup'

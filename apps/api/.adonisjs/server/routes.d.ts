@@ -18,6 +18,8 @@ export type ScannedRoutes = {
     'v1.events.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.events.replay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.events.replays': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.events.share': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.share.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'v1.auth.new_account.store': { paramsTuple?: []; params?: {} }
     'v1.auth.access_tokens.store': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.providers': { paramsTuple?: []; params?: {} }
@@ -39,6 +41,7 @@ export type ScannedRoutes = {
     'v1.inboxes.index': { paramsTuple?: []; params?: {} }
     'v1.events.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.events.replays': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.share.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'v1.auth.oauth.providers': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
@@ -52,6 +55,7 @@ export type ScannedRoutes = {
     'v1.inboxes.index': { paramsTuple?: []; params?: {} }
     'v1.events.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.events.replays': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.share.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'v1.auth.oauth.providers': { paramsTuple?: []; params?: {} }
     'v1.auth.oauth.redirect': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
     'v1.auth.oauth.callback': { paramsTuple: [ParamValue]; params: {'provider': ParamValue} }
@@ -67,6 +71,7 @@ export type ScannedRoutes = {
     'v1.2fa.disable': { paramsTuple?: []; params?: {} }
     'v1.inboxes.store': { paramsTuple?: []; params?: {} }
     'v1.events.replay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'v1.events.share': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.auth.new_account.store': { paramsTuple?: []; params?: {} }
     'v1.auth.access_tokens.store': { paramsTuple?: []; params?: {} }
     'v1.profile.access_tokens.destroy': { paramsTuple?: []; params?: {} }

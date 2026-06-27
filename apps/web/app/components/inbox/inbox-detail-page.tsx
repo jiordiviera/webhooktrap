@@ -11,6 +11,7 @@ import {
   IconPencil,
   IconPlayerPlay,
   IconRefresh,
+  IconShare3,
   IconTrash,
   IconX,
 } from '@tabler/icons-react'
@@ -35,7 +36,7 @@ import { ApiError } from '@/lib/api'
 import { useConfirm } from '@/contexts/confirm-context'
 import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
 import { buildEventCurl, buildEventJson } from '@/lib/event-copy'
-import { replayEvent } from '@/lib/events'
+import { generateShareToken, replayEvent } from '@/lib/events'
 import {
   deleteInbox,
   formatRelativeTime,
@@ -139,6 +140,9 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
   const [actionError, setActionError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [copiedAction, setCopiedAction] = useState<'json' | 'curl' | null>(null)
+  const [sharing, setSharing] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [shareJustCopied, setShareJustCopied] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -244,6 +248,38 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
     await navigator.clipboard.writeText(text)
     setCopiedAction(action)
     window.setTimeout(() => setCopiedAction(null), 2000)
+  }
+
+  async function handleShare() {
+    if (!selectedEventId) return
+
+    setSharing(true)
+    setActionError(null)
+
+    try {
+      const shareToken = await generateShareToken(token, selectedEventId)
+      const origin = window.location.origin
+      setShareUrl(`${origin}/s/${shareToken}`)
+    } catch (error) {
+      setActionError(
+        error instanceof ApiError ? error.message : 'Could not generate share link.'
+      )
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  async function handleCopyShareUrl() {
+    if (!shareUrl) return
+
+    await navigator.clipboard.writeText(shareUrl)
+    setShareJustCopied(true)
+    window.setTimeout(() => setShareJustCopied(false), 2000)
+  }
+
+  function dismissShareUrl() {
+    setShareUrl(null)
+    setShareJustCopied(false)
   }
 
   function startEditingName() {
@@ -508,6 +544,20 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
                       type="button"
                       variant="outline"
                       size="sm"
+                      disabled={sharing}
+                      onClick={() => void handleShare()}
+                    >
+                      {sharing ? (
+                        <Loader size="sm" tone="inherit" />
+                      ) : (
+                        <IconShare3 className="size-3.5" aria-hidden />
+                      )}
+                      {sharing ? 'Creating…' : 'Share'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => void handleCopyEvent('json')}
                     >
                       <IconCopy className="size-3.5" aria-hidden />
@@ -526,6 +576,35 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
                 ) : undefined
               }
             >
+              {shareUrl ? (
+                <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+                  <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                    {shareUrl}
+                  </code>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleCopyShareUrl()}
+                  >
+                    {shareJustCopied ? (
+                      <IconCheck className="size-3.5 text-signal" aria-hidden />
+                    ) : (
+                      <IconCopy className="size-3.5" aria-hidden />
+                    )}
+                    {shareJustCopied ? 'Copied' : 'Copy'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={dismissShareUrl}
+                    aria-label="Dismiss share link"
+                  >
+                    <IconX className="size-3.5" aria-hidden />
+                  </Button>
+                </div>
+              ) : null}
               {!eventDetail ? (
                 <p className="px-4 py-10 text-sm text-muted-foreground">
                   {selectedEventId

@@ -105,3 +105,17 @@ export async function fetchEventReplays(token: string | null, eventId: string) {
   const body = await apiFetch<ReplaysListResponse>(`/api/v1/events/${eventId}/replays`, { token })
   return body.data.replays
 }
+
+type ShareTokenResponse = {
+  data: {
+    token: string
+  }
+}
+
+export async function generateShareToken(token: string, eventId: string) {
+  const body = await apiFetch<ShareTokenResponse>(`/api/v1/events/${eventId}/share`, {
+    method: 'POST',
+    token,
+  })
+  return body.data.token
+}
