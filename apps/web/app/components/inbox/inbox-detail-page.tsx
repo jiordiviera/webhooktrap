@@ -18,6 +18,13 @@ import {
 import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Loader } from '@workspace/ui/components/loader'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@workspace/ui/components/sheet'
 import { Separator } from '@workspace/ui/components/separator'
 import { Skeleton } from '@workspace/ui/components/skeleton'
 import { cn } from '@workspace/ui/lib/utils'
@@ -84,33 +91,6 @@ function ReplayStatus({ replay }: { replay: { statusCode: number | null; errorCo
     <span className="font-mono text-sm font-semibold text-destructive">
       {replay.errorCode ?? 'ERROR'}
     </span>
-  )
-}
-
-function SectionPanel({
-  title,
-  description,
-  children,
-  actions,
-}: {
-  title: string
-  description?: string
-  children: React.ReactNode
-  actions?: React.ReactNode
-}) {
-  return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3">
-        <div className="min-w-0">
-          <h2 className="font-ui text-sm font-semibold text-foreground">{title}</h2>
-          {description ? (
-            <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
-          ) : null}
-        </div>
-        {actions ? <div className="flex shrink-0 gap-2">{actions}</div> : null}
-      </div>
-      {children}
-    </div>
   )
 }
 
@@ -504,234 +484,261 @@ export function InboxDetailPage({ inboxId, token }: { inboxId: string; token: st
         </p>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-6">
-        <section aria-labelledby="events-heading">
-          <div className="mb-3 px-1">
-            <h2 id="events-heading" className="font-ui text-sm font-semibold text-foreground">
-              Events
-              <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">
-                ({eventCount})
-              </span>
-            </h2>
-          </div>
-          <div className="max-h-128 overflow-y-auto rounded-xl">
-            <DataTable
-              model="inbox-events"
-              token={token}
-              context={{ inboxId }}
-              refetchInterval={POLL_INTERVAL_MS}
-              selectedRowId={selectedEventId}
-              onRowClickAction={(event) => setSelectedEventId(event.id)}
-              showPagination
-              onDataChangeAction={({ rows, total }) => {
-                setEventsTotal(total)
-                setSelectedEventId((current) => current ?? rows[0]?.id ?? null)
-              }}
-            />
-          </div>
-        </section>
+      <section aria-labelledby="events-heading">
+        <div className="mb-3 px-1">
+          <h2 id="events-heading" className="font-ui text-sm font-semibold text-foreground">
+            Events
+            <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">
+              ({eventCount})
+            </span>
+          </h2>
+        </div>
+        <div className="max-h-128 overflow-y-auto rounded-xl">
+          <DataTable
+            model="inbox-events"
+            token={token}
+            context={{ inboxId }}
+            refetchInterval={POLL_INTERVAL_MS}
+            selectedRowId={selectedEventId}
+            onRowClickAction={(event) => setSelectedEventId(event.id)}
+            showPagination
+            onDataChangeAction={({ rows, total }) => {
+              setEventsTotal(total)
+            }}
+          />
+        </div>
+      </section>
 
-        <section className="flex min-w-0 flex-col gap-4">
-          {detailLoading ? (
-            <EventInspectorSkeleton />
-          ) : (
-            <SectionPanel
-              title="Event detail"
-              actions={
-                eventDetail ? (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={sharing}
-                      onClick={() => void handleShare()}
-                    >
-                      {sharing ? (
-                        <Loader size="sm" tone="inherit" />
-                      ) : (
-                        <IconShare3 className="size-3.5" aria-hidden />
-                      )}
-                      {sharing ? 'Creating…' : 'Share'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void handleCopyEvent('json')}
-                    >
-                      <IconCopy className="size-3.5" aria-hidden />
-                      {copiedAction === 'json' ? 'Copied' : 'JSON'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void handleCopyEvent('curl')}
-                    >
-                      <IconCopy className="size-3.5" aria-hidden />
-                      {copiedAction === 'curl' ? 'Copied' : 'cURL'}
-                    </Button>
-                  </>
-                ) : undefined
-              }
-            >
-              {shareUrl ? (
-                <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-                  <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
-                    {shareUrl}
-                  </code>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void handleCopyShareUrl()}
-                  >
-                    {shareJustCopied ? (
-                      <IconCheck className="size-3.5 text-signal" aria-hidden />
-                    ) : (
-                      <IconCopy className="size-3.5" aria-hidden />
-                    )}
-                    {shareJustCopied ? 'Copied' : 'Copy'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={dismissShareUrl}
-                    aria-label="Dismiss share link"
-                  >
-                    <IconX className="size-3.5" aria-hidden />
-                  </Button>
-                </div>
-              ) : null}
-              {!eventDetail ? (
-                <p className="px-4 py-10 text-sm text-muted-foreground">
-                  {selectedEventId
-                    ? 'Could not load this event. Select another or refresh.'
-                    : 'Select an event to inspect headers and body.'}
-                </p>
-              ) : (
-                <div className="space-y-5 p-4">
-                  <div className="flex flex-wrap items-center gap-3 text-sm">
+      <Sheet
+        open={!!selectedEventId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedEventId(null)
+            dismissShareUrl()
+          }
+        }}
+      >
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col p-0 sm:max-w-lg"
+        >
+          {/* Sheet header: event identity + actions */}
+          <SheetHeader className="border-b border-border px-4 py-3">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                {eventDetail ? (
+                  <div className="flex flex-wrap items-center gap-2">
                     <MethodBadge method={eventDetail.method} />
-                    <span className="min-w-0 truncate font-mono text-foreground">
+                    <code className="truncate font-mono text-sm text-foreground">
                       {eventDetail.path}
-                    </span>
-                    <span className="text-muted-foreground">
-                      {formatRelativeTime(eventDetail.receivedAt)}
-                    </span>
+                    </code>
                   </div>
-
-                  <div>
-                    <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                      Headers
-                    </h3>
-                    <JsonBlock value={eventDetail.headers} />
-                  </div>
-
-                  <div>
-                    <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                      Body
-                    </h3>
-                    {eventDetail.bodyJson ? (
-                      <JsonBlock value={eventDetail.bodyJson} />
-                    ) : (
-                      <pre className="max-h-80 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs whitespace-pre-wrap text-foreground">
-                        {eventDetail.bodyText ?? '(empty)'}
-                      </pre>
-                    )}
-                  </div>
-                </div>
-              )}
-            </SectionPanel>
-          )}
-
-          {replaysLoading ? (
-            <ReplayPanelSkeleton />
-          ) : (
-            <SectionPanel
-              title="Replay"
-              description="Fire the same request to your local server or staging endpoint."
-            >
-              <div className="space-y-4 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Input
-                    value={replayUrl}
-                    onChange={(event) => setReplayUrl(event.target.value)}
-                    placeholder="http://localhost:7777/webhooks/stripe"
-                    className="font-mono text-sm"
-                  />
-                  <div className="flex shrink-0 gap-2">
-                    <Button type="button" variant="outline" onClick={() => void handleSaveReplayUrl()}>
-                      Save
-                    </Button>
-                    <Button
-                      type="button"
-                      disabled={!selectedEventId || replaying}
-                      onClick={() => void handleReplay()}
-                    >
-                      {replaying ? (
-                        <>
-                          <Loader size="sm" tone="inherit" />
-                          Replaying…
-                        </>
-                      ) : (
-                        <>
-                          <IconPlayerPlay className="size-4" aria-hidden />
-                          Replay
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                {replays.length > 0 ? (
-                  <div className="space-y-3">
-                    <Separator />
-                    <h3 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                      History
-                    </h3>
-                    <ul className="divide-y divide-border rounded-lg border border-border">
-                      {replays.map((replay) => (
-                        <li key={replay.id} className="px-3 py-3 text-sm">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <ReplayStatus replay={replay} />
-                            {replay.durationMs !== null ? (
-                              <span className="text-muted-foreground tabular-nums">
-                                {replay.durationMs}ms
-                              </span>
-                            ) : null}
-                            <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
-                              {replay.targetUrl}
-                            </span>
-                          </div>
-                          {replay.errorMessage ? (
-                            <p className="mt-2 text-destructive">{replay.errorMessage}</p>
-                          ) : null}
-                          {replay.responseHeaders ? (
-                            <div className="mt-3">
-                              <p className="mb-1.5 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                                Response headers
-                              </p>
-                              <JsonBlock value={replay.responseHeaders} />
-                            </div>
-                          ) : null}
-                          {replay.responseBody ? (
-                            <pre className="mt-2 max-h-40 overflow-auto font-mono text-xs whitespace-pre-wrap text-foreground">
-                              {replay.responseBody}
-                            </pre>
-                          ) : null}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
+                ) : (
+                  <SheetTitle className="font-ui text-sm font-semibold text-foreground">
+                    Event detail
+                  </SheetTitle>
+                )}
+                <SheetDescription className="mt-0.5 text-xs">
+                  {eventDetail
+                    ? formatRelativeTime(eventDetail.receivedAt)
+                    : detailLoading
+                      ? 'Loading event...'
+                      : ''}
+                </SheetDescription>
               </div>
-            </SectionPanel>
-          )}
-        </section>
-      </div>
+            </div>
+            {eventDetail ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={sharing}
+                  onClick={() => void handleShare()}
+                >
+                  {sharing ? (
+                    <Loader size="sm" tone="inherit" />
+                  ) : (
+                    <IconShare3 className="size-3.5" aria-hidden />
+                  )}
+                  {sharing ? 'Creating\u2026' : 'Share'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleCopyEvent('json')}
+                >
+                  <IconCopy className="size-3.5" aria-hidden />
+                  {copiedAction === 'json' ? 'Copied' : 'JSON'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleCopyEvent('curl')}
+                >
+                  <IconCopy className="size-3.5" aria-hidden />
+                  {copiedAction === 'curl' ? 'Copied' : 'cURL'}
+                </Button>
+              </div>
+            ) : null}
+          </SheetHeader>
+
+          {/* Scrollable event body */}
+          <div className="flex-1 overflow-y-auto">
+            {shareUrl ? (
+              <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+                <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                  {shareUrl}
+                </code>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleCopyShareUrl()}
+                >
+                  {shareJustCopied ? (
+                    <IconCheck className="size-3.5 text-signal" aria-hidden />
+                  ) : (
+                    <IconCopy className="size-3.5" aria-hidden />
+                  )}
+                  {shareJustCopied ? 'Copied' : 'Copy'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={dismissShareUrl}
+                  aria-label="Dismiss share link"
+                >
+                  <IconX className="size-3.5" aria-hidden />
+                </Button>
+              </div>
+            ) : null}
+
+            {detailLoading ? (
+              <EventInspectorSkeleton />
+            ) : !eventDetail ? (
+              <p className="px-4 py-10 text-sm text-muted-foreground">
+                {selectedEventId
+                  ? 'Could not load this event. Select another or refresh.'
+                  : 'Select an event to inspect headers and body.'}
+              </p>
+            ) : (
+              <div className="space-y-6 p-4">
+                <div>
+                  <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                    Headers
+                  </h3>
+                  <JsonBlock value={eventDetail.headers} />
+                </div>
+
+                {eventDetail.query && Object.keys(eventDetail.query).length > 0 && (
+                  <div>
+                    <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                      Query
+                    </h3>
+                    <JsonBlock value={eventDetail.query} />
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                    Body
+                  </h3>
+                  {eventDetail.bodyJson ? (
+                    <JsonBlock value={eventDetail.bodyJson} />
+                  ) : (
+                    <pre className="max-h-80 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs whitespace-pre-wrap text-foreground">
+                      {eventDetail.bodyText ?? '(empty)'}
+                    </pre>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Replay section pinned at bottom */}
+          <div className="border-t border-border px-4 py-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Input
+                value={replayUrl}
+                onChange={(event) => setReplayUrl(event.target.value)}
+                placeholder="http://localhost:7777/webhooks/stripe"
+                className="font-mono text-sm"
+              />
+              <div className="flex shrink-0 gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => void handleSaveReplayUrl()}>
+                  Save
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!selectedEventId || replaying}
+                  onClick={() => void handleReplay()}
+                >
+                  {replaying ? (
+                    <>
+                      <Loader size="sm" tone="inherit" />
+                      Replaying\u2026
+                    </>
+                  ) : (
+                    <>
+                      <IconPlayerPlay className="size-4" aria-hidden />
+                      Replay
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {replaysLoading && replays.length === 0 ? (
+              <ReplayPanelSkeleton />
+            ) : replays.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                <Separator />
+                <h3 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                  History
+                </h3>
+                <ul className="divide-y divide-border rounded-lg border border-border">
+                  {replays.map((replay) => (
+                    <li key={replay.id} className="px-3 py-3 text-sm">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <ReplayStatus replay={replay} />
+                        {replay.durationMs !== null ? (
+                          <span className="text-muted-foreground tabular-nums">
+                            {replay.durationMs}ms
+                          </span>
+                        ) : null}
+                        <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
+                          {replay.targetUrl}
+                        </span>
+                      </div>
+                      {replay.errorMessage ? (
+                        <p className="mt-2 text-destructive">{replay.errorMessage}</p>
+                      ) : null}
+                      {replay.responseHeaders ? (
+                        <div className="mt-3">
+                          <p className="mb-1.5 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                            Response headers
+                          </p>
+                          <JsonBlock value={replay.responseHeaders} />
+                        </div>
+                      ) : null}
+                      {replay.responseBody ? (
+                        <pre className="mt-2 max-h-40 overflow-auto font-mono text-xs whitespace-pre-wrap text-foreground">
+                          {replay.responseBody}
+                        </pre>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
