@@ -9,6 +9,7 @@ export type ScannedRoutes = {
     'v1.2fa.verify': { paramsTuple?: []; params?: {} }
     'v1.2fa.generate_recovery_codes': { paramsTuple?: []; params?: {} }
     'v1.2fa.disable': { paramsTuple?: []; params?: {} }
+    'v1.2fa.challenge': { paramsTuple?: []; params?: {} }
     'v1.inboxes.store': { paramsTuple?: []; params?: {} }
     'v1.inboxes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -74,6 +75,7 @@ export type ScannedRoutes = {
     'v1.2fa.verify': { paramsTuple?: []; params?: {} }
     'v1.2fa.generate_recovery_codes': { paramsTuple?: []; params?: {} }
     'v1.2fa.disable': { paramsTuple?: []; params?: {} }
+    'v1.2fa.challenge': { paramsTuple?: []; params?: {} }
     'v1.inboxes.store': { paramsTuple?: []; params?: {} }
     'v1.events.replay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.events.share': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

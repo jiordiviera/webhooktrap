@@ -12,6 +12,7 @@ export function twoFactorAuthRoutes() {
         .post('generate-recovery-codes', [TwoFactorsController, 'generateRecoveryCodes'])
         .as('generate_recovery_codes')
       router.post('disable', [TwoFactorsController, 'disable']).as('disable')
+      router.post('challenge', [TwoFactorsController, 'challenge']).as('challenge')
     })
     .as('2fa')
     .prefix('2fa')

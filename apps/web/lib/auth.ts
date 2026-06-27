@@ -5,11 +5,18 @@ export const AUTH_TOKEN_KEY = 'hookscope_token'
 
 export type AuthUser = UserProfileDTO
 
+export type AuthData = {
+  user: UserProfileDTO
+  token: string
+}
+
+export type ChallengeData = {
+  requires_2fa: true
+  challenge_token: string
+}
+
 export type AuthPayload = {
-  data: {
-    user: UserProfileDTO
-    token: string
-  }
+  data: AuthData | ChallengeData
 }
 
 export function normalizeAuthUser(user: UserProfileDTO): AuthUser {

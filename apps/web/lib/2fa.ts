@@ -1,3 +1,4 @@
+import type { UserProfileDTO } from '@workspace/types'
 import { apiFetch } from '@/lib/api'
 
 export type TwoFactorSecret = {
@@ -12,6 +13,13 @@ export type TwoFactorVerifyResponse = {
 
 export type TwoFactorRecoveryCodesResponse = {
   recovery_codes: string[]
+}
+
+export type ChallengeResponse = {
+  data: {
+    token: string
+    user: UserProfileDTO
+  }
 }
 
 export async function generateTwoFactorSecret(): Promise<TwoFactorSecret> {
@@ -33,4 +41,15 @@ export async function generateRecoveryCodes(): Promise<TwoFactorRecoveryCodesRes
 
 export async function disableTwoFactor(): Promise<void> {
   await apiFetch<void>('/api/v1/2fa/disable', { method: 'POST' })
+}
+
+export async function verifyChallenge(
+  otp: string,
+  challengeToken: string
+): Promise<ChallengeResponse> {
+  return apiFetch<ChallengeResponse>('/api/v1/2fa/challenge', {
+    method: 'POST',
+    body: JSON.stringify({ otp }),
+    token: challengeToken,
+  })
 }

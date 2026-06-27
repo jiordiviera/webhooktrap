@@ -36,6 +36,12 @@ const routes = {
     tokens: [{"old":"/api/v1/2fa/disable","type":0,"val":"api","end":""},{"old":"/api/v1/2fa/disable","type":0,"val":"v1","end":""},{"old":"/api/v1/2fa/disable","type":0,"val":"2fa","end":""},{"old":"/api/v1/2fa/disable","type":0,"val":"disable","end":""}],
     types: placeholder as Registry['v1.2fa.disable']['types'],
   },
+  'v1.2fa.challenge': {
+    methods: ["POST"],
+    pattern: '/api/v1/2fa/challenge',
+    tokens: [{"old":"/api/v1/2fa/challenge","type":0,"val":"api","end":""},{"old":"/api/v1/2fa/challenge","type":0,"val":"v1","end":""},{"old":"/api/v1/2fa/challenge","type":0,"val":"2fa","end":""},{"old":"/api/v1/2fa/challenge","type":0,"val":"challenge","end":""}],
+    types: placeholder as Registry['v1.2fa.challenge']['types'],
+  },
   'v1.inboxes.store': {
     methods: ["POST"],
     pattern: '/api/v1/inboxes',

@@ -8,6 +8,15 @@ export default class AccessTokensController {
     const { email, password } = await request.validateUsing(loginValidator)
 
     const user = await User.verifyCredentials(email, password)
+
+    if (user.isTwoFactorEnabled) {
+      const challengeToken = await User.accessTokens.create(user)
+      return serialize({
+        requires_2fa: true,
+        challenge_token: challengeToken.value!.release(),
+      })
+    }
+
     const token = await User.accessTokens.create(user)
 
     return serialize({

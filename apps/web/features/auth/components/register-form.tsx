@@ -16,7 +16,7 @@ import {
 import { Input } from '@workspace/ui/components/input'
 import { useAuth } from '@/contexts/auth-context'
 import { ApiError, apiFetch } from '@/lib/api'
-import { type AuthPayload } from '@/lib/auth'
+import { type AuthData } from '@/lib/auth'
 import { type RegisterValues, registerSchema } from '@/lib/schemas/auth'
 import { OAuthButtons } from './oauth-buttons'
 
@@ -40,7 +40,7 @@ export function RegisterForm() {
 
   async function onSubmit(values: RegisterValues) {
     try {
-      const body = await apiFetch<AuthPayload>('/api/v1/auth/signup', {
+      const body = await apiFetch<{ data: AuthData }>('/api/v1/auth/signup', {
         method: 'POST',
         skipAuth: true,
         body: JSON.stringify({

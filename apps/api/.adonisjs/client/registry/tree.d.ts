@@ -9,6 +9,7 @@ export interface ApiDefinition {
       verify: typeof routes['v1.2fa.verify']
       generateRecoveryCodes: typeof routes['v1.2fa.generate_recovery_codes']
       disable: typeof routes['v1.2fa.disable']
+      challenge: typeof routes['v1.2fa.challenge']
     }
     inboxes: {
       store: typeof routes['v1.inboxes.store']

@@ -67,6 +67,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/two_factor_auth_controller').default['disable']>>>
     }
   }
+  'v1.2fa.challenge': {
+    methods: ["POST"]
+    pattern: '/api/v1/2fa/challenge'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/verify_otp').verifyOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/verify_otp').verifyOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/two_factor_auth_controller').default['challenge']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/two_factor_auth_controller').default['challenge']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'v1.inboxes.store': {
     methods: ["POST"]
     pattern: '/api/v1/inboxes'

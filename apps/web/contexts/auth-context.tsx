@@ -11,7 +11,7 @@ import {
 } from 'react'
 import { ApiError, apiFetch, SESSION_EXPIRED_EVENT } from '@/lib/api'
 import {
-  type AuthPayload,
+  type AuthData,
   type AuthUser,
   clearAuthToken,
   getAuthToken,
@@ -27,7 +27,7 @@ type AuthContextValue = {
   token: string | null
   status: AuthStatus
   isAuthenticated: boolean
-  signIn: (payload: AuthPayload['data']) => void
+  signIn: (payload: AuthData) => void
   signInWithToken: (token: string) => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<AuthUser | null>
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
   const [status, setStatus] = useState<AuthStatus>('loading')
 
-  const signIn = useCallback((payload: AuthPayload['data']) => {
+  const signIn = useCallback((payload: AuthData) => {
     saveAuthToken(payload.token)
     setToken(payload.token)
     setUser(normalizeAuthUser(payload.user))
