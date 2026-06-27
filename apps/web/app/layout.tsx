@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Geist, Lora, Space_Grotesk, Outfit, Albert_Sans } from 'next/font/google'
+import { Cormorant_Garamond, Lora, Albert_Sans } from 'next/font/google'
 import { Providers } from '@/app/components/providers'
 import '@workspace/ui/globals.css'
 import { cn } from '@workspace/ui/lib/utils'

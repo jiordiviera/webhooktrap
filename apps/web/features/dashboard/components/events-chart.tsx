@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import {
   Card,
@@ -85,9 +85,22 @@ export function EventsChart({
 }: {
   inboxes: { lastEventAt: string | null; eventsCount: number }[];
 }) {
-  const [timeRange, setTimeRange] = React.useState("7d");
+  const [timeRange, setTimeRange] = useState("7d");
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(800);
 
-  const data = React.useMemo(() => {
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const { width } = entries[0]!.contentRect;
+      if (width > 0) setChartWidth(width);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const data = useMemo(() => {
     const days = timeRange === "90d" ? 90 : timeRange === "30d" ? 30 : 7;
     return buildBins(inboxes, days);
   }, [inboxes, timeRange]);
@@ -127,21 +140,66 @@ export function EventsChart({
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {hasActivity ? (
-          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-            <BarChart accessibilityLayer data={data}>
+          <ChartContainer
+            ref={chartRef}
+            config={chartConfig}
+            className="aspect-auto h-[250px] w-full"
+          >
+            <AreaChart data={data} width={chartWidth} height={250}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="label"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
+                minTickGap={32}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  });
+                }}
               />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent hideLabel />}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }}
+                    indicator="dot"
+                  />
+                }
               />
-              <Bar dataKey="inboxes" fill="var(--color-inboxes)" radius={8} />
-            </BarChart>
+              <defs>
+                <linearGradient id="fillActivity" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-inboxes)"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-inboxes)"
+                    stopOpacity={0.05}
+                  />
+                </linearGradient>
+              </defs>
+              <Area
+                dataKey="inboxes"
+                type="monotone"
+                fill="url(#fillActivity)"
+                fillOpacity={1}
+                stroke="var(--color-inboxes)"
+                strokeWidth={2}
+                activeDot={{ r: 6, strokeWidth: 2 }}
+                stackId="inboxes"
+              />
+            </AreaChart>
           </ChartContainer>
         ) : (
           <div className="flex h-[200px] items-center justify-center">
