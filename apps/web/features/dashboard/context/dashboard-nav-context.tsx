@@ -1,7 +1,13 @@
 'use client'
 
 import { createContext, useContext, useMemo } from 'react'
-import { IconInbox, IconLayoutDashboard, TablerIcon } from '@tabler/icons-react'
+import {
+  IconInbox,
+  IconKey,
+  IconLayoutDashboard,
+  IconSettings,
+  TablerIcon,
+} from '@tabler/icons-react'
 
 export type DashboardNavItem = {
   href: string
@@ -25,6 +31,20 @@ const DEFAULT_NAV: DashboardNavItem[] = [
     hint: 'Ingest URLs and events',
     icon: IconInbox,
     isActive: (pathname) => pathname === '/inboxes' || pathname.startsWith('/i/'),
+  },
+  {
+    href: '/settings',
+    label: 'Settings',
+    hint: 'Account and preferences',
+    icon: IconSettings,
+    isActive: (pathname) => pathname === '/settings',
+  },
+  {
+    href: '/api-tokens',
+    label: 'API Tokens',
+    hint: 'Personal access tokens',
+    icon: IconKey,
+    isActive: (pathname) => pathname === '/api-tokens',
   },
 ]
 
