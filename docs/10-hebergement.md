@@ -1,137 +1,202 @@
-# Hébergement — Vercel + Railway + Neon
+# Hébergement — Vercel + VPS + Neon
 
-**Décision validée** : pas de Fly, pas de Docker. Stack managée from scratch.
+| Service | Rôle |
+|---------|------|
+| **Vercel** | Frontend Next.js (landing, inbox, dashboard) |
+| **VPS** | API AdonisJS derrière Caddy |
+| **Neon** | PostgreSQL (production uniquement) |
 
-## Architecture deploy
+> **Dev local** : PostgreSQL natif (`brew install postgresql` / `apt install postgresql`)
+> **Prod** : Neon
+
+## Architecture
 
 ```mermaid
 flowchart TB
-    subgraph users [Trafic]
+    subgraph internet [Internet]
+        DNS["hookscope.dev → Vercel\napi.hookscope.dev → VPS"]
         BROWSER["Navigateur"]
         STRIPE["Stripe / GitHub / …"]
     end
 
     subgraph vercel [Vercel]
-        WEB["apps/web — Next.js 15"]
+        WEB["apps/web — Next.js 16"]
     end
 
-    subgraph railway [Railway]
-        API["apps/api — AdonisJS 6"]
+    subgraph vps [VPS]
+        CADDY["Caddy — reverse proxy + SSL"]
+        API["apps/api — AdonisJS 6\nport 3333"]
     end
 
     subgraph neon [Neon]
-        PG[(PostgreSQL)]
+        PG[(PostgreSQL 16)]
     end
 
-    BROWSER --> WEB
-    BROWSER -->|"fetch /api"| API
-    STRIPE -->|"POST /i/:id"| API
-    WEB -->|"rewrite /i/*"| API
+    DNS --> WEB
+    DNS --> CADDY
+    BROWSER -->|"hookscope.dev"| WEB
+    BROWSER -->|"api.hookscope.dev/*"| CADDY
+    STRIPE -->|"POST /i/:id"| CADDY
+    WEB -->|"fetch /api + rewrite /hooks"| CADDY
+    CADDY --> API
     API --> PG
 ```
 
-## Qui fait quoi
+## 0. Dev local — PostgreSQL natif
 
-| Service | Projet | Rôle | URL cible |
-|---------|--------|------|-----------|
-| **Vercel** | `hookscope-web` | Landing, inbox UI, dashboard, auth pages | `https://hookscope.dev` |
-| **Railway** | `hookscope-api` | Ingest webhooks, replay, auth API, dashboard API | `https://api.hookscope.dev` |
-| **Neon** | `hookscope` | Users, inboxes, events, replays | — (connexion interne) |
+```bash
+# Install
+sudo apt install postgresql   # linux
+brew install postgresql       # mac
 
-## Pourquoi ce trio
+# Create user and database
+sudo -u postgres createuser local --pwprompt
+sudo -u postgres createdb hookscope --owner=local
+```
 
-| Besoin | Solution |
-|--------|----------|
-| Next.js, previews PR, CDN | **Vercel** |
-| Serveur Node **long-running** (ingest < 100ms, replay 30s) | **Railway** |
-| PostgreSQL sans install locale | **Neon** |
-| Pas de Redis au MVP | — |
-| Pas de Docker | Tout est PaaS / DBaaS |
+```env
+# .env (racine du monorepo)
+DATABASE_URL=postgresql://local:password@localhost:5432/hookscope
+```
+
+Migrations :
+
+```bash
+cd apps/api
+node ace migration:run
+```
 
 ---
 
-## 1. Neon — PostgreSQL
-
-### Setup
+## 1. Production — Neon (PostgreSQL)
 
 1. [neon.tech](https://neon.tech) → compte GitHub
-2. Projet **`hookscope`**
-3. Branches :
-   - `main` → **production**
-   - `dev` → développement (optionnel, ou une DB locale)
-4. Copier les connection strings
-
-### Variables (exemple)
+2. Projet **hookscope**
+3. Branche `main` (prod)
+4. Copier la connection string
 
 ```env
-# Production (Railway)
 DATABASE_URL=postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/hookscope?sslmode=require
-
-# Dev local (hookscope/.env à la racine du monorepo)
-DATABASE_URL=postgresql://user:pass@ep-yyy.eu-central-1.aws.neon.tech/hookscope_dev?sslmode=require
 ```
 
-### AdonisJS (`apps/api`)
+Migrations à faire depuis le VPS :
 
-```env
-DB_CONNECTION=pg
-# Ou laisser Adonis lire DATABASE_URL directement selon config
+```bash
+cd apps/api
+node ace migration:run
 ```
 
-Migrations : `node ace migration:run` (Railway deploy hook ou manuel).
+## 2. VPS — API AdonisJS
 
----
+### Prérequis
 
-## 2. Railway — API AdonisJS
+```bash
+# Node.js 22
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+nvm install 22 && nvm alias default 22
+
+# pnpm
+corepack enable && corepack install pnpm@latest
+
+# Caddy
+sudo apt install caddy
+```
 
 ### Setup
 
-1. [railway.app](https://railway.app) → compte GitHub
-2. **New Project** → **Deploy from GitHub repo**
-3. Root directory : `apps/api` (quand monorepo prêt)
-4. Build : détecté auto (Node) ou :
-
-```json
-{
-  "build": { "builder": "NIXPACKS" },
-  "deploy": {
-    "startCommand": "node bin/server.js",
-    "healthcheckPath": "/health"
-  }
-}
+```bash
+git clone https://github.com/jiordiviera/hookscope
+cd hookscope
+pnpm install
+pnpm build --filter=api
 ```
 
-### Variables Railway (production)
+Fichier `.env` (racine du monorepo) :
 
 ```env
 NODE_ENV=production
 PORT=3333
-HOST=0.0.0.0
-APP_KEY=<généré ace generate:key>
-DATABASE_URL=<neon production URL>
-WEB_ORIGIN=https://hookscope.dev
+HOST=127.0.0.1
+APP_KEY=<node ace generate:key>
+APP_URL=https://api.hookscope.dev
+WEB_URL=https://hookscope.dev
+DB_CONNECTION=pg
+DATABASE_URL=postgresql://user:pass@ep-xxx.neon.tech/hookscope?sslmode=require
+SESSION_DRIVER=cookie
+LOG_LEVEL=info
+
+# OAuth
+GITHUB_CLIENT_ID=xxx
+GITHUB_CLIENT_SECRET=xxx
+GOOGLE_CLIENT_ID=xxx
+GOOGLE_CLIENT_SECRET=xxx
+
+# Media — Cloudflare R2
+DRIVE_DISK=r2
+R2_KEY=xxx
+R2_SECRET=xxx
+R2_BUCKET=xxx
+R2_ENDPOINT=xxx
 ```
 
-### Domaine custom
+### Caddyfile
 
-Railway → Settings → Networking → **Custom Domain** :
-- `api.hookscope.dev` → CNAME fourni par Railway
+```caddy
+# /etc/caddy/Caddyfile
+api.hookscope.dev {
+    reverse_proxy 127.0.0.1:3333
+}
+```
 
-### Ce qui tourne sur Railway
+```bash
+sudo systemctl reload caddy
+```
 
-- `POST /i/:inboxId` — ingest (Stripe tape ici ou via rewrite Vercel)
-- `POST /api/events/:id/replay`
-- `POST /auth/login`, etc.
-- `GET /health`
+### systemd — service api
 
----
+```ini
+# /etc/systemd/system/hookscope-api.service
+[Unit]
+Description=Hookscope API — AdonisJS 6
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/hookscope/apps/api
+ExecStart=/home/deploy/hookscope/apps/api/bin/server.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now hookscope-api
+```
+
+### Script deploy
+
+```bash
+#!/usr/bin/env bash
+set -e
+
+cd /home/deploy/hookscope
+
+git pull origin main
+pnpm install
+pnpm build --filter=api
+cd apps/api && node ace migration:run --force && cd ../..
+sudo systemctl restart hookscope-api
+```
 
 ## 3. Vercel — Web Next.js
 
-### Setup
-
-1. [vercel.com](https://vercel.com) → compte GitHub
-2. Import repo → root directory : `apps/web`
+1. [vercel.com](https://vercel.com) → importer le repo
+2. Root directory : `apps/web`
 3. Framework : Next.js (auto)
 
 ### Variables Vercel
@@ -140,66 +205,31 @@ Railway → Settings → Networking → **Custom Domain** :
 NEXT_PUBLIC_API_URL=https://api.hookscope.dev
 ```
 
-### Rewrite ingest (UX propre)
+### Rewrite ingest
 
-L'utilisateur copie `https://hookscope.dev/i/abc123`, pas l'URL Railway.
-
-```js
-// apps/web/next.config.ts
-const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/i/:path*',
-        destination: `${process.env.APP_URL || 'https://api.hookscope.dev'}/i/:path*`,
-      },
-    ]
-  },
-}
-```
-
-Variable serveur (non publique) :
+Le proxy Next.js (`apps/web/proxy.ts`) rewrite `/hooks/:inboxId` vers l'API. En production, la variable `APP_URL` pointe vers le VPS :
 
 ```env
+# Vercel (server-side, pas publique)
 APP_URL=https://api.hookscope.dev
 ```
 
-### Domaine custom
+### Domaine
 
 Vercel → Domains → `hookscope.dev` + `www.hookscope.dev`
 
-DNS (Cloudflare ou registrar) :
+DNS :
 
 | Type | Nom | Valeur |
 |------|-----|--------|
-| A / CNAME | `@` | Vercel |
-| CNAME | `www` | Vercel |
-| CNAME | `api` | Railway |
+| CNAME | `@` | `cname.vercel-dns.com` |
+| CNAME | `www` | `cname.vercel-dns.com` |
+| A | `api` | IP du VPS |
 
----
-
-## Flux dev local (sans Docker)
-
-```env
-# hookscope/.env (racine monorepo — partagé api + web)
-DATABASE_URL=postgresql://...@neon.tech/hookscope_dev?sslmode=require
-APP_KEY=dev-key-min-32-chars-long-xxxx
-PORT=3333
-NEXT_PUBLIC_API_URL=http://localhost:3333
-```
-
-```bash
-pnpm dev   # turbo : api :3333 + web :3000
-```
-
-Même stack qu'en prod — seule la `DATABASE_URL` change (branche Neon `dev`).
-
----
-
-## CORS (API Railway)
+## CORS (API)
 
 ```ts
-// apps/api — config/cors.ts
+// apps/api/config/cors.ts
 {
   origin: [
     'http://localhost:7777',
@@ -210,52 +240,18 @@ Même stack qu'en prod — seule la `DATABASE_URL` change (branche Neon `dev`).
 }
 ```
 
----
+## Dev local
 
-## Coûts estimés (début)
-
-| Service | Free tier | Après |
-|---------|-----------|-------|
-| **Neon** | 0.5 GB, branches limitées | ~$19/mois scale |
-| **Railway** | $5 crédit/mois (plan hobby) | ~$5–20/mois selon usage |
-| **Vercel** | Hobby gratuit | $20/mois Pro si équipe |
-
-**MVP solo** : souvent **$0–10/mois** total.
-
----
-
-## Checklist premier deploy
-
-```
-Neon
-[ ] Projet hookscope créé
-[ ] Branche main (prod) + dev
-[ ] DATABASE_URL copiée
-
-Railway
-[ ] Repo connecté, root apps/api
-[ ] DATABASE_URL + APP_KEY + WEB_ORIGIN
-[ ] Domain api.hookscope.dev
-[ ] GET /health → 200
-[ ] migration:run OK
-
-Vercel
-[ ] Repo connecté, root apps/web
-[ ] NEXT_PUBLIC_API_URL + API_URL (rewrite)
-[ ] Domain hookscope.dev
-[ ] Rewrite /i/* → API testé avec curl
-
-E2E
-[ ] curl POST hookscope.dev/i/xxx → event en DB Neon
-[ ] Inbox UI affiche l'event (polling)
+```bash
+pnpm dev   # api :3333 + web :7777
 ```
 
----
+## Coûts
 
-## Ce qu'on n'utilise pas
+| Service | Free tier |
+|---------|-----------|
+| **Neon** | 0.5 GB, branches limitées |
+| **Vercel** | Hobby gratuit |
+| **VPS** | ~4–6€/mois (Hetzner CX22) |
 
-- Fly.io
-- Docker / docker-compose
-- Redis (MVP)
-- Supabase (sauf si tu changes d'avis sur PG)
-- Hébergement API sur Vercel (serverless incompatible replay long)
+**Total MVP solo : ~4–6€/mois**

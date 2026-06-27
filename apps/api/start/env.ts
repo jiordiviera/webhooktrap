@@ -67,4 +67,14 @@ export default await Env.create(new URL('../../../', import.meta.url), {
   R2_SECRET: Env.schema.string(),
   R2_BUCKET: Env.schema.string(),
   R2_ENDPOINT: Env.schema.string(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for configuring the mail package
+  |----------------------------------------------------------
+  */
+  MAIL_MAILER: Env.schema.enum(['resend'] as const),
+  MAIL_FROM_NAME: Env.schema.string(),
+  MAIL_FROM_ADDRESS: Env.schema.string(),
+  RESEND_API_KEY: Env.schema.string()
 })

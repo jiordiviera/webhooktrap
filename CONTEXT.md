@@ -14,7 +14,7 @@
 
 - **Pas de Docker** — Postgres natif ou Neon ; **pas de Redis** au MVP
 - Realtime : **polling** · Replay **synchrone** · BullMQ/Redis seulement au scale
-- Hébergement : **Vercel** (web) · **Railway** (api) · **Neon** (postgres) — voir [docs/10-hebergement.md](./docs/10-hebergement.md)
+- Hébergement : **Vercel** (web) · **VPS** (api derrière Caddy) · **Neon** (postgres) — voir [docs/10-hebergement.md](./docs/10-hebergement.md)
 - Détail : [docs/09-stack.md](./docs/09-stack.md)
 
 ## Statut

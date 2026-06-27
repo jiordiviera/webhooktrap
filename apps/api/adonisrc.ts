@@ -28,6 +28,7 @@ export default defineConfig({
     () => import('@adonisjs/core/commands'),
     () => import('@adonisjs/lucid/commands'),
     () => import('@adonisjs/session/commands'),
+    () => import('@adonisjs/mail/commands')
   ],
 
   /*
@@ -56,6 +57,7 @@ export default defineConfig({
     () => import('@adonisjs/ally/ally_provider'),
     () => import('@nulix/adonis-2fa/two_factor_auth_provider'),
     () => import('@adonisjs/drive/drive_provider'),
+    () => import('@adonisjs/mail/mail_provider')
   ],
 
   /*

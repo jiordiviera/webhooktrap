@@ -32,7 +32,7 @@ Voir le document détaillé : [09-stack.md](./09-stack.md).
 | DB | PostgreSQL 16 — **native ou Neon, pas de Docker** |
 | IDs | ULID |
 | Tests | Japa (API) + Vitest (web) |
-| Deploy | Web → Vercel, API → Railway, DB → Neon |
+| Deploy | Web → Vercel, API → VPS (Caddy), DB → Neon |
 
 ## Principes
 
