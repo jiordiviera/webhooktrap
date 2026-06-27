@@ -26,10 +26,6 @@ function getBreadcrumbs(
   navItems: DashboardNavItem[],
   inboxTitle: string | null | undefined
 ): BreadcrumbCrumb[] {
-  if (pathname === '/profile') {
-    return [{ label: 'Profile' }]
-  }
-
   if (pathname.startsWith('/i/')) {
     const inboxId = pathname.slice(3).split('/')[0]
     return [

@@ -19,6 +19,7 @@ Résultat consolidé de nos sessions de brainstorming (juin 2026).
 
 ## Statut
 
-- **Phase** : Pré-développement (spec validée, pas encore de code)
-- **Nom retenu** : Hookscope (recommandé)
-- **Prochaine étape** : Registrar `hookscope.dev` + scaffold monorepo
+- **Phase** : MVP avancé — backend complet, frontend dashboard/settings, auth, two-factor
+- **Nom retenu** : Hookscope
+- **Route `/profile` supprimée** — intégrée dans Settings (`/settings#account`)
+- **Prochaine étape** : Share links (Epic D), CLI light (Epic E), tests
