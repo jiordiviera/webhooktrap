@@ -251,10 +251,10 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/api/v1/auth/verify-otp'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/verify_otp').verifyOtpValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/email_otp').emailOtpValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/verify_otp').verifyOtpValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#validators/email_otp').emailOtpValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
     }

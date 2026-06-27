@@ -65,6 +65,7 @@
     "@adonisjs/drive": "^4.0.0",
     "@adonisjs/lucid": "^22.4.2",
     "@adonisjs/mail": "^10.3.0",
+    "@adonisjs/redis": "^10.0.0",
     "@adonisjs/session": "^8.1.0",
     "@adonisjs/shield": "^9.0.0",
     "@aws-sdk/client-s3": "^3.1075.0",

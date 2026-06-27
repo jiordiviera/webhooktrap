@@ -26,6 +26,8 @@ process.env.R2_SECRET = 'test-r2-secret'
 process.env.R2_BUCKET = 'test-bucket'
 process.env.R2_ENDPOINT = 'https://test.r2.cloudflarestorage.com'
 process.env.MEDIA_CDN_BASE_URL = 'https://media.hookscope.test'
+process.env.REDIS_HOST = process.env.REDIS_HOST || 'localhost'
+process.env.REDIS_PORT = process.env.REDIS_PORT || '6379'
 
 import 'reflect-metadata'
 import { Ignitor, prettyPrintError } from '@adonisjs/core'

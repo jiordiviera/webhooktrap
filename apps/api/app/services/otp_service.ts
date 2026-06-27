@@ -1,5 +1,5 @@
 import Otp from '#models/otp'
-import User from '#models/user'
+import type User from '#models/user'
 import { DateTime } from 'luxon'
 
 export type OtpType = 'email_verify' | 'password_reset'

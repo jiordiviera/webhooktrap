@@ -12,3 +12,4 @@
 /// <reference path="../../config/logger.ts" />
 /// <reference path="../../config/mail.ts" />
 /// <reference path="../../config/media.ts" />
+/// <reference path="../../config/redis.ts" />

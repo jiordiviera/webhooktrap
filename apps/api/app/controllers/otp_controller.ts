@@ -22,7 +22,6 @@ export default class OtpController {
       await mail.sendLater(new RequestOtpNotification(user, otp.code, type))
     } catch {}
 
-
     return serialize({ message: 'If the email exists, an OTP has been sent.' })
   }
 

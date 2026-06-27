@@ -1,5 +1,5 @@
 import { withUserMedia } from '#media/has_media'
-import { UserSchema } from '#database/schema'
+import { UserSchema } from '#database/schemas/user'
 import Inbox from '#models/inbox'
 import UserOauthAccount from '#models/user_oauth_account'
 import hash from '@adonisjs/core/services/hash'

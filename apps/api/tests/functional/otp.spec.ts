@@ -1,7 +1,6 @@
 import User from '#models/user'
 import Otp from '#models/otp'
 import testUtils from '@adonisjs/core/services/test_utils'
-import mail from '@adonisjs/mail/services/main'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
@@ -11,9 +10,7 @@ test.group('OTP API', (group) => {
   })
 
   test('request-otp sends email for existing user', async ({ client, assert }) => {
-    mail.fake()
-
-    await User.create({
+    const user = await User.create({
       email: 'otp-test@hookscope.test',
       password: 'password123',
     })
@@ -25,12 +22,10 @@ test.group('OTP API', (group) => {
     response.assertStatus(200)
     response.assertBodyContains({ data: {} })
 
-    const otp = await Otp.query().where('user_id', 1).where('type', 'email_verify').first()
+    const otp = await Otp.query().where('user_id', user.id).where('type', 'email_verify').first()
     assert.isNotNull(otp)
     assert.lengthOf(otp!.code, 6)
     assert.isNull(otp!.usedAt)
-
-    mail.restore()
   })
 
   test('request-otp always returns 200 even for unknown email', async ({ client }) => {
