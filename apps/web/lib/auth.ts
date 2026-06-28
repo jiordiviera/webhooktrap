@@ -1,5 +1,6 @@
 import type { UserProfileDTO } from '@workspace/types'
 import { sanitizeAvatarUrl } from '@/lib/avatar'
+import { apiUrl } from '@/lib/config'
 
 export const AUTH_TOKEN_KEY = 'hookscope_token'
 
@@ -41,10 +42,6 @@ export function clearAuthToken() {
 }
 
 export function getOAuthRedirectUrl(provider: 'github' | 'google', returnTo: string) {
-  const origin =
-    typeof window !== 'undefined'
-      ? window.location.origin
-      : (process.env.NEXT_PUBLIC_WEB_URL ?? process.env.WEB_URL ?? 'http://localhost:7777')
   const params = new URLSearchParams({ return_to: returnTo })
-  return `${origin}/api/backend/auth/oauth/${provider}/redirect?${params}`
+  return `${apiUrl}/api/v1/auth/oauth/${provider}/redirect?${params}`
 }

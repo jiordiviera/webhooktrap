@@ -24,6 +24,7 @@ function AuthCallbackContent() {
   useEffect(() => {
     const token = searchParams.get('token')
     const error = searchParams.get('error')
+    console.log("searchParams: ", searchParams)
 
     if (error) {
       setStatus('error')

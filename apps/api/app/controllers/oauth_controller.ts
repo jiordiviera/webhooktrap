@@ -22,11 +22,14 @@ export default class OauthController {
     const returnTo = request.input('return_to', env.get('WEB_URL'))
     session.put('oauth.returnTo', returnTo)
 
-    return ally.use(params.provider as OAuthProvider).redirect((redirectRequest) => {
-      if (params.provider === 'google') {
-        redirectRequest.param('prompt', 'select_account')
-      }
-    })
+    return ally
+      .use(params.provider as OAuthProvider)
+      .stateless()
+      .redirect((redirectRequest) => {
+        if (params.provider === 'google') {
+          redirectRequest.param('prompt', 'select_account')
+        }
+      })
   }
 
   async callback({ ally, params, response, session }: HttpContext) {
@@ -34,7 +37,7 @@ export default class OauthController {
       return this.redirectWithError(response, 'unknown_provider')
     }
 
-    const driver = ally.use(params.provider as OAuthProvider)
+    const driver = ally.use(params.provider as OAuthProvider).stateless()
 
     if (driver.accessDenied()) {
       return this.redirectWithError(response, 'access_denied')
