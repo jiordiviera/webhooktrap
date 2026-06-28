@@ -30,13 +30,13 @@ export async function fetchInboxes() {
 
 export async function fetchInboxesPage(params: DataTableParams) {
   const body = await apiFetch<InboxListResponse & { data: { meta?: unknown } }>(
-    `/api/v1/inboxes${buildListQueryString(params)}`
+    `/inboxes${buildListQueryString(params)}`
   )
   return parsePaginatedResponse<'inboxes', InboxDTO>(body, 'inboxes')
 }
 
 export async function createInbox(input: { name: string }) {
-  const body = await apiFetch<InboxCreateResponse>('/api/v1/inboxes', {
+  const body = await apiFetch<InboxCreateResponse>('/inboxes', {
     method: 'POST',
     body: JSON.stringify({ name: input.name }),
   })
@@ -44,7 +44,7 @@ export async function createInbox(input: { name: string }) {
 }
 
 export async function fetchInbox(inboxId: string) {
-  const body = await apiFetch<InboxCreateResponse>(`/api/v1/inboxes/${inboxId}`)
+  const body = await apiFetch<InboxCreateResponse>(`/inboxes/${inboxId}`)
   return body.data.inbox
 }
 
@@ -52,7 +52,7 @@ export async function updateInbox(
   inboxId: string,
   input: { name?: string; defaultReplayUrl?: string | null }
 ) {
-  const body = await apiFetch<InboxCreateResponse>(`/api/v1/inboxes/${inboxId}`, {
+  const body = await apiFetch<InboxCreateResponse>(`/inboxes/${inboxId}`, {
     method: 'PATCH',
     body: JSON.stringify({
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -65,7 +65,7 @@ export async function updateInbox(
 }
 
 export async function deleteInbox(inboxId: string) {
-  await apiFetch<{ data: { deleted: boolean } }>(`/api/v1/inboxes/${inboxId}`, {
+  await apiFetch<{ data: { deleted: boolean } }>(`/inboxes/${inboxId}`, {
     method: 'DELETE',
   })
 }

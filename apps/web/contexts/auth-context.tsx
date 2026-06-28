@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (currentToken) {
       try {
-        await apiFetch('/api/v1/account/logout', {
+        await apiFetch('/account/logout', {
           method: 'POST',
           token: currentToken,
         })

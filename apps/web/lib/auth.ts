@@ -46,5 +46,5 @@ export function getOAuthRedirectUrl(provider: 'github' | 'google', returnTo: str
       ? window.location.origin
       : (process.env.NEXT_PUBLIC_WEB_URL ?? process.env.WEB_URL ?? 'http://localhost:7777')
   const params = new URLSearchParams({ return_to: returnTo })
-  return `${origin}/api/v1/auth/oauth/${provider}/redirect?${params}`
+  return `${origin}/api/backend/auth/oauth/${provider}/redirect?${params}`
 }

@@ -6,14 +6,14 @@ type ProfileResponse = {
 }
 
 export async function fetchProfile(): Promise<AuthUser> {
-  const body = await apiFetch<ProfileResponse>('/api/v1/account/profile')
+  const body = await apiFetch<ProfileResponse>('/account/profile')
   return normalizeAuthUser(body.data)
 }
 
 export async function updateProfile(
   payload: { fullName: string }
 ): Promise<AuthUser> {
-  const body = await apiFetch<ProfileResponse>('/api/v1/account/profile', {
+  const body = await apiFetch<ProfileResponse>('/account/profile', {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })

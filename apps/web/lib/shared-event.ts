@@ -9,7 +9,7 @@ type SharedEventResponse = {
 }
 
 export async function fetchSharedEvent(token: string) {
-  const body = await apiFetch<SharedEventResponse>(`/api/v1/s/${token}`, { skipAuth: true })
+  const body = await apiFetch<SharedEventResponse>(`/s/${token}`, { skipAuth: true })
   return body.data
 }
 

@@ -11,10 +11,6 @@ function proxyToApi(request: NextRequest, upstreamPath: string) {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (pathname.startsWith('/api/v1/')) {
-    return proxyToApi(request, pathname)
-  }
-
   const hooksMatch = pathname.match(/^\/hooks\/([A-Za-z0-9]{12})$/)
   if (hooksMatch) {
     return proxyToApi(request, `/i/${hooksMatch[1]}`)
@@ -24,5 +20,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/v1/:path*', '/hooks/:inboxId'],
+  matcher: ['/hooks/:inboxId'],
 }

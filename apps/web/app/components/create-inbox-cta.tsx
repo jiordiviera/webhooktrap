@@ -25,7 +25,7 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
     setCopied(false)
 
     try {
-      const body = await apiFetch<InboxResponse>('/api/v1/inboxes', {
+      const body = await apiFetch<InboxResponse>('/inboxes', {
         method: 'POST',
         skipAuth: true,
         body: JSON.stringify({ name: 'My inbox' }),

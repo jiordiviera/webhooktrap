@@ -40,7 +40,7 @@ export function RegisterForm() {
 
   async function onSubmit(values: RegisterValues) {
     try {
-      const body = await apiFetch<{ data: AuthData }>('/api/v1/auth/signup', {
+      const body = await apiFetch<{ data: AuthData }>('/auth/signup', {
         method: 'POST',
         skipAuth: true,
         body: JSON.stringify({

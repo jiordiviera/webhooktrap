@@ -15,7 +15,7 @@ type ResetPasswordResponse = {
 }
 
 export async function requestOtp(email: string, type: OtpType) {
-  return apiFetch<OtpRequestResponse>('/api/v1/auth/request-otp', {
+  return apiFetch<OtpRequestResponse>('/auth/request-otp', {
     method: 'POST',
     skipAuth: true,
     body: JSON.stringify({ email, type }),
@@ -23,7 +23,7 @@ export async function requestOtp(email: string, type: OtpType) {
 }
 
 export async function verifyOtp(email: string, code: string, type: OtpType) {
-  return apiFetch<OtpVerifyResponse>('/api/v1/auth/verify-otp', {
+  return apiFetch<OtpVerifyResponse>('/auth/verify-otp', {
     method: 'POST',
     skipAuth: true,
     body: JSON.stringify({ email, code, type }),
@@ -35,7 +35,7 @@ export async function resetPassword(
   password: string,
   passwordConfirmation: string
 ) {
-  return apiFetch<ResetPasswordResponse>('/api/v1/auth/reset-password', {
+  return apiFetch<ResetPasswordResponse>('/auth/reset-password', {
     method: 'POST',
     skipAuth: true,
     body: JSON.stringify({ resetToken, password, passwordConfirmation }),

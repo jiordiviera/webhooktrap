@@ -3,11 +3,11 @@ import { clearAuthToken, getAuthToken } from '@/lib/auth'
 import { toApiError } from '@/lib/api/errors'
 import { apiUrl } from '../config'
 
-/** Server-only API origin. Browser calls same-origin /api/v1 via proxy.ts. */
+/** Server-only API origin. Browser calls same-origin /api/backend via route handler. */
 const SERVER_APP_URL = apiUrl
 
 function resolveApiBaseUrl() {
-  if (typeof window !== 'undefined') return ''
+  if (typeof window !== 'undefined') return '/api/backend'
   return SERVER_APP_URL
 }
 

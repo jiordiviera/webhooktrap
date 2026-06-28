@@ -1,39 +1,46 @@
-import { z } from 'zod'
-
-const envSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'production', 'test'])
-    .default('development'),
-
-  /** API origin — used by proxy and server-side fetch. */
-  APP_URL: z.url().default('https://api.hookscope.jiordiviera.me'),
-
-  /** Web origin — used for metadata, OAuth callbacks, ingest links. */
-  WEB_URL: z.url().default('https://hookscope.jiordiviera.me'),
-
-  /** Public web origin (injected at build-time by Next.js). */
-  NEXT_PUBLIC_WEB_URL: z.url().optional(),
-
-  /** Public API origin (injected at build-time by Next.js). */
-  NEXT_PUBLIC_API_URL: z.url().optional(),
-})
-
-function parseEnv() {
-  const isServer = typeof process !== 'undefined' && typeof process.exit === 'function'
-  const result = envSchema.safeParse(process.env)
-
-  if (!result.success) {
-    if (isServer) {
-      console.error('Invalid environment variables:')
-      for (const issue of result.error.issues) {
-        console.error(`  ${issue.path.join('.')}: ${issue.message}`)
-      }
-      process.exit(1)
-    }
-    return envSchema.parse({ NODE_ENV: process.env.NODE_ENV })
-  }
-
-  return result.data
+interface AppConfig {
+  env: string;
+  url: string;
+  isProduction: boolean;
 }
 
-export const env = parseEnv()
+interface ApiConfig {
+  url: string;
+}
+
+interface EnvConfig {
+  app: AppConfig;
+  api: ApiConfig;
+}
+
+export const env: EnvConfig = {
+  app: {
+    env: process.env.NODE_ENV || "development",
+    url: process.env.NEXT_PUBLIC_APP_URL!,
+    isProduction: process.env.NODE_ENV === "production",
+  },
+  api: {
+    url: process.env.NEXT_PUBLIC_API_URL!,
+  },
+};
+
+function validateEnv(): void {
+  const required = {
+    NEXT_PUBLIC_APP_URL: env.app.url,
+    NEXT_PUBLIC_API_URL: env.api.url,
+  };
+
+  console.log("Env: ", process.env);
+  const missing = Object.entries(required).flatMap(([key, value]) =>
+    value ? [] : [key],
+  );
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing environment variables: ${missing.join(", ")}\n` +
+        "Please check your .env file.",
+    );
+  }
+}
+
+validateEnv();

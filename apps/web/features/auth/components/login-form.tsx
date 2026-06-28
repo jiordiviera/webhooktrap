@@ -55,7 +55,7 @@ export function LoginForm() {
   async function onSubmitLogin(values: LoginValues) {
     loginForm.clearErrors()
     try {
-      const body = await apiFetch<AuthPayload>('/api/v1/auth/login', {
+      const body = await apiFetch<AuthPayload>('/auth/login', {
         method: 'POST',
         skipAuth: true,
         body: JSON.stringify(values),

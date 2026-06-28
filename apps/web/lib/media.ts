@@ -34,7 +34,7 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRecord>
   formData.append('model_id', input.modelId)
   formData.append('collection', input.collection)
 
-  const response = await apiClient.post<UploadMediaResponse>('/api/v1/media', formData)
+  const response = await apiClient.post<UploadMediaResponse>('/media', formData)
 
   return response.data.data.media
 }

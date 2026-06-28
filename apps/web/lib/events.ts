@@ -47,13 +47,13 @@ export async function fetchInboxEventsPage(
   params: DataTableParams
 ) {
   const body = await apiFetch<EventsListResponse & { data: { meta?: unknown } }>(
-    `/api/v1/inboxes/${inboxId}/events${buildListQueryString(params)}`
+    `/inboxes/${inboxId}/events${buildListQueryString(params)}`
   )
   return parsePaginatedResponse<'events', EventSummaryDTO>(body, 'events')
 }
 
 export async function fetchEvent(eventId: string) {
-  const body = await apiFetch<EventDetailResponse>(`/api/v1/events/${eventId}`)
+  const body = await apiFetch<EventDetailResponse>(`/events/${eventId}`)
   return body.data.event
 }
 
@@ -61,7 +61,7 @@ export async function replayEvent(
   eventId: string,
   input?: { targetUrl?: string }
 ) {
-  const body = await apiFetch<ReplayResponse>(`/api/v1/events/${eventId}/replay`, {
+  const body = await apiFetch<ReplayResponse>(`/events/${eventId}/replay`, {
     method: 'POST',
     body: JSON.stringify(
       input?.targetUrl ? { target_url: input.targetUrl } : {}
@@ -71,7 +71,7 @@ export async function replayEvent(
 }
 
 export async function fetchEventReplays(eventId: string) {
-  const body = await apiFetch<ReplaysListResponse>(`/api/v1/events/${eventId}/replays`)
+  const body = await apiFetch<ReplaysListResponse>(`/events/${eventId}/replays`)
   return body.data.replays
 }
 
@@ -82,7 +82,7 @@ type ShareTokenResponse = {
 }
 
 export async function generateShareToken(eventId: string) {
-  const body = await apiFetch<ShareTokenResponse>(`/api/v1/events/${eventId}/share`, {
+  const body = await apiFetch<ShareTokenResponse>(`/events/${eventId}/share`, {
     method: 'POST',
   })
   return body.data.token

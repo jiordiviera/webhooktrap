@@ -159,6 +159,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.4.0
         version: 5.4.0(react-hook-form@7.80.0(react@19.2.7))
+      '@next/env':
+        specifier: ^16.2.9
+        version: 16.2.9
       '@tabler/icons-react':
         specifier: ^3.44.0
         version: 3.44.0(react@19.2.7)
@@ -177,6 +180,9 @@ importers:
       axios:
         specifier: ^1.18.1
         version: 1.18.1
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
       next:
         specifier: 16.2.0
         version: 16.2.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1892,6 +1898,9 @@ packages:
 
   '@next/env@16.2.0':
     resolution: {integrity: sha512-OZIbODWWAi0epQRCRjNe1VO45LOFBzgiyqmTLzIqWq6u1wrxKnAyz1HH6tgY/Mc81YzIjRPoYsPAEr4QV4l9TA==}
+
+  '@next/env@16.2.9':
+    resolution: {integrity: sha512-ki5VxxXfzD/9TDe13wyeTKIjQTAwBVpnr8KhRDUr8ltMUq1/NBpWNT5tiPoxiGl+PHM4X2ahSOiPk6iAimIzPg==}
 
   '@next/eslint-plugin-next@16.2.0':
     resolution: {integrity: sha512-3D3pEMcGKfENC9Pzlkr67GOm+205+5hRdYPZvHuNIy5sr9k0ybSU8g+sxOO/R/RLEh/gWZ3UlY+5LmEyZ1xgXQ==}
@@ -8869,6 +8878,8 @@ snapshots:
     optional: true
 
   '@next/env@16.2.0': {}
+
+  '@next/env@16.2.9': {}
 
   '@next/eslint-plugin-next@16.2.0':
     dependencies:
