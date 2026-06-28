@@ -1,5 +1,5 @@
 ---
-name: Hookvane
+name: Hookscope
 description: Warm terracotta debugger UI with editorial landing and utilitarian product surfaces.
 colors:
   background: "oklch(0.96 0.018 78)"
@@ -85,13 +85,13 @@ components:
     height: "2rem"
 ---
 
-# Design System: Hookvane
+# Design System: Hookscope
 
 ## Overview
 
 **Creative North Star: "The Warm Workbench"**
 
-Hookvane looks like a well-lit developer bench: warm cream surfaces, terracotta accents used sparingly, and typography that shifts from editorial serif on the landing to system UI in the debugger. The product register is utilitarian (Stripe/Linear clarity); the brand register is editorial warmth without losing precision.
+Hookscope looks like a well-lit developer bench: warm cream surfaces, terracotta accents used sparingly, and typography that shifts from editorial serif on the landing to system UI in the debugger. The product register is utilitarian (Stripe/Linear clarity); the brand register is editorial warmth without losing precision.
 
 Density is controlled, not sparse and not bloated. Lists and borders carry structure; cards appear only when grouping related actions (ingest URL reveal, auth panels). Motion is purposeful on marketing surfaces and restrained in-app. Depth comes from tonal layering (background → card → border) more than heavy shadows.
 

@@ -46,7 +46,7 @@ export default function OpenGraphImage() {
               fontFamily: 'system-ui',
             }}
           >
-            Hookvane
+            Hookscope
           </span>
         </div>
         <h1

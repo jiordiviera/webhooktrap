@@ -81,7 +81,7 @@
 }
 
 :root {
-  /* Hookvane — terracotta / crème, higher contrast */
+  /* Hookscope — terracotta / crème, higher contrast */
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --wordmark: oklch(0.32 0.06 44);

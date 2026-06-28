@@ -24,15 +24,15 @@ const albertSans = Albert_Sans({subsets:['latin'],variable:'--font-sans'})
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Hookvane — Webhook debugger',
-    template: '%s — Hookvane',
+    default: 'Hookscope — Webhook debugger',
+    template: '%s — Hookscope',
   },
   description:
     'Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.',
   openGraph: {
     type: 'website',
-    siteName: 'Hookvane',
-    title: 'Hookvane — Webhook debugger',
+    siteName: 'Hookscope',
+    title: 'Hookscope — Webhook debugger',
     description:
       'Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.',
     images: [
@@ -40,13 +40,13 @@ export const metadata: Metadata = {
         url: '/opengraph-image.png',
         width: 1200,
         height: 630,
-        alt: 'Hookvane — Webhook debugging, simplified.',
+        alt: 'Hookscope — Webhook debugging, simplified.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hookvane — Webhook debugger',
+    title: 'Hookscope — Webhook debugger',
     description:
       'Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.',
     images: ['/opengraph-image.png'],

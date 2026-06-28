@@ -33,7 +33,7 @@
 - Payant : replay, historique 100k, workflows no-code
 - CLI forward vers localhost
 
-## Positionnement Hookvane
+## Positionnement Hookscope
 
 ```
                     no-code / workflows
@@ -41,7 +41,7 @@
               webhook.site ●
                            |
     dev / CLI ←────────────┼────────────→ infra prod
-         Hookvane ●       |           ● Hookdeck
+         Hookscope ●       |           ● Hookdeck
          Stripe CLI ●      |
                            ↓
                       debug local
@@ -49,7 +49,7 @@
 
 ### Wedge vs concurrence
 
-| Concurrent | Leur force | Angle Hookvane |
+| Concurrent | Leur force | Angle Hookscope |
 |------------|------------|-----------------|
 | webhook.site | Feature-rich, no-code | Un seul job : replay loop + response view |
 | Catchhook | Tunnel + AI | CLI-first, minimal, dev pur |

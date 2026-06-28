@@ -6,10 +6,10 @@ const envSchema = z.object({
     .default('development'),
 
   /** API origin — used by proxy and server-side fetch. */
-  APP_URL: z.url().default('http://localhost:3333'),
+  APP_URL: z.url().default('https://api.hookscope.jiordiviera.me'),
 
   /** Web origin — used for metadata, OAuth callbacks, ingest links. */
-  WEB_URL: z.url().default('http://localhost:7777'),
+  WEB_URL: z.url().default('https://hookscope.jiordiviera.me'),
 
   /** Public web origin (injected at build-time by Next.js). */
   NEXT_PUBLIC_WEB_URL: z.url().optional(),

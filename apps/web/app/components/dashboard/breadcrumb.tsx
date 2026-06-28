@@ -39,7 +39,7 @@ function getBreadcrumbs(
     return [{ label: activeItem.label }]
   }
 
-  return [{ label: 'Hookvane' }]
+  return [{ label: 'Hookscope' }]
 }
 
 export function DashboardBreadcrumb() {

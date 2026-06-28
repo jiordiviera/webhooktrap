@@ -1,9 +1,10 @@
 import axios, { isAxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { clearAuthToken, getAuthToken } from '@/lib/auth'
 import { toApiError } from '@/lib/api/errors'
+import { apiUrl } from '../config'
 
 /** Server-only API origin. Browser calls same-origin /api/v1 via proxy.ts. */
-const SERVER_APP_URL = process.env.APP_URL ?? 'http://localhost:3333'
+const SERVER_APP_URL = apiUrl
 
 function resolveApiBaseUrl() {
   if (typeof window !== 'undefined') return ''

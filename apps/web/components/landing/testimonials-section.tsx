@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 const workflows = [
   {
     quote:
-      'Stripe sent a checkout event I could not reproduce locally. Hookvane captured it, I replayed to localhost, and saw the 422 my handler returned.',
+      'Stripe sent a checkout event I could not reproduce locally. Hookscope captured it, I replayed to localhost, and saw the 422 my handler returned.',
     context: 'Payment integration',
     metric: 'Found the bug in one replay',
   },

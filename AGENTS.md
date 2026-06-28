@@ -1,4 +1,4 @@
-# Hookvane — Agent Guide
+# Hookscope — Agent Guide
 
 ## Quick start
 

@@ -180,7 +180,7 @@ export default function SharedEventPage({
     return (
       <div className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col items-center justify-center gap-6 px-4">
         <Link href="/" className="font-ui text-sm font-semibold text-primary">
-          Hookvane
+          Hookscope
         </Link>
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="font-ui text-xl font-semibold text-foreground">
@@ -210,7 +210,7 @@ export default function SharedEventPage({
           href="/"
           className="font-ui text-sm font-semibold text-primary transition-colors hover:text-primary/80"
         >
-          Hookvane
+          Hookscope
         </Link>
       </div>
 
@@ -322,7 +322,7 @@ export default function SharedEventPage({
           className="inline-flex items-center gap-1.5 font-ui text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <IconExternalLink className="size-3.5" aria-hidden />
-          Hookvane &middot; Webhook debugger
+          Hookscope &middot; Webhook debugger
         </Link>
       </footer>
     </div>

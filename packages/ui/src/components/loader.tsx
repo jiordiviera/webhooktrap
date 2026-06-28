@@ -11,7 +11,7 @@ const DEFAULT_TIPS = [
   {
     key: "anonymous",
     text: "Anonymous inboxes last 48 hours. Sign in when you want to keep them.",
-    label: "Hookvane tip",
+    label: "Hookscope tip",
   },
   {
     key: "replay",

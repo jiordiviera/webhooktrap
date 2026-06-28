@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Dashboard — Hookvane',
+  title: 'Dashboard — Hookscope',
   description: 'Overview of your webhook inboxes, events, and replay activity.',
 }
 

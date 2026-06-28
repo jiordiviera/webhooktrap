@@ -1,4 +1,4 @@
-# Hookvane — Branding assets
+# Hookscope — Branding assets
 
 ## Fichiers
 
@@ -21,10 +21,10 @@ Les PNG/JPG **n’embarquent pas de police** (texte rasterisé). Pour le code et
 <link rel="stylesheet" href="/branding/brand.css" />
 
 <!-- Image logo (fidèle au rendu Imagine) -->
-<img src="/branding/logo.png" alt="Hookvane" width="180" height="48" />
+<img src="/branding/logo.png" alt="Hookscope" width="180" height="48" />
 
 <!-- Ou texte seul (SEO, accessibilité, dark mode) -->
-<span class="logo-wordmark">Hookvane</span>
+<span class="logo-wordmark">Hookscope</span>
 ```
 
 Combiner **image** (rendu premium du PNG) + **texte stylé** (accessibilité, `prefers-color-scheme`) est une bonne pratique.
@@ -32,4 +32,4 @@ Combiner **image** (rendu premium du PNG) + **texte stylé** (accessibilité, `p
 ## Historique
 
 - Premiers SVG (cyan / fond sombre) — remplacés par la direction **terracotta / crème** et assets Imagine.
-- Direction typographique initialement explorée via le nom de travail **DreamBell**, puis **Hookvane**.
+- Direction typographique initialement explorée via le nom de travail **DreamBell**, puis **Hookscope**.

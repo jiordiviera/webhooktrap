@@ -1,8 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-
-/** Internal API origin — server-only, never shown in the browser. */
-const apiUrl = process.env.APP_URL ?? 'http://localhost:3333'
+import { apiUrl } from '@/lib/config'
 
 function proxyToApi(request: NextRequest, upstreamPath: string) {
   const upstream = new URL(upstreamPath, apiUrl)

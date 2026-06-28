@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-06-23T16:30:00.000Z",
-  "title": "Design System: Hookvane",
+  "title": "Design System: Hookscope",
   "extensions": {
     "colorMeta": {
       "primary": {
@@ -191,7 +191,7 @@
   ],
   "narrative": {
     "northStar": "The Warm Workbench",
-    "overview": "Hookvane looks like a well-lit developer bench: warm cream surfaces, terracotta accents used sparingly, and typography that shifts from editorial serif on the landing to system UI in the debugger. Density is controlled. Lists and borders carry structure; cards appear only when grouping related actions. Depth comes from tonal layering more than heavy shadows.",
+    "overview": "Hookscope looks like a well-lit developer bench: warm cream surfaces, terracotta accents used sparingly, and typography that shifts from editorial serif on the landing to system UI in the debugger. Density is controlled. Lists and borders carry structure; cards appear only when grouping related actions. Depth comes from tonal layering more than heavy shadows.",
     "keyCharacteristics": [
       "OKLCH terracotta/crème palette with tinted neutrals",
       "Dual typography: serif editorial landing, font-ui product surfaces",

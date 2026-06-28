@@ -15,16 +15,16 @@ import { FooterSection } from "@/components/landing/footer-section";
 import "@/styles/landing-v2.css";
 
 export const metadata: Metadata = {
-  title: 'Hookvane — Webhook debugger',
+  title: 'Hookscope — Webhook debugger',
   description:
     'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
   openGraph: {
-    title: 'Hookvane — Webhook debugger',
+    title: 'Hookscope — Webhook debugger',
     description:
       'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
   },
   twitter: {
-    title: 'Hookvane — Webhook debugger',
+    title: 'Hookscope — Webhook debugger',
     description:
       'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
   },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'Hookvane',
+  name: 'Hookscope',
   url: 'https://hookscope.dev',
   description:
     'Webhook debugging tool. Receive, inspect, replay, and share webhook payloads.',
