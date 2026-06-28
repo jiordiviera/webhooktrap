@@ -29,7 +29,12 @@ MVP avancé. 20+ commits, 9 migrations. Backend complet : ingest (toujours 200),
 
 ## Prochaine action
 
-1. Share links (Epic D) — API controller + routes + web public page
+1. Tests — couverture pour ingest, replay, auth, share
 2. CLI light (Epic E) — npx @hookscope/cli
-3. Tests — couverture pour ingest, replay, auth, share
-4. Landing page polish — copy, illustrations, SEO
+
+## Changements récents
+
+- **Env vars** — Simplifié : plus de Zod, interfaces TS + `validateEnv()`. Nouvelles vars : `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`. `.env` chargé depuis le root monorepo via `@next/env` dans `next.config.js`. Turbo pipeline déclare les vars dans `apps/web/turbo.json`.
+- **Route proxy** — Nouvelle route `/api/backend/[...path]/route.ts` qui proxie toutes les requêtes XHR vers l'API. Remplace le middleware `proxy.ts` pour les calls API (le middleware ne gère plus que `/hooks/:inboxId` pour l'ingest).
+- **`baseURL`** — `lib/api/client.ts` : `baseURL = '/api/backend'` côté navigateur, chemins API relatifs (ex: `/inboxes`, `/events/${id}`). Le route handler mappe `/api/backend` → `/api/v1` vers AdonisJS.
+- **Landing page** — 13 sections, layout SEO (OG/Twitter cards, JSON-LD, OG image dynamique), pipeline SVG.
