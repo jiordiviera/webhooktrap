@@ -6,14 +6,15 @@ async function handler(req: NextRequest) {
   const pathname = req.nextUrl.pathname.replace(/^\/api\/backend/, "/api/v1");
   const url = `${backendUrl}${pathname}${req.nextUrl.search}`;
 
-  const token = req.cookies.get("token")?.value;
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader || req.cookies.get("token")?.value;
 
   const headers: Record<string, string> = {
     "Content-Type": req.headers.get("content-type") || "application/json",
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
   }
 
   const accept = req.headers.get("accept");

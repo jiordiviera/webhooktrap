@@ -30,7 +30,6 @@ function validateEnv(): void {
     NEXT_PUBLIC_API_URL: env.api.url,
   };
 
-  console.log("Env: ", process.env);
   const missing = Object.entries(required).flatMap(([key, value]) =>
     value ? [] : [key],
   );
