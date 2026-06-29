@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { IconCheck, IconCopy, IconShare3, IconX } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
@@ -25,7 +25,6 @@ import { buildEventCurl, buildEventJson } from "@/lib/event-copy";
 import { generateShareToken, replayEvent } from "@/lib/events";
 import { formatRelativeTime, updateInbox } from "@/lib/inboxes";
 import type { ReplayRecord } from "@/lib/events";
-import JsonView from "@uiw/react-json-view";
 import { JsonBlock } from "./json-block";
 
 function MethodBadge({ method }: { method: string }) {

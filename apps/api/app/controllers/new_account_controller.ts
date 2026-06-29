@@ -12,13 +12,13 @@ export default class NewAccountController {
     const { fullName, email, password } = await request.validateUsing(signupValidator)
 
     const user = await db.transaction(async (trx) => {
-      const user = new User()
-      user.fullName = fullName
-      user.email = email
-      user.password = password
-      user.useTransaction(trx)
-      await user.save()
-      return user
+      const newUser = new User()
+      newUser.fullName = fullName
+      newUser.email = email
+      newUser.password = password
+      newUser.useTransaction(trx)
+      await newUser.save()
+      return newUser
     })
 
     const token = await User.accessTokens.create(user)
