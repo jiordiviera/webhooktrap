@@ -182,9 +182,9 @@ export function EventDetailSheet({
     >
       <SheetContent
         side="right"
-        className="flex w-full flex-col p-0 sm:max-w-lg"
+        className="flex w-full flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-muted/80 p-0 sm:max-w-lg"
       >
-        <SheetHeader className="border-b border-border px-4 py-3">
+        <SheetHeader className="sticky top-0 z-10 border-b border-border bg-popover px-4 py-3">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               {eventDetail ? (
@@ -246,7 +246,7 @@ export function EventDetailSheet({
           ) : null}
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="scrollbar-thin scrollbar-thumb-muted scrollbar-track-sky-100">
           {sheetError ? (
             <p className="px-4 py-2.5 text-sm text-destructive" role="alert">
               {sheetError}

@@ -12,7 +12,7 @@ export interface EventDetailDTO extends EventSummaryDTO {
   query: Record<string, string>
   headers: Record<string, string | string[]>
   bodyText: string | null
-  bodyJson: Record<string, unknown> | unknown[] | null
+  bodyJson: object
   ip: string | null
   createdAt: string
 }

@@ -1,28 +1,26 @@
-'use client'
+"use client";
 
-import { use, useState } from 'react'
-import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
-import { IconCopy, IconExternalLink } from '@tabler/icons-react'
-import { Button } from '@workspace/ui/components/button'
-import { Skeleton } from '@workspace/ui/components/skeleton'
-import { cn } from '@workspace/ui/lib/utils'
-import { MethodBadge } from '@/components/method-badge'
-import { fetchSharedEvent } from '@/lib/shared-event'
-import type { ReplayRecord } from '@/lib/shared-event'
-import { formatRelativeTime } from '@/lib/inboxes'
+import { use, useState } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { IconCopy, IconExternalLink } from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { cn } from "@workspace/ui/lib/utils";
+import { MethodBadge } from "@/components/method-badge";
+import { fetchSharedEvent } from "@/lib/shared-event";
+import type { ReplayRecord } from "@/lib/shared-event";
+import { formatRelativeTime } from "@/lib/inboxes";
+import { JsonBlock } from "@/features/inbox/components/json-block";
 
-function JsonBlock({ value }: { value: unknown }) {
-  const text = JSON.stringify(value, null, 2)
-
-  return (
-    <pre className="max-h-80 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs leading-relaxed text-foreground">
-      {text}
-    </pre>
-  )
-}
-
-function buildEventJson(event: { method: string; path: string; headers: Record<string, unknown>; query: Record<string, unknown>; bodyJson: unknown; bodyText: string | null }) {
+function buildEventJson(event: {
+  method: string;
+  path: string;
+  headers: Record<string, unknown>;
+  query: Record<string, unknown>;
+  bodyJson: unknown;
+  bodyText: string | null;
+}) {
   return JSON.stringify(
     {
       method: event.method,
@@ -32,32 +30,41 @@ function buildEventJson(event: { method: string; path: string; headers: Record<s
       body: event.bodyJson ?? event.bodyText,
     },
     null,
-    2
-  )
+    2,
+  );
 }
 
-function buildEventCurl(event: { method: string; path: string; headers: Record<string, unknown>; bodyJson: unknown; bodyText: string | null }) {
-  const url = `https://hookscope.dev${event.path}`
-  const parts = [`curl -X ${event.method} '${url}'`]
+function buildEventCurl(event: {
+  method: string;
+  path: string;
+  headers: Record<string, unknown>;
+  bodyJson: unknown;
+  bodyText: string | null;
+}) {
+  const url = `https://hookscope.dev${event.path}`;
+  const parts = [`curl -X ${event.method} '${url}'`];
 
   for (const [key, value] of Object.entries(event.headers)) {
-    if (key.toLowerCase() === 'authorization') continue
-    const val = Array.isArray(value) ? value[0] ?? '' : value
-    parts.push(`  -H '${key}: ${val}'`)
+    if (key.toLowerCase() === "authorization") continue;
+    const val = Array.isArray(value) ? (value[0] ?? "") : value;
+    parts.push(`  -H '${key}: ${val}'`);
   }
 
-  const body = event.bodyJson ?? event.bodyText
+  const body = event.bodyJson ?? event.bodyText;
   if (body) {
-    parts.push(`  -d '${typeof body === 'string' ? body : JSON.stringify(body)}'`)
+    parts.push(
+      `  -d '${typeof body === "string" ? body : JSON.stringify(body)}'`,
+    );
   }
 
-  return parts.join(' \\\n')
+  return parts.join(" \\\n");
 }
 
 function ReplayRow({ replay }: { replay: ReplayRecord }) {
-  const statusOk = replay.statusCode && replay.statusCode >= 200 && replay.statusCode < 300
-  const statusErr = replay.statusCode && replay.statusCode >= 400
-  const duration = replay.durationMs != null ? `${replay.durationMs}ms` : null
+  const statusOk =
+    replay.statusCode && replay.statusCode >= 200 && replay.statusCode < 300;
+  const statusErr = replay.statusCode && replay.statusCode >= 400;
+  const duration = replay.durationMs != null ? `${replay.durationMs}ms` : null;
 
   return (
     <div className="rounded-lg border border-border px-4 py-3">
@@ -65,14 +72,22 @@ function ReplayRow({ replay }: { replay: ReplayRecord }) {
         {replay.statusCode ? (
           <span
             className={cn(
-              'inline-flex items-center gap-1.5 font-mono text-sm font-semibold tabular-nums',
-              statusErr ? 'text-destructive' : statusOk ? 'text-signal' : 'text-foreground'
+              "inline-flex items-center gap-1.5 font-mono text-sm font-semibold tabular-nums",
+              statusErr
+                ? "text-destructive"
+                : statusOk
+                  ? "text-signal"
+                  : "text-foreground",
             )}
           >
             <span
               className={cn(
-                'size-1.5 rounded-full',
-                statusErr ? 'bg-destructive' : statusOk ? 'bg-signal' : 'bg-muted-foreground'
+                "size-1.5 rounded-full",
+                statusErr
+                  ? "bg-destructive"
+                  : statusOk
+                    ? "bg-signal"
+                    : "bg-muted-foreground",
               )}
               aria-hidden
             />
@@ -80,8 +95,11 @@ function ReplayRow({ replay }: { replay: ReplayRecord }) {
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 font-mono text-sm font-semibold text-destructive">
-            <span className="size-1.5 rounded-full bg-destructive" aria-hidden />
-            {replay.errorCode ?? 'ERR'}
+            <span
+              className="size-1.5 rounded-full bg-destructive"
+              aria-hidden
+            />
+            {replay.errorCode ?? "ERR"}
           </span>
         )}
         <span className="min-w-0 truncate text-xs text-muted-foreground">
@@ -100,8 +118,8 @@ function ReplayRow({ replay }: { replay: ReplayRecord }) {
             type="button"
             className="font-medium text-primary underline-offset-2 hover:underline"
             onClick={() => {
-              const el = document.getElementById(`replay-body-${replay.id}`)
-              el?.classList.toggle('hidden')
+              const el = document.getElementById(`replay-body-${replay.id}`);
+              el?.classList.toggle("hidden");
             }}
           >
             View response
@@ -117,12 +135,15 @@ function ReplayRow({ replay }: { replay: ReplayRecord }) {
         </pre>
       ) : null}
     </div>
-  )
+  );
 }
 
 function SharedEventSkeleton() {
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-16" aria-busy="true">
+    <div
+      className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-16"
+      aria-busy="true"
+    >
       <Skeleton className="h-3 w-20 rounded-md" />
       <div className="space-y-3">
         <Skeleton className="h-5 w-48 rounded-md" />
@@ -134,39 +155,43 @@ function SharedEventSkeleton() {
       <Skeleton className="h-48 rounded-xl border border-border" />
       <Skeleton className="h-64 rounded-xl border border-border" />
     </div>
-  )
+  );
 }
 
 export default function SharedEventPage({
   params,
 }: {
-  params: Promise<{ token: string }>
+  params: Promise<{ token: string }>;
 }) {
-  const { token } = use(params)
+  const { token } = use(params);
 
-  const [copiedAction, setCopiedAction] = useState<'json' | 'curl' | null>(null)
+  const [copiedAction, setCopiedAction] = useState<"json" | "curl" | null>(
+    null,
+  );
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['shared-event', token],
+    queryKey: ["shared-event", token],
     queryFn: () => fetchSharedEvent(token),
     retry: 1,
     staleTime: 30_000,
-  })
+  });
 
-  async function handleCopy(action: 'json' | 'curl') {
-    if (!data) return
+  async function handleCopy(action: "json" | "curl") {
+    if (!data) return;
 
     const text =
-      action === 'json' ? buildEventJson(data.event) : buildEventCurl(data.event)
-    if (!text) return
+      action === "json"
+        ? buildEventJson(data.event)
+        : buildEventCurl(data.event);
+    if (!text) return;
 
-    await navigator.clipboard.writeText(text)
-    setCopiedAction(action)
-    window.setTimeout(() => setCopiedAction(null), 2000)
+    await navigator.clipboard.writeText(text);
+    setCopiedAction(action);
+    window.setTimeout(() => setCopiedAction(null), 2000);
   }
 
   if (isLoading) {
-    return <SharedEventSkeleton />
+    return <SharedEventSkeleton />;
   }
 
   if (isError || !data) {
@@ -190,10 +215,10 @@ export default function SharedEventPage({
           </Button>
         </Link>
       </div>
-    )
+    );
   }
 
-  const { event, replays } = data
+  const { event, replays } = data;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-16">
@@ -226,19 +251,19 @@ export default function SharedEventPage({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => void handleCopy('json')}
+            onClick={() => void handleCopy("json")}
           >
             <IconCopy className="size-3.5" aria-hidden />
-            {copiedAction === 'json' ? 'Copied' : 'JSON'}
+            {copiedAction === "json" ? "Copied" : "JSON"}
           </Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => void handleCopy('curl')}
+            onClick={() => void handleCopy("curl")}
           >
             <IconCopy className="size-3.5" aria-hidden />
-            {copiedAction === 'curl' ? 'Copied' : 'cURL'}
+            {copiedAction === "curl" ? "Copied" : "cURL"}
           </Button>
         </div>
       </div>
@@ -296,7 +321,7 @@ export default function SharedEventPage({
                 Replays
               </h2>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {replays.length} replay{replays.length > 1 ? 's' : ''}
+                {replays.length} replay{replays.length > 1 ? "s" : ""}
               </p>
             </div>
             <div className="space-y-2 p-4">
@@ -319,5 +344,5 @@ export default function SharedEventPage({
         </Link>
       </footer>
     </div>
-  )
+  );
 }
