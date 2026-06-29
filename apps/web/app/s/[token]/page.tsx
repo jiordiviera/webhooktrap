@@ -1,9 +1,9 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { IconCopy, IconExternalLink } from "@tabler/icons-react";
+import { IconCopy, IconExternalLink, IconPlus } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { cn } from "@workspace/ui/lib/utils";
@@ -61,6 +61,7 @@ function buildEventCurl(event: {
 }
 
 function ReplayRow({ replay }: { replay: ReplayRecord }) {
+  const [showResponse, setShowResponse] = useState(false);
   const statusOk =
     replay.statusCode && replay.statusCode >= 200 && replay.statusCode < 300;
   const statusErr = replay.statusCode && replay.statusCode >= 400;
@@ -117,20 +118,14 @@ function ReplayRow({ replay }: { replay: ReplayRecord }) {
           <button
             type="button"
             className="font-medium text-primary underline-offset-2 hover:underline"
-            onClick={() => {
-              const el = document.getElementById(`replay-body-${replay.id}`);
-              el?.classList.toggle("hidden");
-            }}
+            onClick={() => setShowResponse((prev) => !prev)}
           >
-            View response
+            {showResponse ? "Hide response" : "View response"}
           </button>
         ) : null}
       </div>
-      {replay.responseBody ? (
-        <pre
-          id={`replay-body-${replay.id}`}
-          className="mt-2 hidden max-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[0.6875rem] leading-relaxed text-foreground"
-        >
+      {showResponse && replay.responseBody ? (
+        <pre className="mt-2 max-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[0.6875rem] leading-relaxed text-foreground">
           {replay.responseBody}
         </pre>
       ) : null}
@@ -168,6 +163,7 @@ export default function SharedEventPage({
   const [copiedAction, setCopiedAction] = useState<"json" | "curl" | null>(
     null,
   );
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["shared-event", token],
@@ -187,7 +183,8 @@ export default function SharedEventPage({
 
     await navigator.clipboard.writeText(text);
     setCopiedAction(action);
-    window.setTimeout(() => setCopiedAction(null), 2000);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopiedAction(null), 2000);
   }
 
   if (isLoading) {
@@ -223,20 +220,24 @@ export default function SharedEventPage({
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-16">
       {/* Brand mark */}
-      <div>
+      <div className="flex items-baseline gap-3">
         <Link
           href="/"
           className="font-ui text-sm font-semibold text-primary transition-colors hover:text-primary/80"
         >
           Hookscope
         </Link>
+        <span className="text-xs text-muted-foreground">
+          Webhook debugger
+        </span>
       </div>
 
       {/* Hero: event identity + copy actions */}
       <div className="space-y-4">
-        <p className="font-ui text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 px-3 py-1 font-ui text-[0.6875rem] font-medium tracking-[0.06em] text-muted-foreground uppercase">
+          <span className="size-1.5 rounded-full bg-primary/50" aria-hidden />
           Shared event
-        </p>
+        </span>
         <div className="flex flex-wrap items-center gap-3">
           <MethodBadge method={event.method} />
           <code className="truncate rounded-md bg-muted/40 px-1.5 py-0.5 font-mono text-sm text-foreground">
@@ -297,7 +298,7 @@ export default function SharedEventPage({
         )}
 
         {(event.bodyJson !== null || event.bodyText !== null) && (
-          <div className="overflow-hidden rounded-xl border-2 border-border bg-card">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="border-b border-border px-4 py-2.5">
               <h2 className="font-ui text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
                 Body
@@ -331,6 +332,23 @@ export default function SharedEventPage({
             </div>
           </div>
         )}
+      </div>
+
+      {/* CTA */}
+      <div className="rounded-xl border border-border bg-card p-6 text-center sm:p-8">
+        <p className="font-ui text-sm font-semibold text-foreground">
+          Debug your webhooks in real-time
+        </p>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Hookscope receives, inspects, and replays every webhook your app
+          sends.
+        </p>
+        <Link href="/" className="mt-5 inline-flex">
+          <Button type="button" variant="default">
+            <IconPlus className="size-4" aria-hidden />
+            Create your own webhook endpoint
+          </Button>
+        </Link>
       </div>
 
       {/* Footer */}
