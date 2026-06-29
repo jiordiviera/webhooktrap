@@ -7,17 +7,10 @@ import { IconCopy, IconExternalLink } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { Skeleton } from '@workspace/ui/components/skeleton'
 import { cn } from '@workspace/ui/lib/utils'
+import { MethodBadge } from '@/components/method-badge'
 import { fetchSharedEvent } from '@/lib/shared-event'
 import type { ReplayRecord } from '@/lib/shared-event'
 import { formatRelativeTime } from '@/lib/inboxes'
-
-function MethodBadge({ method }: { method: string }) {
-  return (
-    <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[0.6875rem] font-semibold tracking-wide text-primary">
-      {method}
-    </span>
-  )
-}
 
 function JsonBlock({ value }: { value: unknown }) {
   const text = JSON.stringify(value, null, 2)

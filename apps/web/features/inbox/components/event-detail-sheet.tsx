@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { IconCheck, IconCopy, IconShare3, IconX } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
@@ -12,6 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet";
+import { MethodBadge } from "@/components/method-badge";
 import { EventInspectorSkeleton } from "@/features/inbox/components/inbox-detail-skeleton";
 import {
   useEventDetailQuery,
@@ -26,14 +27,6 @@ import { generateShareToken, replayEvent } from "@/lib/events";
 import { formatRelativeTime, updateInbox } from "@/lib/inboxes";
 import type { ReplayRecord } from "@/lib/events";
 import { JsonBlock } from "./json-block";
-
-function MethodBadge({ method }: { method: string }) {
-  return (
-    <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[0.6875rem] font-semibold tracking-wide text-primary">
-      {method}
-    </span>
-  );
-}
 
 interface EventDetailSheetProps {
   inboxId: string;
@@ -66,6 +59,15 @@ export function EventDetailSheet({
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareJustCopied, setShareJustCopied] = useState(false);
   const [sheetError, setSheetError] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shareTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      if (shareTimeoutRef.current) clearTimeout(shareTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     setReplayUrl("");
@@ -101,9 +103,9 @@ export function EventDetailSheet({
       const replay = await replayEvent(selectedEventId, {
         targetUrl: replayUrl.trim() || undefined,
       });
-      queryClient.setQueryData(
+      queryClient.setQueryData<ReplayRecord[]>(
         eventReplaysQueryKey(selectedEventId),
-        (current: ReplayRecord[] | undefined) => [replay, ...(current ?? [])],
+        (current) => [replay, ...(current ?? [])],
       );
     } catch (error) {
       setSheetError(
@@ -125,7 +127,8 @@ export function EventDetailSheet({
 
     await navigator.clipboard.writeText(text);
     setCopiedAction(action);
-    window.setTimeout(() => setCopiedAction(null), 2000);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopiedAction(null), 2000);
   }
 
   async function handleShare() {
@@ -154,7 +157,8 @@ export function EventDetailSheet({
 
     await navigator.clipboard.writeText(shareUrl);
     setShareJustCopied(true);
-    window.setTimeout(() => setShareJustCopied(false), 2000);
+    if (shareTimeoutRef.current) clearTimeout(shareTimeoutRef.current);
+    shareTimeoutRef.current = setTimeout(() => setShareJustCopied(false), 2000);
   }
 
   function dismissShareUrl() {
