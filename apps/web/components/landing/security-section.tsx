@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { IconEye, IconFileCheck, IconLock, IconShield } from '@tabler/icons-react'
+import { productName } from '@/lib/config'
 
 const securityFeatures = [
   {
@@ -66,7 +67,7 @@ export function SecuritySection() {
               Share deliberately.
             </h2>
             <p className="mb-12 text-xl leading-relaxed text-muted-foreground">
-              Hookscope is a debugger, not production webhook infrastructure. Design around
+              {productName} is a debugger, not production webhook infrastructure. Design around
               inspection, replay, and controlled sharing.
             </p>
             <div className="flex flex-wrap gap-3">

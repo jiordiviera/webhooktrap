@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { productName } from '@/lib/config'
 
 export const runtime = 'edge'
 export const size = { width: 1200, height: 630 }
@@ -46,7 +47,7 @@ export default function OpenGraphImage() {
               fontFamily: 'system-ui',
             }}
           >
-            Hookscope
+            {productName}
           </span>
         </div>
         <h1

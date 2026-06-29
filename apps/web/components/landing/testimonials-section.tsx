@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { productName } from '@/lib/config'
 
 const workflows = [
   {
     quote:
-      'Stripe sent a checkout event I could not reproduce locally. Hookscope captured it, I replayed to localhost, and saw the 422 my handler returned.',
+      `Stripe sent a checkout event I could not reproduce locally. ${productName} captured it, I replayed to localhost, and saw the 422 my handler returned.`,
     context: 'Payment integration',
     metric: 'Found the bug in one replay',
   },

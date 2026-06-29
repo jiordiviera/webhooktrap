@@ -1,8 +1,10 @@
 'use client'
 
+import * as React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { productName } from '@/lib/config'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import {
   IconBell,
   IconBuilding,
@@ -58,11 +60,7 @@ export function SettingsPage() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting, isDirty },
-  } = useForm<ProfileValues>({
+  const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     values: {
       fullName: user?.fullName?.trim() || user?.email.split('@')[0] || '',
@@ -164,7 +162,7 @@ export function SettingsPage() {
                     Account
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Manage your display name and avatar across Hookscope.
+                    Manage your display name and avatar across {productName}.
                   </p>
                 </div>
 
@@ -208,16 +206,24 @@ export function SettingsPage() {
                     </div>
                   </div>
 
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <form id="profile-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FieldGroup>
-                      <Field>
-                        <FieldLabel htmlFor="fullName">Display name</FieldLabel>
-                        <Input id="fullName" autoComplete="name" {...register('fullName')} />
-                        <FieldDescription>
-                          Used in the sidebar, header, and shared views.
-                        </FieldDescription>
-                        <FieldError>{errors.fullName?.message}</FieldError>
-                      </Field>
+                      <Controller
+                        name="fullName"
+                        control={form.control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel htmlFor="fullName">Display name</FieldLabel>
+                            <Input id="fullName" autoComplete="name" {...field} />
+                            <FieldDescription>
+                              Used in the sidebar, header, and shared views.
+                            </FieldDescription>
+                            {fieldState.invalid && (
+                              <FieldError errors={[fieldState.error]} />
+                            )}
+                          </Field>
+                        )}
+                      />
 
                       <Field>
                         <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -229,8 +235,12 @@ export function SettingsPage() {
                     </FieldGroup>
 
                     <div className="flex flex-wrap items-center gap-3">
-                      <Button type="submit" disabled={isSubmitting || !isDirty}>
-                        {isSubmitting ? 'Saving\u2026' : 'Save changes'}
+                      <Button
+                        type="submit"
+                        form="profile-form"
+                        disabled={form.formState.isSubmitting || !form.formState.isDirty}
+                      >
+                        {form.formState.isSubmitting ? 'Saving\u2026' : 'Save changes'}
                       </Button>
                       {saveMessage ? (
                         <p className="inline-flex items-center gap-1.5 text-sm text-primary">
@@ -278,7 +288,7 @@ export function SettingsPage() {
                   Notifications
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Configure how and when you hear from Hookscope.
+                  Configure how and when you hear from {productName}.
                 </p>
               </div>
               <div className="px-6 py-12 text-center">

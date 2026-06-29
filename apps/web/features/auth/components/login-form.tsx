@@ -1,10 +1,11 @@
 'use client'
 
+import * as React from 'react'
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@workspace/ui/components/button'
 import {
   Field,
@@ -122,9 +123,6 @@ export function LoginForm() {
   }
 
   if (requires2fa) {
-    const otpValue = otpForm.watch('otp')
-    const otpError = otpForm.formState.errors.otp?.message
-
     return (
       <div className="flex flex-col gap-6">
         <div className="text-center">
@@ -134,47 +132,55 @@ export function LoginForm() {
           </p>
         </div>
 
-        <form onSubmit={otpForm.handleSubmit(onSubmitOtp)}>
+        <form id="login-otp-form" onSubmit={otpForm.handleSubmit(onSubmitOtp)}>
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="2fa-challenge-otp">Authentication code</FieldLabel>
-              <InputOTP
-                pattern={REGEXP_ONLY_DIGITS}
-                inputMode="numeric"
-                id="2fa-challenge-otp"
-                className='w-full'
-                maxLength={6}
-                value={otpValue}
-                onChange={(v) => otpForm.setValue('otp', v, { shouldValidate: true })}
-                onComplete={() => otpForm.handleSubmit(onSubmitOtp)()}
-              >
-                <InputOTPGroup> 
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <InputOTPSlot
-                      key={index}
-                      index={index}
-                      className="size-12 text-2xl sm:size-16 sm:text-3xl"
-                    />
-                  ))}
-                </InputOTPGroup>
-                <InputOTPSeparator />
-                <InputOTPGroup>
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <InputOTPSlot
-                      key={index + 3}
-                      index={index + 3}
-                      className="size-12 text-2xl sm:size-16 sm:text-3xl"
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-              <FieldError>{otpError}</FieldError>
-            </Field>
+            <Controller
+              name="otp"
+              control={otpForm.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="2fa-challenge-otp">Authentication code</FieldLabel>
+                  <InputOTP
+                    pattern={REGEXP_ONLY_DIGITS}
+                    inputMode="numeric"
+                    id="2fa-challenge-otp"
+                    className='w-full'
+                    maxLength={6}
+                    {...field}
+                    onComplete={() => otpForm.handleSubmit(onSubmitOtp)()}
+                  >
+                    <InputOTPGroup> 
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <InputOTPSlot
+                          key={index}
+                          index={index}
+                          className="size-12 text-2xl sm:size-16 sm:text-3xl"
+                        />
+                      ))}
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <InputOTPSlot
+                          key={index + 3}
+                          index={index + 3}
+                          className="size-12 text-2xl sm:size-16 sm:text-3xl"
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
             <Button
               type="submit"
+              form="login-otp-form"
               className="font-ui h-10 w-full"
-              disabled={otpForm.formState.isSubmitting || otpValue.length < 6}
+              disabled={otpForm.formState.isSubmitting || (otpForm.watch('otp')?.length ?? 0) < 6}
             >
               {otpForm.formState.isSubmitting ? 'Verifying…' : 'Verify'}
             </Button>
@@ -198,51 +204,53 @@ export function LoginForm() {
 
       <FieldSeparator>or with email</FieldSeparator>
 
-      <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} noValidate>
+      <form id="login-form" onSubmit={loginForm.handleSubmit(onSubmitLogin)} noValidate>
         <FieldGroup>
-          <Field data-invalid={!!loginForm.formState.errors.email}>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              aria-invalid={!!loginForm.formState.errors.email}
-              {...loginForm.register('email')}
-            />
-            <FieldError
-              errors={
-                loginForm.formState.errors.email
-                  ? [loginForm.formState.errors.email]
-                  : undefined
-              }
-            />
-          </Field>
+          <Controller
+            name="email"
+            control={loginForm.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={fieldState.invalid}
+                  {...field}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-          <Field data-invalid={!!loginForm.formState.errors.password}>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              aria-invalid={!!loginForm.formState.errors.password}
-              {...loginForm.register('password')}
-            />
-            <FieldError
-              errors={
-                loginForm.formState.errors.password
-                  ? [loginForm.formState.errors.password]
-                  : undefined
-              }
-            />
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="font-ui text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
-          </Field>
+          <Controller
+            name="password"
+            control={loginForm.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={fieldState.invalid}
+                  {...field}
+                />
+                <FieldError errors={fieldState.invalid ? [fieldState.error] : undefined} />
+                <div className="flex justify-end">
+                  <Link
+                    href="/forgot-password"
+                    className="font-ui text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </Field>
+            )}
+          />
 
           {loginForm.formState.errors.root && (
             <FieldError>{loginForm.formState.errors.root.message}</FieldError>
@@ -250,6 +258,7 @@ export function LoginForm() {
 
           <Button
             type="submit"
+            form="login-form"
             className="font-ui h-10 w-full"
             disabled={loginForm.formState.isSubmitting}
           >

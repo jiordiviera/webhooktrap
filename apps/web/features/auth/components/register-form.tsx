@@ -1,9 +1,10 @@
 'use client'
 
+import * as React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@workspace/ui/components/button'
 import {
   Field,
@@ -23,12 +24,7 @@ import { OAuthButtons } from './oauth-buttons'
 export function RegisterForm() {
   const router = useRouter()
   const { signIn } = useAuth()
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterValues>({
+  const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: '',
@@ -67,14 +63,14 @@ export function RegisterForm() {
           fieldError?.field &&
           registerFields.includes(fieldError.field as (typeof registerFields)[number])
         ) {
-          setError(fieldError.field as keyof RegisterValues, { message: fieldError.message })
+          form.setError(fieldError.field as keyof RegisterValues, { message: fieldError.message })
           return
         }
-        setError('root', {
+        form.setError('root', {
           message: fieldError?.message ?? err.message,
         })
       } else {
-        setError('root', {
+        form.setError('root', {
           message: 'Could not reach the API. Is the server running on port 3333?',
         })
       }
@@ -87,63 +83,98 @@ export function RegisterForm() {
 
       <FieldSeparator>or with email</FieldSeparator>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form id="register-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
         <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="fullName">Name</FieldLabel>
-            <Input
-              id="fullName"
-              type="text"
-              autoComplete="name"
-              placeholder="Optional"
-              {...register('fullName')}
-            />
-            <FieldDescription>Shown on shared event links.</FieldDescription>
-          </Field>
+          <Controller
+            name="fullName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="fullName">Name</FieldLabel>
+                <Input
+                  id="fullName"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="Optional"
+                  {...field}
+                />
+                <FieldDescription>Shown on shared event links.</FieldDescription>
+              </Field>
+            )}
+          />
 
-          <Field data-invalid={!!errors.email}>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              aria-invalid={!!errors.email}
-              {...register('email')}
-            />
-            <FieldError errors={errors.email ? [errors.email] : undefined} />
-          </Field>
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={fieldState.invalid}
+                  {...field}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-          <Field data-invalid={!!errors.password}>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={!!errors.password}
-              {...register('password')}
-            />
-            <FieldDescription>8 to 32 characters.</FieldDescription>
-            <FieldError errors={errors.password ? [errors.password] : undefined} />
-          </Field>
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={fieldState.invalid}
+                  {...field}
+                />
+                <FieldDescription>8 to 32 characters.</FieldDescription>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-          <Field data-invalid={!!errors.passwordConfirmation}>
-            <FieldLabel htmlFor="passwordConfirmation">Confirm password</FieldLabel>
-            <Input
-              id="passwordConfirmation"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={!!errors.passwordConfirmation}
-              {...register('passwordConfirmation')}
-            />
-            <FieldError
-              errors={errors.passwordConfirmation ? [errors.passwordConfirmation] : undefined}
-            />
-          </Field>
+          <Controller
+            name="passwordConfirmation"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="passwordConfirmation">Confirm password</FieldLabel>
+                <Input
+                  id="passwordConfirmation"
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={fieldState.invalid}
+                  {...field}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-          {errors.root && <FieldError>{errors.root.message}</FieldError>}
+          {form.formState.errors.root && (
+            <FieldError>{form.formState.errors.root.message}</FieldError>
+          )}
 
-          <Button type="submit" className="font-ui h-10 w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating account…' : 'Create account'}
+          <Button
+            type="submit"
+            form="register-form"
+            className="font-ui h-10 w-full"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? 'Creating account…' : 'Create account'}
           </Button>
         </FieldGroup>
       </form>

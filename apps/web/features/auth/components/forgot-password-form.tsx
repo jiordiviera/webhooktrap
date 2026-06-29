@@ -1,8 +1,9 @@
 'use client'
 
+import * as React from 'react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@workspace/ui/components/button'
 import {
   Field,
@@ -27,12 +28,7 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
   const [sent, setSent] = useState(false)
   const countdown = useCountdown()
 
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<ForgotPasswordValues>({
+  const form = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   })
@@ -50,10 +46,10 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
           setSent(true)
           onSent(values.email)
         } else {
-          setError('email', { message: err.message })
+          form.setError('email', { message: err.message })
         }
       } else {
-        setError('root', { message: 'Something went wrong. Try again.' })
+        form.setError('root', { message: 'Something went wrong. Try again.' })
       }
     }
   }
@@ -74,24 +70,39 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form id="forgot-password-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
       <FieldGroup>
-        <Field data-invalid={!!errors.email}>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            aria-invalid={!!errors.email}
-            {...register('email')}
-          />
-          <FieldError errors={errors.email ? [errors.email] : undefined} />
-        </Field>
+        <Controller
+          name="email"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                aria-invalid={fieldState.invalid}
+                {...field}
+              />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
 
-        {errors.root && <FieldError>{errors.root.message}</FieldError>}
+        {form.formState.errors.root && (
+          <FieldError>{form.formState.errors.root.message}</FieldError>
+        )}
 
-        <Button type="submit" className="font-ui h-10 w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Sending…' : 'Send reset code'}
+        <Button
+          type="submit"
+          form="forgot-password-form"
+          className="font-ui h-10 w-full"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? 'Sending…' : 'Send reset code'}
         </Button>
       </FieldGroup>
     </form>

@@ -1,8 +1,9 @@
 'use client'
 
+import * as React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { Button } from '@workspace/ui/components/button'
 import {
   Dialog,
@@ -37,12 +38,7 @@ export function CreateInboxDialog({
 }: CreateInboxDialogProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<CreateInboxValues>({
+  const form = useForm<CreateInboxValues>({
     resolver: zodResolver(createInboxSchema),
     defaultValues: { name: '' },
   })
@@ -53,7 +49,7 @@ export function CreateInboxDialog({
     try {
       const inbox = await createInbox({ name: values.name.trim() })
       onCreatedAction(inbox)
-      reset()
+      form.reset()
       onOpenChangeAction(false)
     } catch (error) {
       setSubmitError(
@@ -64,7 +60,7 @@ export function CreateInboxDialog({
 
   function handleOpenChange(next: boolean) {
     if (!next) {
-      reset()
+      form.reset()
       setSubmitError(null)
     }
     onOpenChangeAction(next)
@@ -80,18 +76,26 @@ export function CreateInboxDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form id="create-inbox-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="inboxName">Title</FieldLabel>
-              <Input
-                id="inboxName"
-                placeholder="Stripe checkout webhooks"
-                autoFocus
-                {...register('name')}
-              />
-              <FieldError>{errors.name?.message}</FieldError>
-            </Field>
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="inboxName">Title</FieldLabel>
+                  <Input
+                    id="inboxName"
+                    placeholder="Stripe checkout webhooks"
+                    autoFocus
+                    {...field}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           </FieldGroup>
 
           {submitError ? (
@@ -104,8 +108,12 @@ export function CreateInboxDialog({
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
+            <Button
+              type="submit"
+              form="create-inbox-form"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? (
                 <>
                   <Loader size="sm" tone="inherit" />
                   Creating…

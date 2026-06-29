@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { productName } from '@/lib/config'
 
 const integrations = [
   { name: 'Stripe', category: 'Payments' },
@@ -51,7 +52,7 @@ export function IntegrationsSection() {
             Every provider you already use.
           </h2>
           <p className="text-xl text-muted-foreground">
-            Point any webhook sender at Hookscope. No vendor-specific SDK required.
+            Point any webhook sender at {productName}. No vendor-specific SDK required.
           </p>
         </div>
       </div>

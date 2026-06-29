@@ -1,7 +1,8 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import * as React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@workspace/ui/components/button'
 import {
   Field,
@@ -24,12 +25,7 @@ type ResetPasswordFormProps = {
 }
 
 export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormProps) {
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<ResetPasswordValues>({
+  const form = useForm<ResetPasswordValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: '', passwordConfirmation: '' },
   })
@@ -42,52 +38,73 @@ export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormPr
       if (err instanceof ApiError) {
         const fieldError = err.body.errors?.[0]
         if (fieldError?.field) {
-          setError(fieldError.field as keyof ResetPasswordValues, {
+          form.setError(fieldError.field as keyof ResetPasswordValues, {
             message: fieldError.message,
           })
           return
         }
-        setError('root', { message: fieldError?.message ?? err.message })
+        form.setError('root', { message: fieldError?.message ?? err.message })
       } else {
-        setError('root', { message: 'Something went wrong. Try again.' })
+        form.setError('root', { message: 'Something went wrong. Try again.' })
       }
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form id="reset-password-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
       <FieldGroup>
-        <Field data-invalid={!!errors.password}>
-          <FieldLabel htmlFor="password">New password</FieldLabel>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            aria-invalid={!!errors.password}
-            {...register('password')}
-          />
-          <FieldDescription>8 to 32 characters.</FieldDescription>
-          <FieldError errors={errors.password ? [errors.password] : undefined} />
-        </Field>
+        <Controller
+          name="password"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="password">New password</FieldLabel>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={fieldState.invalid}
+                {...field}
+              />
+              <FieldDescription>8 to 32 characters.</FieldDescription>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
 
-        <Field data-invalid={!!errors.passwordConfirmation}>
-          <FieldLabel htmlFor="passwordConfirmation">Confirm new password</FieldLabel>
-          <Input
-            id="passwordConfirmation"
-            type="password"
-            autoComplete="new-password"
-            aria-invalid={!!errors.passwordConfirmation}
-            {...register('passwordConfirmation')}
-          />
-          <FieldError
-            errors={errors.passwordConfirmation ? [errors.passwordConfirmation] : undefined}
-          />
-        </Field>
+        <Controller
+          name="passwordConfirmation"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="passwordConfirmation">Confirm new password</FieldLabel>
+              <Input
+                id="passwordConfirmation"
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={fieldState.invalid}
+                {...field}
+              />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
 
-        {errors.root && <FieldError>{errors.root.message}</FieldError>}
+        {form.formState.errors.root && (
+          <FieldError>{form.formState.errors.root.message}</FieldError>
+        )}
 
-        <Button type="submit" className="font-ui h-10 w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Resetting…' : 'Reset password'}
+        <Button
+          type="submit"
+          form="reset-password-form"
+          className="font-ui h-10 w-full"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? 'Resetting…' : 'Reset password'}
         </Button>
       </FieldGroup>
     </form>

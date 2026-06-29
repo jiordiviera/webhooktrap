@@ -2,6 +2,7 @@
 
 import { use, useRef, useState } from "react";
 import Link from "next/link";
+import { productName } from "@/lib/config";
 import { useQuery } from "@tanstack/react-query";
 import { IconCopy, IconExternalLink, IconPlus } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
@@ -195,7 +196,7 @@ export default function SharedEventPage({
     return (
       <div className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col items-center justify-center gap-6 px-4">
         <Link href="/" className="font-ui text-sm font-semibold text-primary">
-          Hookscope
+          {productName}
         </Link>
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="font-ui text-xl font-semibold text-foreground">
@@ -225,7 +226,7 @@ export default function SharedEventPage({
           href="/"
           className="font-ui text-sm font-semibold text-primary transition-colors hover:text-primary/80"
         >
-          Hookscope
+          {productName}
         </Link>
         <span className="text-xs text-muted-foreground">
           Webhook debugger
@@ -340,7 +341,7 @@ export default function SharedEventPage({
           Debug your webhooks in real-time
         </p>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Hookscope receives, inspects, and replays every webhook your app
+          {productName} receives, inspects, and replays every webhook your app
           sends.
         </p>
         <Link href="/" className="mt-5 inline-flex">
@@ -358,7 +359,7 @@ export default function SharedEventPage({
           className="inline-flex items-center gap-1.5 font-ui text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <IconExternalLink className="size-3.5" aria-hidden />
-          Hookscope &middot; Webhook debugger
+          {productName} &middot; Webhook debugger
         </Link>
       </footer>
     </div>

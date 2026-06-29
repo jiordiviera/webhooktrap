@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { productName } from '@/lib/config'
 import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
 import { FeaturesSection } from "@/components/landing/features-section";
@@ -15,11 +16,11 @@ import { FooterSection } from "@/components/landing/footer-section";
 import "@/styles/landing-v2.css";
 
 export const metadata: Metadata = {
-  title: 'Hookscope — Webhook debugger',
+  title: `${productName} — Webhook debugger`,
   description:
     'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
   openGraph: {
-    title: 'Hookscope — Webhook debugger',
+    title: `${productName} — Webhook debugger`,
     description:
       'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
   },
