@@ -6,6 +6,7 @@ import { IconArrowRight } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { CreateInboxCta } from '@/app/components/create-inbox-cta'
 import { LiveWebhookDemo } from '@/app/components/landing/live-webhook-demo'
+import { productName } from '@/lib/config'
 
 const words = ['receive', 'inspect', 'replay', 'respond']
 
@@ -96,7 +97,7 @@ export function HeroSection() {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >
-            Hookscope shows every webhook as it lands, then fires it back to your local server.
+            {productName} shows every webhook as it lands, then fires it back to your local server.
             No tunnel maze. No dashboard bloat.
           </p>
 

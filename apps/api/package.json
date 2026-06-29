@@ -9,7 +9,7 @@
     "./registry": "./.adonisjs/client/registry/index.ts"
   },
   "scripts": {
-    "start": "node bin/server.js",
+    "start": "node build/bin/server.js",
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "pm2:restart": "pm2 restart hookscope-api",

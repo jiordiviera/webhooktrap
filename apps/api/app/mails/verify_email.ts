@@ -14,7 +14,6 @@ export default class VerifyEmailNotification extends BaseMail {
       subject: this.subject,
       title: 'Verify your email address',
       body: `Hi ${this.user.email}, click the link below to verify your email address.`,
-      brandName: 'Hookscope',
     })
   }
 }

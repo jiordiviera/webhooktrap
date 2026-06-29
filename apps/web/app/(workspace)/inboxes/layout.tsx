@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
+import { productName } from '@/lib/config'
 
 export const metadata: Metadata = {
-  title: 'Inboxes — Hookscope',
+  title: `Inboxes — ${productName}`,
   description: 'Manage ingest URLs and open webhook inboxes.',
 }
 

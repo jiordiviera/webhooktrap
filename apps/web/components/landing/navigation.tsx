@@ -6,6 +6,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { AuthNav } from "@/app/components/auth-nav";
+import { productName } from "@/lib/config";
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -148,7 +149,7 @@ export function Navigation() {
           >
             <Image
               src="/logo.png"
-              alt="Hookscope"
+              alt={productName}
               width={120}
               height={32}
               className={cn(

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { productName } from '@/lib/config'
 
 const events = [
   { method: 'POST', type: 'checkout.session.completed', source: 'Stripe', time: '2s ago' },
@@ -122,7 +123,7 @@ export function InfrastructureSection() {
                   <rect x="115" y="14" width="80" height="48" rx="8" fill="none" stroke="currentColor" strokeWidth="2" className="transition-all duration-500" style={{ opacity: isVisible ? 1 : 0 }}>
                     <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite" />
                   </rect>
-                  <text x="155" y="34" textAnchor="middle" className="font-ui" fontSize="9" fontWeight="600" fill="currentColor">Hookscope</text>
+                  <text x="155" y="34" textAnchor="middle" className="font-ui" fontSize="9" fontWeight="600" fill="currentColor">{productName}</text>
                   <text x="155" y="50" textAnchor="middle" className="font-ui" fontSize="7" fill="currentColor" opacity="0.6">/i/&hellip; inbox</text>
 
                   <line x1="197" y1="38" x2="235" y2="38" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#infra-arrow)" className="transition-all duration-500" style={{ opacity: isVisible ? 0.35 : 0 }} />

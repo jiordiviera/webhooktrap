@@ -9,6 +9,7 @@ import { GithubDark } from '@workspace/ui/components/svgs/githubDark'
 import { GithubLight } from '@workspace/ui/components/svgs/githubLight'
 import { X as XIcon } from '@workspace/ui/components/ui/svgs/x'
 import { XDark } from '@workspace/ui/components/ui/svgs/xDark'
+import { productName } from '@/lib/config'
 
 const X_URL = 'https://x.com/jiordiviera'
 const GITHUB_URL = 'https://github.com/jiordiviera'
@@ -41,7 +42,7 @@ export function FooterSection() {
           <div className="grid grid-cols-2 gap-12 md:grid-cols-6 lg:gap-8">
             <div className="col-span-2">
               <Link href="/" className="mb-6 inline-flex items-center">
-                <Image src="/logo.png" alt="Hookscope" width={132} height={36} className="h-auto max-w-10" />
+                <Image src="/logo.png" alt={productName} width={132} height={36} className="h-auto max-w-10" />
               </Link>
               <p className="mb-8 max-w-xs leading-relaxed text-muted-foreground">
                 Developer-first webhook debugging. Receive, inspect, replay, see the response.
@@ -92,7 +93,7 @@ export function FooterSection() {
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-border py-8 md:flex-row">
-          <p className="text-sm text-muted-foreground">Hookscope. Inspect. Replay. Respond.</p>
+          <p className="text-sm text-muted-foreground">{productName}. Inspect. Replay. Respond.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <ThemeToggle />
             <DeveloperCredit />

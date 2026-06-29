@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { IconArrowRight, IconCheck } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
+import { productName } from '@/lib/config'
 
 const plans = [
   {
     name: 'Anonymous',
-    description: 'Try Hookscope before you sign in',
+    description: `Try ${productName} before you sign in`,
     price: 'Free',
     features: [
       'Instant ingest URL',

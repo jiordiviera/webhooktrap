@@ -3,9 +3,10 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { AuthShell } from '@/features/auth/components/auth-shell'
 import { LoginForm } from '@/features/auth/components/login-form'
+import { productName } from '@/lib/config'
 
 export const metadata: Metadata = {
-  title: 'Sign in — Hookscope',
+  title: `Sign in — ${productName}`,
   description: 'Sign in to save your webhook inboxes and replay events to localhost.',
 }
 
