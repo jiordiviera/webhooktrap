@@ -13,7 +13,7 @@ import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Loader } from '@workspace/ui/components/loader'
 import { Skeleton } from '@workspace/ui/components/skeleton'
-import type { Inbox } from '@/lib/inboxes'
+import { InboxDTO } from '@workspace/types'
 
 function InboxHeaderSkeleton() {
   return (
@@ -26,7 +26,7 @@ function InboxHeaderSkeleton() {
 }
 
 interface InboxHeaderProps {
-  inbox: Inbox | null
+  inbox: InboxDTO | null
   inboxLoading: boolean
   editingName: boolean
   nameDraft: string
