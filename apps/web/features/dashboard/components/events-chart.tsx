@@ -126,7 +126,7 @@ export function EventsChart({
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger
-            className="hidden w-[140px] sm:flex"
+            className="hidden w-35 sm:flex"
             aria-label="Select time range"
           >
             <SelectValue placeholder="Last 7 days" />
@@ -143,7 +143,7 @@ export function EventsChart({
           <ChartContainer
             ref={chartRef}
             config={chartConfig}
-            className="aspect-auto h-[250px] w-full"
+            className="aspect-auto h-62.5 w-full"
           >
             <AreaChart data={data} width={chartWidth} height={250}>
               <CartesianGrid vertical={false} />
@@ -153,19 +153,13 @@ export function EventsChart({
                 tickMargin={10}
                 axisLine={false}
                 minTickGap={32}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  });
-                }}
               />
               <ChartTooltip
-                cursor={false}
+                cursor={true}
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) => {
+                      console.log("Value: ", value);
                       return new Date(value).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -202,7 +196,7 @@ export function EventsChart({
             </AreaChart>
           </ChartContainer>
         ) : (
-          <div className="flex h-[200px] items-center justify-center">
+          <div className="flex h-50 items-center justify-center">
             <p className="text-sm text-muted-foreground">
               No activity in this period
             </p>

@@ -31,7 +31,6 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
     register,
     handleSubmit,
     setError,
-    getValues,
     formState: { errors, isSubmitting },
   } = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -63,7 +62,7 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          If an account with that email exists, we've sent a reset code. Check your inbox.
+          If an account with that email exists, we&apos;ve sent a reset code. Check your inbox.
         </p>
         {countdown.isRunning && (
           <p className="font-ui text-center text-xs text-muted-foreground">

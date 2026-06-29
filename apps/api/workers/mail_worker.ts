@@ -12,12 +12,12 @@ const IMPORTER = (filePath: string) => {
 }
 
 const app = new Ignitor(APP_ROOT, { importer: IMPORTER })
-  .tap((app) => {
-    app.booting(async () => {
+  .tap((a) => {
+    a.booting(async () => {
       await import('#start/env')
     })
-    app.listen('SIGTERM', () => app.terminate())
-    app.listenIf(app.managedByPm2, 'SIGINT', () => app.terminate())
+    a.listen('SIGTERM', () => a.terminate())
+    a.listenIf(a.managedByPm2, 'SIGINT', () => a.terminate())
   })
   .createApp('web')
 

@@ -1,37 +1,45 @@
-'use client'
+"use client";
 
-import { IconSearch } from '@tabler/icons-react'
-import { Input } from '@workspace/ui/components/input'
-import { Label } from '@workspace/ui/components/label'
-import type { DataTableFilterDef } from '@/features/data-table/types'
-import { cn } from '@workspace/ui/lib/utils'
+import { IconSearch } from "@tabler/icons-react";
+import { Input } from "@workspace/ui/components/input";
+import { Label } from "@workspace/ui/components/label";
+import type { DataTableFilterDef } from "@/features/data-table/types";
+import { cn } from "@workspace/ui/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 
 type DataTableToolbarProps = {
-  search: string
-  onSearchChange: (value: string) => void
-  searchPlaceholder?: string
-  filters?: DataTableFilterDef[]
-  filterValues: Record<string, string | boolean | null>
-  onFilterChange: (id: string, value: string | boolean | null) => void
-  className?: string
-  actions?: React.ReactNode
-}
+  search: string;
+  onSearchChange: (value: string) => void;
+  searchPlaceholder?: string;
+  filters?: DataTableFilterDef[];
+  filterValues: Record<string, string | boolean | null>;
+  onFilterChange: (id: string, value: string | boolean | null) => void;
+  className?: string;
+  actions?: React.ReactNode;
+};
 
 export function DataTableToolbar({
   search,
   onSearchChange,
-  searchPlaceholder = 'Search…',
+  searchPlaceholder = "Search…",
   filters,
   filterValues,
   onFilterChange,
   className,
   actions,
 }: DataTableToolbarProps) {
-  const hasFilters = (filters?.length ?? 0) > 0
+  const hasFilters = (filters?.length ?? 0) > 0;
 
   if (!hasFilters && !actions) {
     return (
-      <div className={cn('relative', className)}>
+      <div className={cn("relative", className)}>
         <IconSearch
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           aria-hidden
@@ -44,11 +52,16 @@ export function DataTableToolbar({
           aria-label="Search table"
         />
       </div>
-    )
+    );
   }
 
   return (
-    <div className={cn('flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
+        className,
+      )}
+    >
       <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-end">
         <div className="relative min-w-[12rem] flex-1">
           <IconSearch
@@ -65,28 +78,60 @@ export function DataTableToolbar({
         </div>
 
         {filters?.map((filter) => (
-          <div key={filter.id} className="min-w-[10rem] space-y-1.5">
-            <Label htmlFor={`filter-${filter.id}`} className="text-xs text-muted-foreground">
+          <div key={filter.id} className="min-w-40 space-y-1.5">
+            <Label
+              htmlFor={`filter-${filter.id}`}
+              className="text-xs text-muted-foreground"
+            >
               {filter.label}
             </Label>
-            {filter.type === 'select' ? (
-              <select
-                id={`filter-${filter.id}`}
-                value={String(filterValues[filter.id] ?? '')}
-                onChange={(event) => onFilterChange(filter.id, event.target.value || null)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            {filter.type === "select" ? (
+              <Select
+                value={String(filterValues[filter.id] ?? "")}
+                onValueChange={(value) =>
+                  onFilterChange(filter.id, value || null)
+                }
               >
-                {filter.options?.map((option) => (
-                  <option key={option.value || 'all'} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-45">
+                  <SelectValue id={filter.id} defaultValue={filter.label} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {filter.options?.map((option) => {
+                      return (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                          className="cursor-pointer"
+                        >
+                          {option.label}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             ) : (
+              // <Select
+              //   id={`filter-${filter.id}`}
+              //   value={String(filterValues[filter.id] ?? '')}
+              //   onChange={(event) => onFilterChange(filter.id, event.target.value || null)}
+              //   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              // >
+
+              //   {filter.options?.map((option) => (
+
+              //     <option key={option.value || 'all'} value={option.value}>
+              //       {option.label}
+              //     </option>
+              //   ))}
+              // </Select>
               <Input
                 id={`filter-${filter.id}`}
-                value={String(filterValues[filter.id] ?? '')}
-                onChange={(event) => onFilterChange(filter.id, event.target.value || null)}
+                value={String(filterValues[filter.id] ?? "")}
+                onChange={(event) =>
+                  onFilterChange(filter.id, event.target.value || null)
+                }
                 placeholder={filter.placeholder}
               />
             )}
@@ -94,7 +139,9 @@ export function DataTableToolbar({
         ))}
       </div>
 
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex shrink-0 items-center gap-2">{actions}</div>
+      ) : null}
     </div>
-  )
+  );
 }

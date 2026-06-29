@@ -81,7 +81,7 @@ export function VerifyEmailForm() {
     return (
       <div className="flex flex-col gap-6">
         <p className="text-sm text-muted-foreground">
-          We'll send a 6-digit code to{" "}
+          We&apos;ll send a 6-digit code to{" "}
           <span className="font-medium text-foreground">{user?.email}</span>.
         </p>
         <Button

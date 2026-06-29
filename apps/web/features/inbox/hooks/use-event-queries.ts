@@ -11,20 +11,20 @@ export function eventReplaysQueryKey(eventId: string) {
   return ['event-replays', eventId] as const
 }
 
-export function useEventDetailQuery(token: string | null, eventId: string | null) {
+export function useEventDetailQuery(eventId: string | null) {
   return useQuery({
     queryKey: eventId ? eventDetailQueryKey(eventId) : ['event', null],
     queryFn: () => fetchEvent(eventId!),
-    enabled: Boolean(token && eventId),
+    enabled: Boolean(eventId),
     placeholderData: keepPreviousData,
   })
 }
 
-export function useEventReplaysQuery(token: string | null, eventId: string | null) {
+export function useEventReplaysQuery(eventId: string | null) {
   return useQuery({
     queryKey: eventId ? eventReplaysQueryKey(eventId) : ['event-replays', null],
     queryFn: () => fetchEventReplays(eventId!),
-    enabled: Boolean(token && eventId),
+    enabled: Boolean(eventId),
     placeholderData: keepPreviousData,
   })
 }

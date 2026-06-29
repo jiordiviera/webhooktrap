@@ -265,7 +265,7 @@ export function DataTable<TModel extends DataTableModelId>({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-border bg-card",
+        "rounded-2xl border border-border bg-card",
         className,
       )}
     >

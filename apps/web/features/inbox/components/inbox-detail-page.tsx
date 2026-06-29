@@ -2,98 +2,32 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAuth } from '@/contexts/auth-context'
+import { useCallback, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   IconArrowLeft,
   IconCheck,
   IconCopy,
   IconPencil,
-  IconPlayerPlay,
   IconRefresh,
-  IconShare3,
   IconTrash,
   IconX,
 } from '@tabler/icons-react'
 import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Loader } from '@workspace/ui/components/loader'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@workspace/ui/components/sheet'
-import { Separator } from '@workspace/ui/components/separator'
+
 import { Skeleton } from '@workspace/ui/components/skeleton'
-import { cn } from '@workspace/ui/lib/utils'
-import {
-  EventInspectorSkeleton,
-  ReplayPanelSkeleton,
-} from '@/features/inbox/components/inbox-detail-skeleton'
+
 import { DataTable } from '@/features/data-table/components/data-table'
-import {
-  eventReplaysQueryKey,
-  useEventDetailQuery,
-  useEventReplaysQuery,
-} from '@/features/inbox/hooks/use-event-queries'
 import { inboxQueryKey, useInboxQuery } from '@/features/inbox/hooks/use-inbox-query'
+import { EventDetailSheet } from '@/features/inbox/components/event-detail-sheet'
 import { ApiError } from '@/lib/api'
 import { useConfirm } from '@/contexts/confirm-context'
 import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
-import { buildEventCurl, buildEventJson } from '@/lib/event-copy'
-import { generateShareToken, replayEvent } from '@/lib/events'
-import {
-  deleteInbox,
-  formatRelativeTime,
-  updateInbox,
-} from '@/lib/inboxes'
+import { deleteInbox, updateInbox } from '@/lib/inboxes'
 
 const POLL_INTERVAL_MS = 3000
-
-function MethodBadge({ method }: { method: string }) {
-  return (
-    <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[0.6875rem] font-semibold tracking-wide text-primary">
-      {method}
-    </span>
-  )
-}
-
-function JsonBlock({ value }: { value: unknown }) {
-  const text = useMemo(() => JSON.stringify(value, null, 2), [value])
-
-  return (
-    <pre className="max-h-80 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs leading-relaxed text-foreground">
-      {text}
-    </pre>
-  )
-}
-
-function ReplayStatus({ replay }: { replay: { statusCode: number | null; errorCode: string | null } }) {
-  if (replay.statusCode) {
-    const isSuccess = replay.statusCode >= 200 && replay.statusCode < 300
-    const isError = replay.statusCode >= 400
-
-    return (
-      <span
-        className={cn(
-          'font-mono text-sm font-semibold tabular-nums',
-          isError ? 'text-destructive' : isSuccess ? 'text-signal' : 'text-foreground'
-        )}
-      >
-        {replay.statusCode}
-      </span>
-    )
-  }
-
-  return (
-    <span className="font-mono text-sm font-semibold text-destructive">
-      {replay.errorCode ?? 'ERROR'}
-    </span>
-  )
-}
 
 function InboxHeaderSkeleton() {
   return (
@@ -106,37 +40,22 @@ function InboxHeaderSkeleton() {
 }
 
 export function InboxDetailPage({ inboxId }: { inboxId: string }) {
-  const { token } = useAuth()
   const router = useRouter()
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const inboxPage = useInboxPageTitle()
 
-  const inboxQuery = useInboxQuery(token, inboxId)
+  const inboxQuery = useInboxQuery(inboxId)
   const inbox = inboxQuery.data ?? null
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [eventsTotal, setEventsTotal] = useState(0)
-  const [replayUrl, setReplayUrl] = useState('')
-  const [replaying, setReplaying] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [copiedAction, setCopiedAction] = useState<'json' | 'curl' | null>(null)
-  const [sharing, setSharing] = useState(false)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
-  const [shareJustCopied, setShareJustCopied] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
   const [savingName, setSavingName] = useState(false)
   const [deleting, setDeleting] = useState(false)
-
-  const eventQuery = useEventDetailQuery(token, selectedEventId)
-  const replaysQuery = useEventReplaysQuery(token, selectedEventId)
-
-  const eventDetail = eventQuery.data ?? null
-  const replays = replaysQuery.data ?? []
-  const detailLoading = eventQuery.isLoading && !eventDetail
-  const replaysLoading = replaysQuery.isLoading && replays.length === 0 && Boolean(selectedEventId)
 
   const ingestUrl = inbox?.ingestUrl ?? ''
   const eventCount = inbox?.eventsCount || eventsTotal
@@ -148,11 +67,6 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
         ? inboxQuery.error.message
         : 'Could not load inbox. Try again.'
       : null)
-
-  useEffect(() => {
-    if (!inbox) return
-    setReplayUrl(inbox.defaultReplayUrl ?? '')
-  }, [inbox])
 
   useEffect(() => {
     if (!inboxPage || !inbox) return
@@ -170,98 +84,13 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
     void queryClient.invalidateQueries({
       queryKey: ['data-table', 'inbox-events', { inboxId }],
     })
-    if (selectedEventId) {
-      void eventQuery.refetch()
-      void replaysQuery.refetch()
-    }
-  }, [inboxId, inboxQuery, queryClient, selectedEventId, eventQuery, replaysQuery])
-
-  async function handleSaveReplayUrl() {
-    if (!inbox) return
-
-    try {
-      const updated = await updateInbox(inbox.id, {
-        defaultReplayUrl: replayUrl.trim() || null,
-      })
-      queryClient.setQueryData(inboxQueryKey(inbox.id), updated)
-      setReplayUrl(updated.defaultReplayUrl ?? '')
-      setActionError(null)
-    } catch (error) {
-      setActionError(
-        error instanceof ApiError ? error.message : 'Could not save replay URL.'
-      )
-    }
-  }
-
-  async function handleReplay() {
-    if (!selectedEventId) return
-
-    setReplaying(true)
-    setActionError(null)
-
-    try {
-      const replay = await replayEvent(selectedEventId, {
-        targetUrl: replayUrl.trim() || undefined,
-      })
-      queryClient.setQueryData(eventReplaysQueryKey(selectedEventId), (current: typeof replays | undefined) => [
-        replay,
-        ...(current ?? []),
-      ])
-    } catch (error) {
-      setActionError(error instanceof ApiError ? error.message : 'Replay failed.')
-    } finally {
-      setReplaying(false)
-    }
-  }
+  }, [inboxId, inboxQuery, queryClient])
 
   async function handleCopyUrl() {
     if (!ingestUrl) return
     await navigator.clipboard.writeText(ingestUrl)
     setCopied(true)
     window.setTimeout(() => setCopied(false), 2000)
-  }
-
-  async function handleCopyEvent(action: 'json' | 'curl') {
-    if (!eventDetail) return
-
-    const text = action === 'json' ? buildEventJson(eventDetail) : buildEventCurl(eventDetail)
-    if (!text) return
-
-    await navigator.clipboard.writeText(text)
-    setCopiedAction(action)
-    window.setTimeout(() => setCopiedAction(null), 2000)
-  }
-
-  async function handleShare() {
-    if (!selectedEventId) return
-
-    setSharing(true)
-    setActionError(null)
-
-    try {
-      const shareToken = await generateShareToken(selectedEventId)
-      const origin = window.location.origin
-      setShareUrl(`${origin}/s/${shareToken}`)
-    } catch (error) {
-      setActionError(
-        error instanceof ApiError ? error.message : 'Could not generate share link.'
-      )
-    } finally {
-      setSharing(false)
-    }
-  }
-
-  async function handleCopyShareUrl() {
-    if (!shareUrl) return
-
-    await navigator.clipboard.writeText(shareUrl)
-    setShareJustCopied(true)
-    window.setTimeout(() => setShareJustCopied(false), 2000)
-  }
-
-  function dismissShareUrl() {
-    setShareUrl(null)
-    setShareJustCopied(false)
   }
 
   function startEditingName() {
@@ -495,7 +324,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
             </span>
           </h2>
         </div>
-        <div className="max-h-128 overflow-y-auto rounded-xl">
+        <div className="">
           <DataTable
             model="inbox-events"
             context={{ inboxId }}
@@ -510,236 +339,11 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
         </div>
       </section>
 
-      <Sheet
-        open={!!selectedEventId}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedEventId(null)
-            dismissShareUrl()
-          }
-        }}
-      >
-        <SheetContent
-          side="right"
-          className="flex w-full flex-col p-0 sm:max-w-lg"
-        >
-          {/* Sheet header: event identity + actions */}
-          <SheetHeader className="border-b border-border px-4 py-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                {eventDetail ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <MethodBadge method={eventDetail.method} />
-                    <code className="truncate font-mono text-sm text-foreground">
-                      {eventDetail.path}
-                    </code>
-                  </div>
-                ) : (
-                  <SheetTitle className="font-ui text-sm font-semibold text-foreground">
-                    Event detail
-                  </SheetTitle>
-                )}
-                <SheetDescription className="mt-0.5 text-xs">
-                  {eventDetail
-                    ? formatRelativeTime(eventDetail.receivedAt)
-                    : detailLoading
-                      ? 'Loading event...'
-                      : ''}
-                </SheetDescription>
-              </div>
-            </div>
-            {eventDetail ? (
-              <div className="mt-2 flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={sharing}
-                  onClick={() => void handleShare()}
-                >
-                  {sharing ? (
-                    <Loader size="sm" tone="inherit" />
-                  ) : (
-                    <IconShare3 className="size-3.5" aria-hidden />
-                  )}
-                  {sharing ? 'Creating\u2026' : 'Share'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void handleCopyEvent('json')}
-                >
-                  <IconCopy className="size-3.5" aria-hidden />
-                  {copiedAction === 'json' ? 'Copied' : 'JSON'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void handleCopyEvent('curl')}
-                >
-                  <IconCopy className="size-3.5" aria-hidden />
-                  {copiedAction === 'curl' ? 'Copied' : 'cURL'}
-                </Button>
-              </div>
-            ) : null}
-          </SheetHeader>
-
-          {/* Scrollable event body */}
-          <div className="flex-1 overflow-y-auto">
-            {shareUrl ? (
-              <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-                <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
-                  {shareUrl}
-                </code>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void handleCopyShareUrl()}
-                >
-                  {shareJustCopied ? (
-                    <IconCheck className="size-3.5 text-signal" aria-hidden />
-                  ) : (
-                    <IconCopy className="size-3.5" aria-hidden />
-                  )}
-                  {shareJustCopied ? 'Copied' : 'Copy'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={dismissShareUrl}
-                  aria-label="Dismiss share link"
-                >
-                  <IconX className="size-3.5" aria-hidden />
-                </Button>
-              </div>
-            ) : null}
-
-            {detailLoading ? (
-              <EventInspectorSkeleton />
-            ) : !eventDetail ? (
-              <p className="px-4 py-10 text-sm text-muted-foreground">
-                {selectedEventId
-                  ? 'Could not load this event. Select another or refresh.'
-                  : 'Select an event to inspect headers and body.'}
-              </p>
-            ) : (
-              <div className="space-y-6 p-4">
-                <div>
-                  <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                    Headers
-                  </h3>
-                  <JsonBlock value={eventDetail.headers} />
-                </div>
-
-                {eventDetail.query && Object.keys(eventDetail.query).length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                      Query
-                    </h3>
-                    <JsonBlock value={eventDetail.query} />
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="mb-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                    Body
-                  </h3>
-                  {eventDetail.bodyJson ? (
-                    <JsonBlock value={eventDetail.bodyJson} />
-                  ) : (
-                    <pre className="max-h-80 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs whitespace-pre-wrap text-foreground">
-                      {eventDetail.bodyText ?? '(empty)'}
-                    </pre>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Replay section pinned at bottom */}
-          <div className="border-t border-border px-4 py-3">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Input
-                value={replayUrl}
-                onChange={(event) => setReplayUrl(event.target.value)}
-                placeholder="http://localhost:7777/webhooks/stripe"
-                className="font-mono text-sm"
-              />
-              <div className="flex shrink-0 gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => void handleSaveReplayUrl()}>
-                  Save
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={!selectedEventId || replaying}
-                  onClick={() => void handleReplay()}
-                >
-                  {replaying ? (
-                    <>
-                      <Loader size="sm" tone="inherit" />
-                      Replaying\u2026
-                    </>
-                  ) : (
-                    <>
-                      <IconPlayerPlay className="size-4" aria-hidden />
-                      Replay
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {replaysLoading && replays.length === 0 ? (
-              <ReplayPanelSkeleton />
-            ) : replays.length > 0 ? (
-              <div className="mt-3 space-y-2">
-                <Separator />
-                <h3 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                  History
-                </h3>
-                <ul className="divide-y divide-border rounded-lg border border-border">
-                  {replays.map((replay) => (
-                    <li key={replay.id} className="px-3 py-3 text-sm">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <ReplayStatus replay={replay} />
-                        {replay.durationMs !== null ? (
-                          <span className="text-muted-foreground tabular-nums">
-                            {replay.durationMs}ms
-                          </span>
-                        ) : null}
-                        <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
-                          {replay.targetUrl}
-                        </span>
-                      </div>
-                      {replay.errorMessage ? (
-                        <p className="mt-2 text-destructive">{replay.errorMessage}</p>
-                      ) : null}
-                      {replay.responseHeaders ? (
-                        <div className="mt-3">
-                          <p className="mb-1.5 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-                            Response headers
-                          </p>
-                          <JsonBlock value={replay.responseHeaders} />
-                        </div>
-                      ) : null}
-                      {replay.responseBody ? (
-                        <pre className="mt-2 max-h-40 overflow-auto font-mono text-xs whitespace-pre-wrap text-foreground">
-                          {replay.responseBody}
-                        </pre>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-        </SheetContent>
-      </Sheet>
+      <EventDetailSheet
+        inboxId={inboxId}
+        selectedEventId={selectedEventId}
+        onClose={() => setSelectedEventId(null)}
+      />
     </div>
   )
 }

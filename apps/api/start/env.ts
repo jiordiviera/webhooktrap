@@ -3,9 +3,9 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { existsSync } from 'node:fs'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const Dirname = dirname(fileURLToPath(import.meta.url))
 
-let dir = __dirname
+let dir = Dirname
 while (dir !== dirname(dir)) {
   if (existsSync(join(dir, '.env'))) break
   dir = dirname(dir)
@@ -84,5 +84,5 @@ export default await Env.create(new URL(dir + '/', import.meta.url), {
   | Variables for configuring the limiter package
   |----------------------------------------------------------
   */
-  LIMITER_STORE: Env.schema.enum(['redis', 'memory'] as const)
+  LIMITER_STORE: Env.schema.enum(['redis', 'memory'] as const),
 })

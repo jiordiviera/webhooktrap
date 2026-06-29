@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useState } from "react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
-import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { AuthNav } from "@/app/components/auth-nav";
 
@@ -132,8 +131,8 @@ export function Navigation() {
         className={cn(
           "relative z-50 mx-auto transition-all duration-500",
           isScrolled || isMobileMenuOpen
-            ? "max-w-[1200px] rounded-2xl border border-border/80 bg-background/90 shadow-[0_8px_32px_oklch(0.35_0.04_48/0.08)] backdrop-blur-xl"
-            : "max-w-[1400px] bg-transparent",
+            ? "max-w-300 rounded-2xl border border-border/80 bg-background/90 shadow-[0_8px_32px_oklch(0.35_0.04_48/0.08)] backdrop-blur-xl"
+            : "max-w-350 bg-transparent",
         )}
       >
         <div

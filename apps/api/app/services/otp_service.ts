@@ -5,9 +5,7 @@ import { DateTime } from 'luxon'
 
 export type OtpType = 'email_verify' | 'password_reset'
 
-export type VerifyResult =
-  | { verified: false }
-  | { verified: true; resetToken?: string }
+export type VerifyResult = { verified: false } | { verified: true; resetToken?: string }
 
 export default class OtpService {
   static generateCode(): string {
