@@ -1,30 +1,20 @@
 import type { Metadata } from "next";
 import {
-  Cormorant_Garamond,
-  Lora,
-  Albert_Sans,
   JetBrains_Mono,
+  Bricolage_Grotesque,
 } from "next/font/google";
 import { Providers } from "@/app/components/providers";
 import "@workspace/ui/globals.css";
 import { cn } from "@workspace/ui/lib/utils";
 import { siteUrl, productName } from "@/lib/config";
 
-const cormorant = Cormorant_Garamond({
+
+const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--font-cormorant",
+  variable: "--font-bricolage",
   display: "swap",
 });
 
-const lora = Lora({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-lora",
-  display: "swap",
-});
-
-const albertSans = Albert_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -72,10 +62,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(
-        cormorant.variable,
-        lora.variable,
-        "font-sans",
-        albertSans.variable,
+        bricolageGrotesque.variable,
         jetBrainsMono.variable,
       )}
       suppressHydrationWarning

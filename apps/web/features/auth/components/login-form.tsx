@@ -179,7 +179,7 @@ export function LoginForm() {
             <Button
               type="submit"
               form="login-otp-form"
-              className="font-ui h-10 w-full"
+              className="h-10 w-full"
               disabled={otpForm.formState.isSubmitting || (otpForm.watch('otp')?.length ?? 0) < 6}
             >
               {otpForm.formState.isSubmitting ? 'Verifying…' : 'Verify'}
@@ -190,7 +190,7 @@ export function LoginForm() {
         <button
           type="button"
           onClick={handleBackToLogin}
-          className="font-ui text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          className="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           Back to sign in
         </button>
@@ -243,7 +243,7 @@ export function LoginForm() {
                 <div className="flex justify-end">
                   <Link
                     href="/forgot-password"
-                    className="font-ui text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                   >
                     Forgot password?
                   </Link>
@@ -259,7 +259,7 @@ export function LoginForm() {
           <Button
             type="submit"
             form="login-form"
-            className="font-ui h-10 w-full"
+            className="h-10 w-full"
             disabled={loginForm.formState.isSubmitting}
           >
             {loginForm.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
@@ -267,7 +267,7 @@ export function LoginForm() {
         </FieldGroup>
       </form>
 
-      <p className="font-ui text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-muted-foreground">
         No account yet?{' '}
         <Link href="/register" className="text-primary underline-offset-4 hover:underline">
           Create one

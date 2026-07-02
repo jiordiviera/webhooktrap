@@ -41,7 +41,7 @@ export function IntegrationsSection() {
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
-          <span className="font-ui mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
             <span className="h-px w-8 bg-primary/40" />
             Integrations
             <span className="h-px w-8 bg-primary/40" />

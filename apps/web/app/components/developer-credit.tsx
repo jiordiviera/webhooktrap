@@ -24,7 +24,7 @@ export function DeveloperCredit({
   return (
     <p
       className={cn(
-        "font-ui inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[0.6875rem] leading-relaxed",
+        "inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[0.6875rem] leading-relaxed",
         isSidebar ? "text-sidebar-foreground/50" : "text-muted-foreground",
         className,
       )}

@@ -184,10 +184,10 @@ function LoaderTips({
             visible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0",
           )}
         >
-          <blockquote className="font-ui text-lg leading-relaxed text-foreground/90 italic sm:text-xl">
+          <blockquote className="text-lg leading-relaxed text-foreground/90 italic sm:text-xl">
             &ldquo;{tip.text}&rdquo;
           </blockquote>
-          <figcaption className="font-ui text-sm text-muted-foreground">
+          <figcaption className="text-sm text-muted-foreground">
             &mdash; {tip.label}
           </figcaption>
         </figure>
@@ -339,7 +339,7 @@ function Loader({
 
         <div className="relative z-10 flex w-full max-w-xl flex-col items-center gap-8">
           {showLabel && label ? (
-            <p className="font-ui text-sm text-muted-foreground">{label}</p>
+            <p className="text-sm text-muted-foreground">{label}</p>
           ) : null}
 
           <LoaderTips tips={tips} />
@@ -372,7 +372,7 @@ function Loader({
       />
       <span
         className={
-          showLabel ? "font-ui text-sm text-muted-foreground" : "sr-only"
+          showLabel ? "text-sm text-muted-foreground" : "sr-only"
         }
       >
         {label}

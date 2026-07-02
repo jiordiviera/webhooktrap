@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
         description="Your password has been updated successfully."
         footer={
           <>
-            <Link href="/login" className="font-ui text-primary underline-offset-4 hover:underline">
+            <Link href="/login" className="text-primary underline-offset-4 hover:underline">
               Sign in with your new password
             </Link>
           </>
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
           <button
             type="button"
             onClick={() => setStep('email')}
-            className="font-ui text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             Back to email
           </button>

@@ -197,11 +197,11 @@ export default function SharedEventPage({
   if (isError || !data) {
     return (
       <div className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col items-center justify-center gap-6 px-4">
-        <Link href={LANDING_URL} className="font-ui text-sm font-semibold text-primary">
+        <Link href={LANDING_URL} className="text-sm font-semibold text-primary">
           {productName}
         </Link>
         <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="font-ui text-xl font-semibold text-foreground">
+          <h1 className="text-xl font-semibold text-foreground">
             This link couldn&apos;t be found.
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -226,7 +226,7 @@ export default function SharedEventPage({
       <div className="flex items-baseline gap-3">
         <Link
           href={LANDING_URL}
-          className="font-ui text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+          className="text-sm font-semibold text-primary transition-colors hover:text-primary/80"
         >
           {productName}
         </Link>
@@ -237,7 +237,7 @@ export default function SharedEventPage({
 
       {/* Hero: event identity + copy actions */}
       <div className="space-y-4">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 px-3 py-1 font-ui text-[0.6875rem] font-medium tracking-[0.06em] text-muted-foreground uppercase">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 px-3 py-1 text-[0.6875rem] font-medium tracking-[0.06em] text-muted-foreground uppercase">
           <span className="size-1.5 rounded-full bg-primary/50" aria-hidden />
           Shared event
         </span>
@@ -277,7 +277,7 @@ export default function SharedEventPage({
         {event.headers && Object.keys(event.headers).length > 0 && (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="border-b border-border px-4 py-2.5">
-              <h2 className="font-ui text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+              <h2 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
                 Headers
               </h2>
             </div>
@@ -290,7 +290,7 @@ export default function SharedEventPage({
         {event.query && Object.keys(event.query).length > 0 && (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="border-b border-border px-4 py-2.5">
-              <h2 className="font-ui text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+              <h2 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
                 Query
               </h2>
             </div>
@@ -303,7 +303,7 @@ export default function SharedEventPage({
         {(event.bodyJson !== null || event.bodyText !== null) && (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="border-b border-border px-4 py-2.5">
-              <h2 className="font-ui text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+              <h2 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
                 Body
               </h2>
               {event.contentType ? (
@@ -321,7 +321,7 @@ export default function SharedEventPage({
         {replays.length > 0 && (
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="border-b border-border px-4 py-2.5">
-              <h2 className="font-ui text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+              <h2 className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
                 Replays
               </h2>
               <p className="mt-0.5 text-xs text-muted-foreground">
@@ -339,7 +339,7 @@ export default function SharedEventPage({
 
       {/* CTA */}
       <div className="rounded-xl border border-border bg-card p-6 text-center sm:p-8">
-        <p className="font-ui text-sm font-semibold text-foreground">
+        <p className="text-sm font-semibold text-foreground">
           Debug your webhooks in real-time
         </p>
         <p className="mt-1.5 text-sm text-muted-foreground">
@@ -358,7 +358,7 @@ export default function SharedEventPage({
       <footer className="border-t border-border pt-8 text-center">
         <Link
           href={LANDING_URL}
-          className="inline-flex items-center gap-1.5 font-ui text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <IconExternalLink className="size-3.5" aria-hidden />
           {productName} &middot; Webhook debugger

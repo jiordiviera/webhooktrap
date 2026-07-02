@@ -112,12 +112,12 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
           />
           <span className="size-2 rounded-full bg-border" />
           <span className="size-2 rounded-full bg-border" />
-          <span className="font-ui ml-2 text-[0.8125rem] text-muted-foreground">
+          <span className="ml-2 text-[0.8125rem] text-muted-foreground">
             Stripe Integration
           </span>
           <span
             className={cn(
-              'font-ui ml-auto rounded-full px-2 py-1 text-[0.6875rem] tracking-widest uppercase transition-colors duration-500',
+              'ml-auto rounded-full px-2 py-1 text-[0.6875rem] tracking-widest uppercase transition-colors duration-500',
               phase === 'listen'
                 ? 'bg-muted text-muted-foreground'
                 : 'bg-signal-soft text-signal'
@@ -128,7 +128,7 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
         </div>
 
         <div className="relative border-b border-border bg-muted/30 px-4 py-2.5">
-          <div className="font-ui flex items-center justify-between text-[0.6875rem]">
+          <div className="flex items-center justify-between text-[0.6875rem]">
             <span className="tracking-widest text-muted-foreground uppercase">
               {PHASE_LABELS[phase]}
             </span>
@@ -155,19 +155,19 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
 
         <div className={cn('grid', large ? 'min-h-80 md:grid-cols-[0.38fr_0.62fr]' : 'min-h-72 md:grid-cols-[0.42fr_0.58fr]')}>
           <div className="border-border bg-muted/40 p-4 md:border-r">
-            <p className="font-ui mb-3 text-[0.6875rem] tracking-widest text-muted-foreground uppercase">
+            <p className="mb-3 text-[0.6875rem] tracking-widest text-muted-foreground uppercase">
               Events
             </p>
             <ul className="flex flex-col gap-1.5">
               {showActiveEvent && (
                 <li className="grid animate-in grid-cols-[auto_1fr] grid-rows-[auto_auto] gap-x-2 gap-y-0.5 rounded-lg bg-accent px-2.5 py-2 duration-500 fade-in slide-in-from-left-3">
-                  <span className="font-ui row-span-2 self-center text-[0.625rem] font-semibold tracking-wider text-primary">
+                  <span className="font-mono row-span-2 self-center text-[0.625rem] font-semibold tracking-wider text-primary">
                     POST
                   </span>
-                  <span className="font-ui truncate text-xs text-foreground">
+                  <span className="truncate text-xs text-foreground">
                     checkout.session.completed
                   </span>
-                  <span className="font-ui text-[0.6875rem] text-signal">just now</span>
+                  <span className="text-[0.6875rem] text-signal">just now</span>
                 </li>
               )}
               {EVENTS.map((event, i) => (
@@ -176,11 +176,11 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
                   className="grid grid-cols-[auto_1fr] grid-rows-[auto_auto] gap-x-2 gap-y-0.5 rounded-lg px-2.5 py-2 opacity-60"
                   style={{ transitionDelay: `${i * 80}ms` }}
                 >
-                  <span className="font-ui row-span-2 self-center text-[0.625rem] font-semibold tracking-wider text-primary">
+                  <span className="font-mono row-span-2 self-center text-[0.625rem] font-semibold tracking-wider text-primary">
                     {event.method}
                   </span>
-                  <span className="font-ui truncate text-xs text-foreground">{event.label}</span>
-                  <span className="font-ui text-[0.6875rem] text-muted-foreground">{event.time}</span>
+                  <span className="font-mono truncate text-xs text-foreground">{event.label}</span>
+                  <span className="font-mono text-[0.6875rem] text-muted-foreground">{event.time}</span>
                 </li>
               ))}
             </ul>
@@ -188,25 +188,25 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
 
           <div className="flex flex-col gap-3 p-4">
             <div className="flex items-center gap-2">
-              <span className="font-ui text-[0.625rem] font-semibold tracking-wider text-primary">
+              <span className="font-mono text-[0.625rem] font-semibold tracking-wider text-primary">
                 POST
               </span>
-              <span className="font-ui text-xs text-muted-foreground">/i/xK9m2pQ7nR4a</span>
+              <span className="font-mono text-xs text-muted-foreground">/i/xK9m2pQ7nR4a</span>
             </div>
 
             <div className="flex gap-4 border-b border-border pb-2">
               <span
                 className={cn(
-                  'font-ui text-xs transition-colors duration-300',
+                  'font-mono text-xs transition-colors duration-300',
                   phase === 'captured' || showReplay ? 'font-medium text-foreground' : 'text-muted-foreground'
                 )}
               >
                 Body
               </span>
-              <span className="font-ui text-xs text-muted-foreground">Headers</span>
+              <span className="text-xs text-muted-foreground">Headers</span>
               <span
                 className={cn(
-                  'font-ui text-xs transition-colors duration-300',
+                  'text-xs transition-colors duration-300',
                   showReplay ? 'font-medium text-foreground' : 'text-muted-foreground'
                 )}
               >
@@ -214,7 +214,7 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
               </span>
             </div>
 
-            <pre className="font-ui min-h-36 flex-1 overflow-hidden rounded-lg bg-muted/60 p-3 text-[0.6875rem] leading-relaxed text-muted-foreground">
+            <pre className="font-mono min-h-36 flex-1 overflow-hidden rounded-lg bg-muted/60 p-3 text-[0.6875rem] leading-relaxed text-muted-foreground">
               <code>
                 {phase === 'listen' || phase === 'incoming' ? (
                   <span className="text-muted-foreground/50">Waiting for payload…</span>
@@ -240,15 +240,15 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
             >
               <div className="overflow-hidden border-t border-border pt-2">
                 <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1">
-                  <span className="font-ui col-span-2 text-[0.6875rem] text-muted-foreground">
+                  <span className="col-span-2 text-[0.6875rem] text-muted-foreground">
                     Replay destination
                   </span>
-                  <span className="font-ui text-xs text-foreground">
+                  <span className="text-xs text-foreground">
                     localhost:3000/webhooks/stripe
                   </span>
                   <span
                     className={cn(
-                      'font-ui text-xs font-medium',
+                      'text-xs font-medium',
                       replaySuccess ? 'text-signal landing-count-up' : 'text-primary landing-replay-active'
                     )}
                   >
@@ -261,7 +261,7 @@ export function LiveWebhookDemo({ className, large }: LiveWebhookDemoProps) {
         </div>
       </div>
 
-      <div className="font-ui mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         {PHASE_ORDER.map((step) => (
           <span
             key={step}

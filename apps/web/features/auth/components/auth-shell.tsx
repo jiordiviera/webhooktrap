@@ -39,7 +39,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
       </div>
 
       <aside className="relative hidden overflow-hidden border-l border-border bg-secondary/50 lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10">
-        <p className="font-ui text-xs tracking-[0.14em] text-muted-foreground uppercase">
+        <p className="text-xs tracking-[0.14em] text-muted-foreground uppercase">
           Webhook debugger
         </p>
 
@@ -54,7 +54,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
           </p>
         </div>
 
-        <div className="font-ui grid gap-3 text-xs text-muted-foreground">
+        <div className="grid gap-3 text-xs text-muted-foreground">
           <p>
             <span className="font-medium text-foreground">Anonymous</span> inboxes expire after 48
             hours.

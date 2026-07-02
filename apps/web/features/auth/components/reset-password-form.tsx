@@ -101,7 +101,7 @@ export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormPr
         <Button
           type="submit"
           form="reset-password-form"
-          className="font-ui h-10 w-full"
+          className="h-10 w-full"
           disabled={form.formState.isSubmitting}
         >
           {form.formState.isSubmitting ? 'Resetting…' : 'Reset password'}

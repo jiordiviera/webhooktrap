@@ -75,11 +75,11 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
           className="animate-in fade-in slide-in-from-bottom-2 rounded-xl border border-border bg-card p-4 shadow-[0_12px_40px_oklch(0.35_0.04_48/0.08)] duration-500"
           role="status"
         >
-          <p className="font-ui mb-2 text-xs tracking-widest text-muted-foreground uppercase">
+          <p className="mb-2 text-xs tracking-widest text-muted-foreground uppercase">
             Your ingest URL
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <code className="font-ui min-w-48 flex-1 text-[0.8125rem] break-all text-foreground">
+            <code className="min-w-48 flex-1 text-[0.8125rem] break-all text-foreground">
               {ingestUrl}
             </code>
             <Button variant="outline" size="sm" className="rounded-full" onClick={copyUrl}>
@@ -93,7 +93,7 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
       )}
 
       {status === 'error' && (
-        <p className="font-ui text-sm text-destructive" role="alert">
+        <p className="text-sm text-destructive" role="alert">
           Could not reach the API. Start the server on port 3333 and try again.
         </p>
       )}

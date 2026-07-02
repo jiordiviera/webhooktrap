@@ -77,7 +77,7 @@ export function DevelopersSection() {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
-            <span className="font-ui mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
               <span className="h-px w-8 bg-primary/40" />
               Developers
             </span>
@@ -110,7 +110,7 @@ export function DevelopersSection() {
                   key={example.label}
                   type="button"
                   onClick={() => setActiveTab(index)}
-                  className={`font-ui shrink-0 px-3 py-2.5 text-xs transition-colors sm:px-4 sm:py-3 sm:text-sm ${
+                  className={`shrink-0 px-3 py-2.5 text-xs transition-colors sm:px-4 sm:py-3 sm:text-sm ${
                     activeTab === index
                       ? 'border-b-2 border-primary text-foreground'
                       : 'text-muted-foreground hover:text-foreground'

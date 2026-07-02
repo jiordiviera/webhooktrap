@@ -164,7 +164,7 @@ function FeatureCard({ feature, index }: { feature: (typeof features)[0]; index:
     >
       <div className="flex flex-col gap-8 border-b border-border py-12 lg:flex-row lg:gap-16 lg:py-20">
         <div className="shrink-0">
-          <span className="font-ui text-sm text-primary">{feature.number}</span>
+          <span className="text-sm text-primary">{feature.number}</span>
         </div>
         <div className="grid flex-1 items-center gap-8 lg:grid-cols-2">
           <div>
@@ -203,7 +203,7 @@ export function FeaturesSection() {
     <section id="features" ref={sectionRef} className="relative scroll-mt-24 py-24 lg:py-32">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="mb-16 lg:mb-24">
-          <span className="font-ui mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
             <span className="h-px w-8 bg-primary/40" />
             Capabilities
           </span>

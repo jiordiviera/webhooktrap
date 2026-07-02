@@ -103,7 +103,7 @@ export function VerifyEmailForm() {
         </p>
         <Button
           type="button"
-          className="font-ui h-10 w-full"
+          className="h-10 w-full"
           onClick={() => router.push("/login")}
         >
           Go to sign in
@@ -121,7 +121,7 @@ export function VerifyEmailForm() {
         </p>
         <Button
           type="button"
-          className="font-ui h-10 w-full"
+          className="h-10 w-full"
           disabled={resending}
           onClick={requestCode}
         >
@@ -192,7 +192,7 @@ export function VerifyEmailForm() {
           <Button
             type="submit"
             form="verify-email-form"
-            className="font-ui h-10 w-full"
+            className="h-10 w-full"
             disabled={
               form.formState.isSubmitting || otpValue.length < 6
             }
@@ -203,7 +203,7 @@ export function VerifyEmailForm() {
       </form>
 
       {countdown.isRunning ? (
-        <p className="font-ui text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground">
           Resend in {countdown.remaining}s
         </p>
       ) : (
@@ -211,7 +211,7 @@ export function VerifyEmailForm() {
           type="button"
           onClick={requestCode}
           disabled={resending}
-          className="font-ui text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          className="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           {resending ? "Sending…" : "Resend code"}
         </button>

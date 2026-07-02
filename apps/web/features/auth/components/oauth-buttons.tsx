@@ -21,7 +21,7 @@ export function OAuthButtons({ returnTo }: OAuthButtonsProps) {
       <Button
         type="button"
         variant="outline"
-        className="font-ui h-10 w-full justify-center gap-2.5"
+        className="h-10 w-full justify-center gap-2.5"
         onClick={() => startOAuth('github')}
       >
         <GithubLight className="size-4" aria-hidden />
@@ -30,7 +30,7 @@ export function OAuthButtons({ returnTo }: OAuthButtonsProps) {
       <Button
         type="button"
         variant="outline"
-        className="font-ui h-10 w-full justify-center gap-2.5"
+        className="h-10 w-full justify-center gap-2.5"
         onClick={() => startOAuth('google')}
       >
         <Google className="size-4" aria-hidden />

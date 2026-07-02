@@ -61,7 +61,7 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
           If an account with that email exists, we&apos;ve sent a reset code. Check your inbox.
         </p>
         {countdown.isRunning && (
-          <p className="font-ui text-center text-xs text-muted-foreground">
+          <p className="text-center text-xs text-muted-foreground">
             Resend in {countdown.remaining}s
           </p>
         )}
@@ -99,7 +99,7 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
         <Button
           type="submit"
           form="forgot-password-form"
-          className="font-ui h-10 w-full"
+          className="h-10 w-full"
           disabled={form.formState.isSubmitting}
         >
           {form.formState.isSubmitting ? 'Sending…' : 'Send reset code'}

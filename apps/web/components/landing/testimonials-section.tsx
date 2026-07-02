@@ -51,11 +51,11 @@ export function TestimonialsSection() {
     <section className="relative border-t border-border py-32 lg:py-40">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <div className="mb-16 flex items-center gap-4">
-          <span className="font-ui text-xs tracking-widest text-muted-foreground uppercase">
+          <span className="text-xs tracking-widest text-muted-foreground uppercase">
             Developer workflows
           </span>
           <div className="h-px flex-1 bg-border" />
-          <span className="font-ui text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {String(activeIndex + 1).padStart(2, '0')} / {String(workflows.length).padStart(2, '0')}
           </span>
         </div>
@@ -76,7 +76,7 @@ export function TestimonialsSection() {
                 isAnimating ? 'opacity-0' : 'opacity-100'
               }`}
             >
-              <p className="font-ui text-sm text-primary">{active.context}</p>
+              <p className="text-sm text-primary">{active.context}</p>
               <p className="mt-2 text-muted-foreground">{active.metric}</p>
             </div>
           </div>
@@ -94,7 +94,7 @@ export function TestimonialsSection() {
                       : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                   }`}
                 >
-                  <span className="font-ui text-sm">{workflow.context}</span>
+                  <span className="text-sm">{workflow.context}</span>
                 </button>
               ))}
             </div>

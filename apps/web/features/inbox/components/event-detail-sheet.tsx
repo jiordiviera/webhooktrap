@@ -195,7 +195,7 @@ export function EventDetailSheet({
                   </code>
                 </div>
               ) : (
-                <SheetTitle className="font-ui text-sm font-semibold text-foreground">
+                <SheetTitle className="text-sm font-semibold text-foreground">
                   Event detail
                 </SheetTitle>
               )}

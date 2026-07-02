@@ -58,7 +58,7 @@ export function HeroSection() {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >
-            <span className="font-ui inline-flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-3 text-sm text-muted-foreground">
               <span className="h-px w-8 bg-primary/40" />
               Webhook debugger
             </span>
@@ -142,7 +142,7 @@ export function HeroSection() {
                   </span>
                   <span className="text-sm text-muted-foreground">
                     {stat.label}
-                    <span className="font-ui mt-1 block text-xs tracking-wide uppercase">
+                    <span className="mt-1 block text-xs tracking-wide uppercase">
                       {stat.company}
                     </span>
                   </span>

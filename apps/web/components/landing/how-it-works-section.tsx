@@ -76,7 +76,7 @@ export function HowItWorksSection() {
 
       <div className="relative z-10 mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="mb-16 lg:mb-24">
-          <span className="font-ui mb-6 inline-flex items-center gap-3 text-sm text-primary-foreground/60">
+          <span className="mb-6 inline-flex items-center gap-3 text-sm text-primary-foreground/60">
             <span className="h-px w-8 bg-primary-foreground/30" />
             Process
           </span>
@@ -131,7 +131,7 @@ export function HowItWorksSection() {
                   <div className="size-2.5 rounded-full bg-primary-foreground/20 sm:size-3" />
                   <div className="size-2.5 rounded-full bg-primary-foreground/20 sm:size-3" />
                 </div>
-                <span className="font-ui text-[0.625rem] text-primary-foreground/45 sm:text-xs">inbox.ts</span>
+                <span className="text-[0.625rem] text-primary-foreground/45 sm:text-xs">inbox.ts</span>
               </div>
               <div className="min-h-[200px] overflow-x-auto p-3 font-mono text-[0.625rem] sm:min-h-[280px] sm:p-8 sm:text-sm">
                 <pre className="text-primary-foreground/75">
@@ -147,7 +147,7 @@ export function HowItWorksSection() {
               </div>
               <div className="flex items-center gap-3 border-t border-primary-foreground/15 px-4 py-3 sm:px-6 sm:py-4">
                 <span className="size-1.5 animate-pulse rounded-full bg-signal sm:size-2" />
-                <span className="font-ui text-[0.625rem] text-primary-foreground/45 sm:text-xs">Live capture</span>
+                <span className="text-[0.625rem] text-primary-foreground/45 sm:text-xs">Live capture</span>
               </div>
             </div>
           </div>

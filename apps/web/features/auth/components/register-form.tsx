@@ -171,7 +171,7 @@ export function RegisterForm() {
           <Button
             type="submit"
             form="register-form"
-            className="font-ui h-10 w-full"
+            className="h-10 w-full"
             disabled={form.formState.isSubmitting}
           >
             {form.formState.isSubmitting ? 'Creating account…' : 'Create account'}
@@ -179,7 +179,7 @@ export function RegisterForm() {
         </FieldGroup>
       </form>
 
-      <p className="font-ui text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}
         <Link href="/login" className="text-primary underline-offset-4 hover:underline">
           Sign in

@@ -88,7 +88,7 @@ export function VerifyResetForm({ email, onVerified }: VerifyResetFormProps) {
         <Button
           type="submit"
           form="reset-otp-form"
-          className="font-ui h-10 w-full"
+          className="h-10 w-full"
           disabled={form.formState.isSubmitting || (form.watch('otp')?.length ?? 0) < 6}
         >
           {form.formState.isSubmitting ? 'Verifying…' : 'Verify code'}

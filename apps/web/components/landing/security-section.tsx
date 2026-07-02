@@ -57,7 +57,7 @@ export function SecuritySection() {
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
-            <span className="font-ui mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
               <span className="h-px w-8 bg-primary/40" />
               Trust
             </span>
@@ -74,7 +74,7 @@ export function SecuritySection() {
               {tags.map((tag, index) => (
                 <span
                   key={tag}
-                  className={`font-ui border border-border px-4 py-2 text-sm transition-all duration-500 ${
+                  className={`border border-border px-4 py-2 text-sm transition-all duration-500 ${
                     isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
                   }`}
                   style={{ transitionDelay: `${index * 50 + 200}ms` }}

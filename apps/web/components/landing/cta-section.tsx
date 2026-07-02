@@ -48,7 +48,7 @@ export function CtaSection() {
                     <IconArrowRight className="ml-2 size-4" />
                   </Link>
                 </Button>
-                <p className="font-ui text-sm text-muted-foreground">Anonymous inboxes last 48 hours</p>
+                <p className="text-sm text-muted-foreground">Anonymous inboxes last 48 hours</p>
               </div>
             </div>
           </div>

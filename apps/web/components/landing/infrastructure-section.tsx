@@ -42,7 +42,7 @@ export function InfrastructureSection() {
               isVisible ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'
             }`}
           >
-            <span className="font-ui mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
               <span className="h-px w-8 bg-primary/40" />
               Capture pipeline
             </span>
@@ -78,8 +78,8 @@ export function InfrastructureSection() {
           >
             <div className="border border-border bg-card">
               <div className="flex items-center justify-between border-b border-border px-6 py-4">
-                <span className="font-ui text-sm text-muted-foreground">Inbox events</span>
-                <span className="font-ui flex items-center gap-2 text-xs text-signal">
+                <span className="text-sm text-muted-foreground">Inbox events</span>
+                <span className="flex items-center gap-2 text-xs text-signal">
                   <span className="size-2 animate-pulse rounded-full bg-signal" />
                   Listening
                 </span>
@@ -94,13 +94,13 @@ export function InfrastructureSection() {
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <span className="font-ui mr-2 text-xs font-semibold text-primary">
+                        <span className="font-mono mr-2 text-xs font-semibold text-primary">
                           {event.method}
                         </span>
-                        <span className="font-ui text-sm text-foreground">{event.type}</span>
+                        <span className="text-sm text-foreground">{event.type}</span>
                         <p className="mt-1 text-xs text-muted-foreground">{event.source}</p>
                       </div>
-                      <span className="font-ui text-xs text-muted-foreground">{event.time}</span>
+                      <span className="text-xs text-muted-foreground">{event.time}</span>
                     </div>
                   </li>
                 ))}
@@ -116,25 +116,25 @@ export function InfrastructureSection() {
                 </defs>
                 <g className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0 }}>
                   <rect x="0" y="20" width="70" height="36" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="transition-all duration-500" style={{ opacity: isVisible ? 0.7 : 0 }} />
-                  <text x="35" y="43" textAnchor="middle" className="font-ui" fontSize="9" fill="currentColor">Provider</text>
+                  <text x="35" y="43" textAnchor="middle" className="font-mono" fontSize="9" fill="currentColor">Provider</text>
 
                   <line x1="72" y1="38" x2="110" y2="38" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#infra-arrow)" className="transition-all duration-500" style={{ opacity: isVisible ? 0.35 : 0 }} />
 
                   <rect x="115" y="14" width="80" height="48" rx="8" fill="none" stroke="currentColor" strokeWidth="2" className="transition-all duration-500" style={{ opacity: isVisible ? 1 : 0 }}>
                     <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite" />
                   </rect>
-                  <text x="155" y="34" textAnchor="middle" className="font-ui" fontSize="9" fontWeight="600" fill="currentColor">{productName}</text>
-                  <text x="155" y="50" textAnchor="middle" className="font-ui" fontSize="7" fill="currentColor" opacity="0.6">/i/&hellip; inbox</text>
+                  <text x="155" y="34" textAnchor="middle" className="font-mono" fontSize="9" fontWeight="600" fill="currentColor">{productName}</text>
+                  <text x="155" y="50" textAnchor="middle" className="font-mono" fontSize="7" fill="currentColor" opacity="0.6">/i/&hellip; inbox</text>
 
                   <line x1="197" y1="38" x2="235" y2="38" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#infra-arrow)" className="transition-all duration-500" style={{ opacity: isVisible ? 0.35 : 0 }} />
 
                   <rect x="240" y="20" width="62" height="36" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 2" className="transition-all duration-500" style={{ opacity: isVisible ? 0.7 : 0 }} />
-                  <text x="271" y="43" textAnchor="middle" className="font-ui" fontSize="9" fill="currentColor">Inspect</text>
+                  <text x="271" y="43" textAnchor="middle" className="font-mono" fontSize="9" fill="currentColor">Inspect</text>
 
                   <line x1="304" y1="38" x2="330" y2="38" stroke="currentColor" strokeWidth="1.5" markerEnd="url(#infra-arrow)" className="transition-all duration-500" style={{ opacity: isVisible ? 0.35 : 0 }} />
 
                   <rect x="335" y="20" width="58" height="36" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="transition-all duration-500" style={{ opacity: isVisible ? 0.7 : 0 }} />
-                  <text x="364" y="43" textAnchor="middle" className="font-ui" fontSize="9" fill="currentColor">Replay</text>
+                  <text x="364" y="43" textAnchor="middle" className="font-mono" fontSize="9" fill="currentColor">Replay</text>
                 </g>
               </svg>
             </div>

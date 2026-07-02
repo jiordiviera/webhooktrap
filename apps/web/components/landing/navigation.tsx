@@ -165,7 +165,7 @@ export function Navigation() {
               <a
                 key={link.name}
                 href={link.href}
-                className="font-ui group relative text-sm text-foreground/70 transition-colors duration-300 hover:text-primary"
+                className="group relative text-sm text-foreground/70 transition-colors duration-300 hover:text-primary"
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />

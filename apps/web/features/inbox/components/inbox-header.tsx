@@ -73,7 +73,7 @@ export function InboxHeader({
               <Input
                 value={nameDraft}
                 onChange={(event) => onNameDraftChange(event.target.value)}
-                className="h-9 max-w-sm font-ui text-lg font-semibold"
+                className="h-9 max-w-sm text-lg font-semibold"
                 autoFocus
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') onSaveName()
@@ -101,7 +101,7 @@ export function InboxHeader({
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <h1 className="font-ui text-2xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                 {inbox.name}
               </h1>
               <Button

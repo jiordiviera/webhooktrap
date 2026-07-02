@@ -197,7 +197,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                   <Input
                     value={nameDraft}
                     onChange={(event) => setNameDraft(event.target.value)}
-                    className="h-9 max-w-sm font-ui text-lg font-semibold"
+                    className="h-9 max-w-sm text-lg font-semibold"
                     autoFocus
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') void handleSaveName()
@@ -230,7 +230,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h1 className="font-ui text-2xl font-semibold tracking-tight text-foreground">
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                     {inbox.name}
                   </h1>
                   <Button
@@ -317,7 +317,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
 
       <section aria-labelledby="events-heading">
         <div className="mb-3 px-1">
-          <h2 id="events-heading" className="font-ui text-sm font-semibold text-foreground">
+          <h2 id="events-heading" className="text-sm font-semibold text-foreground">
             Events
             <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">
               ({eventCount})

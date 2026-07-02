@@ -43,7 +43,7 @@ export function PricingSection() {
     <section id="pricing" className="relative scroll-mt-24 border-t border-border py-32 lg:py-40">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         <div className="mb-20 max-w-3xl">
-          <span className="font-ui mb-6 block text-xs tracking-widest text-muted-foreground uppercase">
+          <span className="mb-6 block text-xs tracking-widest text-muted-foreground uppercase">
             Pricing
           </span>
           <h2 className="font-heading mb-6 text-5xl tracking-tight text-foreground md:text-6xl lg:text-7xl">
@@ -66,7 +66,7 @@ export function PricingSection() {
               }`}
             >
               {plan.popular && (
-                <span className="font-ui absolute -top-3 left-8 bg-primary px-3 py-1 text-xs text-primary-foreground">
+                <span className="absolute -top-3 left-8 bg-primary px-3 py-1 text-xs text-primary-foreground">
                   Recommended
                 </span>
               )}
