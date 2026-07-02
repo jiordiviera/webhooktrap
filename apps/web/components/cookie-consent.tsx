@@ -2,33 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-const CONSENT_KEY = "hs:consent";
+import { useConsent } from "@/contexts/consent-context";
 
 export function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+  const { status, accept, decline } = useConsent();
+  const [delayElapsed, setDelayElapsed] = useState(false);
 
   useEffect(() => {
-    const acknowledged = localStorage.getItem(CONSENT_KEY) === "true";
-    if (!acknowledged) {
-      // Small delay so it doesn't flash on fast navigations
-      const timer = setTimeout(() => setVisible(true), 600);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+    if (status !== null) return;
+    // Small delay so it doesn't flash on fast navigations
+    const timer = setTimeout(() => setDelayElapsed(true), 600);
+    return () => clearTimeout(timer);
+  }, [status]);
 
-  function accept() {
-    localStorage.setItem(CONSENT_KEY, "true");
-    setVisible(false);
-  }
-
-  if (!visible) return null;
+  if (status !== null || !delayElapsed) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <div
+      role="dialog"
+      aria-label="Cookie consent"
+      aria-live="polite"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm"
+    >
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
         <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
-          This site uses cookies for analytics and essential functionality.{" "}
+          We use privacy-friendly analytics to see what&apos;s working. No
+          tracking cookies, only with your consent.{" "}
           <Link
             href="/privacy"
             className="underline underline-offset-2 transition-colors hover:text-foreground"
@@ -36,13 +35,22 @@ export function CookieConsent() {
             Learn more
           </Link>
         </p>
-        <button
-          type="button"
-          onClick={accept}
-          className="shrink-0 rounded-md border border-border bg-foreground px-4 py-1.5 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
-        >
-          Accept
-        </button>
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={decline}
+            className="rounded-md border border-border px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            Decline
+          </button>
+          <button
+            type="button"
+            onClick={accept}
+            className="rounded-md border border-border bg-foreground px-4 py-1.5 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
+          >
+            Accept
+          </button>
+        </div>
       </div>
     </div>
   );

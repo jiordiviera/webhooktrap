@@ -6,19 +6,10 @@ import { IconHelp, IconSettings } from '@tabler/icons-react'
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from '@workspace/ui/components/sidebar'
 import { useDashboardNav } from '@/features/dashboard/context/dashboard-nav-context'
 import { NavMain } from './nav-main'
-import { NavDocuments } from './nav-documents'
 import { NavSearch } from './nav-search'
 import { NavSecondary } from './nav-secondary'
 import { NavUser } from './nav-user'
 import { DashboardSidebarHeader } from './sidebar/sidebar-header'
-
-const navDocuments = [
-  {
-    name: 'API Tokens',
-    url: '/api-tokens',
-    icon: IconSettings,
-  },
-]
 
 const navSecondary = [
   {
@@ -61,7 +52,6 @@ export function AppSidebar() {
             <NavMain items={primaryNav} />
           </div>
 
-          <NavDocuments items={navDocuments} />
           <NavSecondary items={navSecondary} className="mt-auto" />
         </SidebarContent>
 
