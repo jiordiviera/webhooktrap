@@ -17,6 +17,8 @@ router.get('/', () => {
   return { hello: 'world' }
 })
 
+router.get('/health', [controllers.Health, 'show']).as('health')
+
 router
   .route('/i/:inboxId', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], [controllers.Ingest, 'handle'])
   .where('inboxId', /^[A-Za-z0-9]{12}$/)

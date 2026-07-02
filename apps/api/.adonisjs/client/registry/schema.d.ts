@@ -7,6 +7,18 @@ import type { InferInput, SimpleError } from '@vinejs/vine/types'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
+  'health': {
+    methods: ["GET","HEAD"]
+    pattern: '/health'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/health_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/health_controller').default['show']>>>
+    }
+  }
   'ingest': {
     methods: ["GET","POST","PUT","PATCH","DELETE"]
     pattern: '/i/:inboxId'

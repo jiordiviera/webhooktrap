@@ -2,6 +2,7 @@
 import type { routes } from './index.ts'
 
 export interface ApiDefinition {
+  health: typeof routes['health']
   ingest: typeof routes['ingest']
   v1: {
     2Fa: {

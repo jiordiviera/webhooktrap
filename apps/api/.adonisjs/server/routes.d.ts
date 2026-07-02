@@ -4,6 +4,7 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'health': { paramsTuple?: []; params?: {} }
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
     'v1.2fa.generate': { paramsTuple?: []; params?: {} }
     'v1.2fa.verify': { paramsTuple?: []; params?: {} }
@@ -42,6 +43,7 @@ export type ScannedRoutes = {
     'v1.media.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
+    'health': { paramsTuple?: []; params?: {} }
     'ingest': { paramsTuple: [ParamValue]; params: {'inboxId': ParamValue} }
     'v1.inboxes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -58,6 +60,7 @@ export type ScannedRoutes = {
     'v1.media.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
+    'health': { paramsTuple?: []; params?: {} }
     'v1.inboxes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'v1.inboxes.index': { paramsTuple?: []; params?: {} }

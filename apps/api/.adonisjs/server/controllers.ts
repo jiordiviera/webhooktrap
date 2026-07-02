@@ -7,6 +7,7 @@ export const controllers = {
   AccessTokens: () => import('#controllers/access_tokens_controller'),
   ApiTokens: () => import('#controllers/api_tokens_controller'),
   Events: () => import('#controllers/events_controller'),
+  Health: () => import('#controllers/health_controller'),
   Inboxes: () => import('#controllers/inboxes_controller'),
   Ingest: () => import('#controllers/ingest_controller'),
   Media: () => import('#controllers/media_controller'),

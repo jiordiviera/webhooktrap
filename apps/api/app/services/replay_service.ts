@@ -2,6 +2,7 @@ import Event from '#models/event'
 import Replay from '#models/replay'
 import { replayId } from '#support/ids'
 import InboxPolicy from '#support/inbox_policy'
+import { assertSafeReplayTarget, SsrfBlockedError } from '#support/ssrf_guard'
 
 const REPLAY_TIMEOUT_MS = 30_000
 
@@ -47,6 +48,8 @@ export default class ReplayService {
     const startedAt = Date.now()
 
     try {
+      await assertSafeReplayTarget(targetUrl)
+
       const response = await fetch(targetUrl, {
         method: event.method,
         headers: this.buildRequestHeaders(event.headers),
@@ -122,6 +125,10 @@ export default class ReplayService {
   }
 
   private static mapReplayError(error: unknown) {
+    if (error instanceof SsrfBlockedError) {
+      return { code: 'BLOCKED_TARGET', message: error.message }
+    }
+
     if (error instanceof Error) {
       if (error.name === 'TimeoutError' || error.name === 'AbortError') {
         return { code: 'TIMEOUT', message: 'Replay timed out after 30 seconds' }

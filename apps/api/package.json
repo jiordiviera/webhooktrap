@@ -74,6 +74,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1075.0",
     "@japa/api-client": "^3.2.1",
     "@nulix/adonis-2fa": "^1.1.1",
+    "@sentry/node": "^10.63.0",
     "@tuyau/core": "^1.2.2",
     "@vinejs/vine": "^4.4.0",
     "@workspace/types": "workspace:*",

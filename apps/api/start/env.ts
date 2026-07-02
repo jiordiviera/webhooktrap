@@ -85,4 +85,12 @@ export default await Env.create(new URL(dir + '/', import.meta.url), {
   |----------------------------------------------------------
   */
   LIMITER_STORE: Env.schema.enum(['redis', 'memory'] as const),
+
+  /*
+  |----------------------------------------------------------
+  | Error tracking (Sentry) — optional, reporting is a no-op
+  | when unset so this never blocks local/dev boot
+  |----------------------------------------------------------
+  */
+  SENTRY_DSN: Env.schema.string.optional(),
 })
