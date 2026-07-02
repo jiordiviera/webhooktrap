@@ -7,6 +7,7 @@ import { ConfirmProvider } from "@/contexts/confirm-context";
 import { QueryProvider } from "@/contexts/query-provider";
 import { TooltipProvider } from "@workspace/ui/components/tooltip";
 import { Analytics } from "@vercel/analytics/next";
+import { CookieConsent } from "@/components/cookie-consent";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -15,7 +16,10 @@ export function Providers({ children }: { children: ReactNode }) {
       <TooltipProvider>
         <QueryProvider>
           <AuthProvider>
-            <ConfirmProvider>{children}</ConfirmProvider>
+            <ConfirmProvider>
+              {children}
+              <CookieConsent />
+            </ConfirmProvider>
           </AuthProvider>
         </QueryProvider>
       </TooltipProvider>

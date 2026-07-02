@@ -15,6 +15,7 @@ import {
   useDashboardNav,
 } from '@/features/dashboard/context/dashboard-nav-context'
 import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
+import { productName } from '@/lib/config'
 
 type BreadcrumbCrumb = {
   label: string
@@ -39,7 +40,7 @@ function getBreadcrumbs(
     return [{ label: activeItem.label }]
   }
 
-  return [{ label: 'Hookscope' }]
+  return [{ label: productName }]
 }
 
 export function DashboardBreadcrumb() {

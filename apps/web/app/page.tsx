@@ -25,7 +25,7 @@ export const metadata: Metadata = {
       'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
   },
   twitter: {
-    title: 'Hookscope — Webhook debugger',
+    title: `${productName} — Webhook debugger`,
     description:
       'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
   },
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'Hookscope',
+  name: productName,
   url: 'https://hookscope.dev',
   description:
     'Webhook debugging tool. Receive, inspect, replay, and share webhook payloads.',

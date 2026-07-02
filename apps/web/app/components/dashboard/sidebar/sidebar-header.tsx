@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { SidebarHeader } from '@workspace/ui/components/sidebar'
+import { productName } from '@/lib/config'
 
 export function DashboardSidebarHeader() {
   return (
@@ -17,7 +18,7 @@ export function DashboardSidebarHeader() {
           aria-hidden
         />
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-sidebar-foreground">Hookscope</span>
+          <span className="block truncate text-sm font-semibold text-sidebar-foreground">{productName}</span>
           <span className="block truncate text-[0.6875rem] text-sidebar-foreground/65">
             Inspect · Replay · Respond
           </span>

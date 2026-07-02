@@ -134,6 +134,8 @@ function ReplayRow({ replay }: { replay: ReplayRecord }) {
   );
 }
 
+const LANDING_URL = "/?utm_source=shared_event";
+
 function SharedEventSkeleton() {
   return (
     <div
@@ -195,7 +197,7 @@ export default function SharedEventPage({
   if (isError || !data) {
     return (
       <div className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col items-center justify-center gap-6 px-4">
-        <Link href="/" className="font-ui text-sm font-semibold text-primary">
+        <Link href={LANDING_URL} className="font-ui text-sm font-semibold text-primary">
           {productName}
         </Link>
         <div className="flex flex-col items-center gap-2 text-center">
@@ -207,7 +209,7 @@ export default function SharedEventPage({
             generate a new one.
           </p>
         </div>
-        <Link href="/">
+        <Link href={LANDING_URL}>
           <Button type="button" variant="default">
             Create your own webhook endpoint
           </Button>
@@ -223,7 +225,7 @@ export default function SharedEventPage({
       {/* Brand mark */}
       <div className="flex items-baseline gap-3">
         <Link
-          href="/"
+          href={LANDING_URL}
           className="font-ui text-sm font-semibold text-primary transition-colors hover:text-primary/80"
         >
           {productName}
@@ -344,7 +346,7 @@ export default function SharedEventPage({
           {productName} receives, inspects, and replays every webhook your app
           sends.
         </p>
-        <Link href="/" className="mt-5 inline-flex">
+        <Link href={LANDING_URL} className="mt-5 inline-flex">
           <Button type="button" variant="default">
             <IconPlus className="size-4" aria-hidden />
             Create your own webhook endpoint
@@ -355,7 +357,7 @@ export default function SharedEventPage({
       {/* Footer */}
       <footer className="border-t border-border pt-8 text-center">
         <Link
-          href="/"
+          href={LANDING_URL}
           className="inline-flex items-center gap-1.5 font-ui text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <IconExternalLink className="size-3.5" aria-hidden />

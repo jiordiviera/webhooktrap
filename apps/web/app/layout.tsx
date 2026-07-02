@@ -8,7 +8,7 @@ import {
 import { Providers } from "@/app/components/providers";
 import "@workspace/ui/globals.css";
 import { cn } from "@workspace/ui/lib/utils";
-import { siteUrl } from "@/lib/config";
+import { siteUrl, productName } from "@/lib/config";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -33,15 +33,15 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Hookscope — Webhook debugger",
-    template: "%s — Hookscope",
+    default: `${productName} — Webhook debugger`,
+    template: `%s — ${productName}`,
   },
   description:
     "Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.",
   openGraph: {
     type: "website",
-    siteName: "Hookscope",
-    title: "Hookscope — Webhook debugger",
+    siteName: productName,
+    title: `${productName} — Webhook debugger`,
     description:
       "Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.",
     images: [
@@ -49,13 +49,13 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "Hookscope — Webhook debugging, simplified.",
+        alt: `${productName} — Webhook debugging, simplified.`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hookscope — Webhook debugger",
+    title: `${productName} — Webhook debugger`,
     description:
       "Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.",
     images: ["/opengraph-image.png"],

@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { DeveloperCredit } from '@/app/components/developer-credit'
+import { productName } from '@/lib/config'
 
 type AuthShellProps = {
   title: string
@@ -17,7 +18,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
         <Link href="/" className="inline-flex w-fit">
           <Image
             src="/logo.png"
-            alt="Hookscope"
+            alt={productName}
             width={132}
             height={36}
             className="h-auto w-18"
