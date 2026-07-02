@@ -73,7 +73,7 @@ export function DevelopersSection() {
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="grid gap-16 lg:grid-cols-2 lg:gap-24">
           <div
-            className={`transition-all duration-700 ${
+            className={`min-w-0 transition-all duration-700 ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
@@ -100,7 +100,7 @@ export function DevelopersSection() {
           </div>
 
           <div
-            className={`transition-all delay-150 duration-700 ${
+            className={`min-w-0 transition-all delay-150 duration-700 ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >

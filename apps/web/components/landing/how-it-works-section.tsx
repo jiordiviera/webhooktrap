@@ -94,7 +94,7 @@ export function HowItWorksSection() {
         </div>
 
         <div className="grid gap-16 lg:grid-cols-2 lg:gap-24">
-          <div className="space-y-0">
+          <div className="min-w-0 space-y-0">
             {steps.map((step, index) => (
               <button
                 key={step.number}
@@ -123,7 +123,7 @@ export function HowItWorksSection() {
             ))}
           </div>
 
-          <div className="lg:sticky lg:top-32 lg:self-start">
+          <div className="min-w-0 lg:sticky lg:top-32 lg:self-start">
             <div className="overflow-hidden border border-primary-foreground/15">
               <div className="flex items-center justify-between border-b border-primary-foreground/15 px-4 py-3 sm:px-6 sm:py-4">
                 <div className="flex gap-2">
