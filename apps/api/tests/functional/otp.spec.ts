@@ -3,10 +3,15 @@ import Otp from '#models/otp'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
+import limiter from '@adonisjs/limiter/services/main'
 
 test.group('OTP API', (group) => {
   group.each.setup(async () => {
     await testUtils.db().migrate()
+    // otp_request/otp_verify throttles key by IP — every request in this
+    // group shares the test client's IP, so state must be cleared between
+    // tests to avoid bleeding into the next test's rate limit.
+    await limiter.clear()
   })
 
   test('request-otp sends email for existing user', async ({ client, assert }) => {

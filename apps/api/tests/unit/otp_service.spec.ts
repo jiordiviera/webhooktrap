@@ -21,7 +21,7 @@ test.group('OtpService', (group) => {
     assert.isTrue(otp.expiresAt > new Date())
 
     const valid = await OtpService.verify(user, 'email_verify', otp.code)
-    assert.isTrue(valid)
+    assert.isTrue(valid.verified)
 
     const otpAfter = await Otp.query().where('user_id', user.id).first()
     assert.isNotNull(otpAfter!.usedAt)
