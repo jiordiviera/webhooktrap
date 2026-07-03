@@ -37,8 +37,12 @@ import { OAuthButtons } from './oauth-buttons'
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { signIn } = useAuth()
+  const { signIn, isAuthenticated } = useAuth()
   const returnTo = searchParams.get('returnTo') ?? '/'
+
+  React.useEffect(() => {
+    if (isAuthenticated) router.replace(returnTo.startsWith('/') ? returnTo : '/')
+  }, [isAuthenticated, returnTo, router])
 
   const [requires2fa, setRequires2fa] = useState(false)
   const [challengeToken, setChallengeToken] = useState<string | null>(null)

@@ -23,11 +23,20 @@ import { DataTable } from '@/features/data-table/components/data-table'
 import { inboxQueryKey, useInboxQuery } from '@/features/inbox/hooks/use-inbox-query'
 import { EventDetailSheet } from '@/features/inbox/components/event-detail-sheet'
 import { ApiError } from '@/lib/api'
+import { useAuth } from '@/contexts/auth-context'
 import { useConfirm } from '@/contexts/confirm-context'
 import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
 import { deleteInbox, updateInbox } from '@/lib/inboxes'
 
 const POLL_INTERVAL_MS = 3000
+
+function formatExpiry(iso: string) {
+  const hours = Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 3_600_000))
+  if (hours < 1) return 'less than an hour'
+  if (hours === 1) return '1 hour'
+  if (hours < 48) return `${hours} hours`
+  return `${Math.round(hours / 24)} days`
+}
 
 function InboxHeaderSkeleton() {
   return (
@@ -44,9 +53,12 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const inboxPage = useInboxPageTitle()
+  const { user, isAuthenticated } = useAuth()
 
   const inboxQuery = useInboxQuery(inboxId)
   const inbox = inboxQuery.data ?? null
+  const canManage = !!inbox && inbox.userId !== null && inbox.userId === user?.id
+  const isAnonymousInbox = !!inbox && inbox.userId === null
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [eventsTotal, setEventsTotal] = useState(0)
@@ -172,7 +184,9 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
       <div className="mx-auto max-w-lg py-16 text-center">
         <p className="text-sm text-muted-foreground">{loadError ?? 'Inbox not found.'}</p>
         <Button variant="outline" className="mt-4" asChild>
-          <Link href="/inboxes">Back to inboxes</Link>
+          <Link href={isAuthenticated ? '/inboxes' : '/'}>
+            {isAuthenticated ? 'Back to inboxes' : 'Back to home'}
+          </Link>
         </Button>
       </div>
     )
@@ -185,12 +199,14 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
           <InboxHeaderSkeleton />
         ) : (
           <div className="min-w-0 space-y-2">
-            <Button variant="ghost" size="sm" className="-ml-2 h-8 px-2" asChild>
-              <Link href="/inboxes">
-                <IconArrowLeft className="size-4" aria-hidden />
-                Inboxes
-              </Link>
-            </Button>
+            {isAuthenticated && (
+              <Button variant="ghost" size="sm" className="-ml-2 h-8 px-2" asChild>
+                <Link href="/inboxes">
+                  <IconArrowLeft className="size-4" aria-hidden />
+                  Inboxes
+                </Link>
+              </Button>
+            )}
             <div>
               {editingName ? (
                 <div className="flex flex-wrap items-center gap-2">
@@ -233,15 +249,17 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                   <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                     {inbox.name}
                   </h1>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={startEditingName}
-                    aria-label="Rename inbox"
-                  >
-                    <IconPencil className="size-4" aria-hidden />
-                  </Button>
+                  {canManage && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={startEditingName}
+                      aria-label="Rename inbox"
+                    >
+                      <IconPencil className="size-4" aria-hidden />
+                    </Button>
+                  )}
                 </div>
               )}
               <p className="mt-1 font-mono text-sm text-muted-foreground">/i/{inbox.id}</p>
@@ -254,23 +272,41 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
             <IconRefresh className="size-3.5" aria-hidden />
             Refresh
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="text-destructive hover:text-destructive"
-            disabled={deleting || !inbox}
-            onClick={() => void handleDeleteInbox()}
-          >
-            {deleting ? (
-              <Loader size="sm" tone="inherit" />
-            ) : (
-              <IconTrash className="size-3.5" aria-hidden />
-            )}
-            {deleting ? 'Deleting…' : 'Delete'}
-          </Button>
+          {canManage && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              disabled={deleting || !inbox}
+              onClick={() => void handleDeleteInbox()}
+            >
+              {deleting ? (
+                <Loader size="sm" tone="inherit" />
+              ) : (
+                <IconTrash className="size-3.5" aria-hidden />
+              )}
+              {deleting ? 'Deleting…' : 'Delete'}
+            </Button>
+          )}
         </div>
       </header>
+
+      {isAnonymousInbox && !inboxLoading && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+          <p className="text-sm text-foreground">
+            {inbox?.expiresAt
+              ? `This inbox expires in ${formatExpiry(inbox.expiresAt)}.`
+              : 'This inbox is temporary.'}{' '}
+            <span className="text-muted-foreground">
+              Anonymous inboxes aren&apos;t saved to an account.
+            </span>
+          </p>
+          <Button type="button" variant="outline" size="sm" asChild>
+            <Link href="/register">Create a free account</Link>
+          </Button>
+        </div>
+      )}
 
       <section
         aria-labelledby="ingest-url-heading"

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   IconArrowRight,
@@ -53,6 +54,7 @@ function StatCard({
 }
 
 export function DashboardHome() {
+  const router = useRouter()
   const [inboxes, setInboxes] = useState<InboxSummary[]>([])
   const [state, setState] = useState<LoadState>('loading')
   const [createOpen, setCreateOpen] = useState(false)
@@ -91,6 +93,7 @@ export function DashboardHome() {
   }, [inboxes])
 
   function handleInboxCreated(inbox: InboxSummary) {
+    router.push(`/i/${inbox.id}`)
     setInboxes((current) => [inbox, ...current])
     setState('ready')
     setErrorMessage(null)

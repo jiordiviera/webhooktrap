@@ -23,7 +23,12 @@ import { OAuthButtons } from './oauth-buttons'
 
 export function RegisterForm() {
   const router = useRouter()
-  const { signIn } = useAuth()
+  const { signIn, isAuthenticated } = useAuth()
+
+  React.useEffect(() => {
+    if (isAuthenticated) router.replace('/dashboard')
+  }, [isAuthenticated, router])
+
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {

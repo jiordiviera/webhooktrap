@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { IconCopy, IconExternalLink, IconPlus } from '@tabler/icons-react'
@@ -46,12 +47,14 @@ function InboxActionsCell({
 }
 
 export function InboxList() {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  function handleInboxCreated() {
+  function handleInboxCreated(inbox: InboxSummary) {
     void queryClient.invalidateQueries({ queryKey: ['data-table', 'inboxes'] })
+    router.push(`/i/${inbox.id}`)
   }
 
   async function handleCopy(id: string, url: string) {

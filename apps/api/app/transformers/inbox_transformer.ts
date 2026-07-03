@@ -11,6 +11,7 @@ export default class InboxTransformer extends BaseTransformer<Inbox> {
       ...this.pick(this.resource, [
         'id',
         'name',
+        'userId',
         'expiresAt',
         'defaultReplayUrl',
         'createdAt',

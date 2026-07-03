@@ -1,6 +1,7 @@
 export interface InboxDTO {
   id: string
   name: string
+  userId: number | null
   expiresAt: string | null
   ingestUrl: string
   defaultReplayUrl: string | null
