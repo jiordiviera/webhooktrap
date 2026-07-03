@@ -23,11 +23,21 @@ export const metadata: Metadata = {
     title: `${productName} — Webhook debugger`,
     description:
       'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: `${productName} — Webhook debugging, simplified.`,
+      },
+    ],
   },
   twitter: {
+    card: 'summary_large_image',
     title: `${productName} — Webhook debugger`,
     description:
       'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
+    images: ['/og-image.jpg'],
   },
 }
 
