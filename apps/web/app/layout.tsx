@@ -36,7 +36,7 @@ export const metadata: Metadata = {
       "Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: `${productName} — Webhook debugging, simplified.`,
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     title: `${productName} — Webhook debugger`,
     description:
       "Receive webhooks, inspect every payload, replay to your local server. Developer-first debugging without the dashboard bloat.",
-    images: ["/opengraph-image.png"],
+    images: ["/og-image.jpg"],
   },
   robots: { index: true, follow: true },
 };
