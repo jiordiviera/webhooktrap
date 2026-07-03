@@ -1,11 +1,17 @@
 "use client";
 
+import { loadFont as loadMono } from "@remotion/google-fonts/JetBrainsMono";
 import {
   Sequence,
   interpolate,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+
+const { fontFamily: MONO_FAMILY } = loadMono("normal", {
+  weights: ["400", "500"],
+  subsets: ["latin"],
+});
 
 export type TerminalLineType = "command" | "log" | "success" | "error";
 
@@ -19,6 +25,13 @@ export interface TerminalLine {
    * If omitted, lines whose text ends in "..." auto-freeze for 18 frames.
    */
   pause?: number;
+  /**
+   * Marks this line as a visual continuation of the previous command (e.g.
+   * a `\`-wrapped curl flag on its own line). Keeps the "command" color but
+   * suppresses the prompt, so a single wrapped command doesn't read as two
+   * separate ones.
+   */
+  continuation?: boolean;
 }
 
 export interface TerminalSimulatorProps {
@@ -82,8 +95,10 @@ export function TerminalSimulator({
 
   const lineHeight = Math.round(fontSize * 1.6);
   const visibleLines = 8;
-  const windowWidth = 900;
-  const windowHeight = 480;
+  const windowWidth = 760;
+  // Fit snugly around the visible lines instead of a fixed 480px — a mostly
+  // empty window under short content reads as unfinished, not premium.
+  const windowHeight = 40 + 40 + visibleLines * lineHeight;
 
   // Compute cumulative start frames for each line, including auto/explicit
   // pauses AFTER a line finishes typing.
@@ -132,8 +147,7 @@ export function TerminalSimulator({
             "0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
           display: "flex",
           flexDirection: "column",
-          fontFamily:
-            "var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace",
+          fontFamily: MONO_FAMILY,
         }}
       >
         {/* Chrome */}
@@ -271,8 +285,11 @@ function TerminalLineRow({
         whiteSpace: "pre",
       }}
     >
-      {line.type === "command" && (
+      {line.type === "command" && !line.continuation && (
         <span style={{ color: "#22c55e", marginRight: 8 }}>{prompt}</span>
+      )}
+      {line.type === "command" && line.continuation && (
+        <span style={{ width: fontSize * 0.9, flexShrink: 0 }} />
       )}
       <span>{visible}</span>
       {!typingDone && cursorVisible && (

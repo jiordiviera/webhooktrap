@@ -5,7 +5,12 @@ import { TerminalSimulator, type TerminalLine } from "../remocn/terminal-simulat
 // (Receive / Inspect / Replay) so the video and the landing copy never drift apart.
 const LINES: TerminalLine[] = [
   { text: "curl -X POST hookscope.dev/i/xK9m2pQ7nR4a \\", type: "command", delay: 6 },
-  { text: "  -d '{\"type\":\"checkout.session.completed\"}'", type: "command", delay: 4 },
+  {
+    text: "-d '{\"type\":\"checkout.session.completed\"}'",
+    type: "command",
+    delay: 4,
+    continuation: true,
+  },
   { text: "{ \"received\": true }", type: "success", delay: 10 },
   { text: "GET /i/xK9m2pQ7nR4a/events/evt_8f2a", type: "command", delay: 12 },
   { text: "{ \"method\": \"POST\", \"stripe-signature\": \"...\" }", type: "log", delay: 8 },
