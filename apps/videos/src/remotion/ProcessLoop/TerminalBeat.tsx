@@ -4,7 +4,7 @@ import { TerminalSimulator, type TerminalLine } from "../remocn/terminal-simulat
 // Mirrors the real snippets in apps/web/components/landing/how-it-works-section.tsx
 // (Receive / Inspect / Replay) so the video and the landing copy never drift apart.
 const LINES: TerminalLine[] = [
-  { text: "curl -X POST hookscope.dev/i/xK9m2pQ7nR4a \\", type: "command", delay: 6 },
+  { text: "curl -X POST hookscope.jiordiviera.me/i/xK9m2pQ7nR4a \\", type: "command", delay: 6 },
   {
     text: "-d '{\"type\":\"checkout.session.completed\"}'",
     type: "command",
