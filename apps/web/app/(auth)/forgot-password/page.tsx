@@ -9,7 +9,7 @@ import { ResetPasswordForm } from '@/features/auth/components/reset-password-for
 
 type Step = 'email' | 'otp' | 'password' | 'done'
 
-export default function ForgotPassword() {
+export default function ForgotPassword(): React.JSX.Element {
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
   const [resetToken, setResetToken] = useState('')
