@@ -1,9 +1,20 @@
 import type { Metadata } from "next";
+import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/app/components/providers";
-import { fontClasses } from "@workspace/ui/lib/fonts";
 import "@workspace/ui/globals.css";
 import { cn } from "@workspace/ui/lib/utils";
 import { siteUrl, productName } from "@/lib/config";
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -46,7 +57,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={fontClasses}
+      className={cn(
+        bricolageGrotesque.variable,
+        jetbrainsMono.variable,
+        "font-sans"
+      )}
       suppressHydrationWarning
     >
       <body>
