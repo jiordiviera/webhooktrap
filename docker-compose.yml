@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: local
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: webhooktrap
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: development
+      TZ: UTC
+      PORT: 3333
+      HOST: 0.0.0.0
+      APP_KEY: ${APP_KEY:-xOezfxipp8h21wYi_B-e1Y8e1sQ36RVa}
+      APP_URL: http://localhost:3333
+      WEB_URL: http://localhost:7777
+
+      DB_CONNECTION: postgres
+      DATABASE_URL: postgresql://local:password@postgres:5432/webhooktrap?schema=public
+
+      SESSION_DRIVER: cookie
+      LOG_LEVEL: info
+
+      # OAuth (configure with your own credentials or leave empty)
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+
+      # Media (R2/S3 or stub for local dev)
+      DRIVE_DISK: r2
+      R2_KEY: ${R2_KEY:-test-key}
+      R2_SECRET: ${R2_SECRET:-test-secret}
+      R2_BUCKET: ${R2_BUCKET:-webhooktrap}
+      R2_ENDPOINT: ${R2_ENDPOINT:-https://test.r2.cloudflarestorage.com}
+      MEDIA_CDN_BASE_URL: http://localhost:3333/media
+      MEDIA_MAX_FILE_SIZE_MB: 10
+
+      # Mail (optional)
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_FROM_NAME: Webhook Trap
+      MAIL_FROM_ADDRESS: noreply@webhooktrap.dev
+    ports:
+      - "3333:3333"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app/apps/api
+      - /app/apps/api/node_modules
+      - ./packages:/app/packages
+    command: pnpm install && pnpm --filter api dev
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_APP_URL: http://localhost:7777
+      NEXT_PUBLIC_API_URL: http://localhost:3333
+    ports:
+      - "7777:7777"
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/app/apps/web
+      - /app/apps/web/node_modules
+      - ./packages:/app/packages
+    command: pnpm install && pnpm --filter web dev
+
+volumes:
+  postgres_data:
