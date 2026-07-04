@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'hookscope-api',
+      name: 'webhooktrap-api',
       cwd: __dirname,
       script: 'apps/api/build/bin/server.js',
       instances: 1,
@@ -22,7 +22,7 @@ module.exports = {
       listen_timeout: 8000,
     },
     {
-      name: 'hookscope-mail-worker',
+      name: 'webhooktrap-mail-worker',
       cwd: __dirname,
       script: 'apps/api/build/workers/mail_worker.js',
       instances: 1,
