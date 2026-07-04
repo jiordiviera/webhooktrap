@@ -1,5 +1,5 @@
 import { z } from "zod";
-export const COMP_NAME = "Hookscope";
+export const COMP_NAME = "Webhook Trap";
 
 export const CompositionProps = z.object({
   title: z.string(),

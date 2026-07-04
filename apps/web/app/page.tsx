@@ -45,7 +45,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: productName,
-  url: 'https://hookscope.dev',
+  url: 'https://webhooktrap.dev',
   description:
     'Webhook debugging tool. Receive, inspect, replay, and share webhook payloads.',
   applicationCategory: 'DeveloperApplication',

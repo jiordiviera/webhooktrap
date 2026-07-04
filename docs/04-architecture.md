@@ -70,7 +70,7 @@ User/CLI → POST /api/events/:id/replay { url }
 
 ### Limitation MVP — localhost
 
-Le replay part **du serveur Hookscope**. `localhost` ne fonctionne que si :
+Le replay part **du serveur Webhook Trap**. `localhost` ne fonctionne que si :
 - L'app est sur une URL **publique** (staging, ngrok, etc.)
 - Ou tunnel natif (V2)
 
@@ -79,16 +79,16 @@ Le replay part **du serveur Hookscope**. `localhost` ne fonctionne que si :
 ## URLs
 
 ```
-hookscope.dev              → landing
-hookscope.dev/i/:id        → inbox
-hookscope.dev/share/:token → partage read-only
-hookscope.dev/docs         → documentation
-api.hookscope.dev          → API (optionnel)
+webhooktrap.dev              → landing
+webhooktrap.dev/i/:id        → inbox
+webhooktrap.dev/share/:token → partage read-only
+webhooktrap.dev/docs         → documentation
+api.webhooktrap.dev          → API (optionnel)
 ```
 
 ## Recyclage PulseSend
 
-| Composant PulseSend | Hookscope |
+| Composant PulseSend | Webhook Trap |
 |---------------------|-----------|
 | Multi-tenant / teams | ✓ |
 | API keys | ✓ |

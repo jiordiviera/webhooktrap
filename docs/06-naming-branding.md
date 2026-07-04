@@ -2,7 +2,7 @@
 
 Recherche effectuée le **22 juin 2026** (WHOIS via who.is).
 
-## Nom retenu : Hookscope
+## Nom retenu : Webhook Trap
 
 > *Microscope for your webhooks.*
 
@@ -12,7 +12,7 @@ Recherche effectuée le **22 juin 2026** (WHOIS via who.is).
 | **Hero** | Debug webhooks in seconds. |
 | **CLI** | `npx @hookscope/cli` → commande `hs` |
 | **npm scope** | `@hookscope/cli`, `@hookscope/sdk` |
-| **Inbox URL** | `https://hookscope.dev/i/:id` |
+| **Inbox URL** | `https://webhooktrap.dev/i/:id` |
 
 ## Domaines
 
@@ -30,7 +30,7 @@ Recherche effectuée le **22 juin 2026** (WHOIS via who.is).
 
 | Domaine | Prix estimé/an |
 |---------|----------------|
-| **`hookscope.dev`** | ~$12 |
+| **`webhooktrap.dev`** | ~$12 |
 | `hookscope.io` | ~$35 (backup) |
 | `webhookdock.com` | ~$12 (alternative) |
 
@@ -40,7 +40,7 @@ Registrar recommandé : **Cloudflare Registrar**.
 
 | Nom | Score | Note |
 |-----|-------|------|
-| **Hookscope** | 34/40 | Recommandé |
+| **Webhook Trap** | 34/40 | Recommandé |
 | Hooktrace | 33/40 | Bon backup |
 | Deadletter | 33/40 | Mémorable, niche dev |
 | Replayhook | 30/40 | Conflit HookReplay |
@@ -48,7 +48,7 @@ Registrar recommandé : **Cloudflare Registrar**.
 
 ## Identité visuelle
 
-Direction actuelle : **serif classique, chaleureux, premium** (rendu DreamBell → Hookscope via Grok Imagine).
+Direction actuelle : **serif classique, chaleureux, premium** (rendu DreamBell → Webhook Trap via Grok Imagine).
 
 | | Valeur |
 |--|--------|
@@ -76,7 +76,7 @@ Les PNG ne contiennent pas de police embarquée — en code, utiliser `brand.css
 - [ ] `github.com/hookscope`
 - [ ] `@hookscope` sur X
 - [ ] npm org `@hookscope`
-- [ ] `hookscope.dev` + `hookscope.io`
+- [ ] `webhooktrap.dev` + `hookscope.io`
 
 ## Copy
 

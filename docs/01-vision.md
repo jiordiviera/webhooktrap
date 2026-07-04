@@ -1,8 +1,8 @@
-# Vision — Hookscope
+# Vision — Webhook Trap
 
 ## En une phrase
 
-**Hookscope** aide les développeurs à débugger les webhooks : recevoir n'importe quel événement (Stripe, GitHub, Shopify…), rejouer le payload vers leur app, et voir la réponse de leur serveur.
+**Webhook Trap** aide les développeurs à débugger les webhooks : recevoir n'importe quel événement (Stripe, GitHub, Shopify…), rejouer le payload vers leur app, et voir la réponse de leur serveur.
 
 ## Mission
 
@@ -18,12 +18,12 @@ Plateforme de **debug webhook** orientée développeurs — intégration en quel
 ## La solution
 
 ```
-Provider → Hookscope inbox → Inspect → Replay → Voir la response
+Provider → Webhook Trap inbox → Inspect → Replay → Voir la response
 ```
 
 ### Flux utilisateur
 
-1. Obtenir une URL : `https://hookscope.dev/i/abc123`
+1. Obtenir une URL : `https://webhooktrap.dev/i/abc123`
 2. Coller dans les settings webhook du provider
 3. Voir l'événement en temps réel
 4. Rejouer vers `http://localhost:7777/webhooks` (ou staging)
@@ -43,7 +43,7 @@ Provider → Hookscope inbox → Inspect → Replay → Voir la response
 
 **Hors cible** : équipes ops cherchant infra webhook prod (retries, SLA) → Hookdeck / Svix.
 
-## Ce que Hookscope est / n'est pas
+## Ce que Webhook Trap est / n'est pas
 
 | Est | N'est pas |
 |-----|-----------|

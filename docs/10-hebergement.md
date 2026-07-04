@@ -14,7 +14,7 @@
 ```mermaid
 flowchart TB
     subgraph internet [Internet]
-        DNS["hookscope.dev → Vercel\napi.hookscope.dev → VPS"]
+        DNS["webhooktrap.dev → Vercel\napi.webhooktrap.dev → VPS"]
         BROWSER["Navigateur"]
         STRIPE["Stripe / GitHub / …"]
     end
@@ -34,8 +34,8 @@ flowchart TB
 
     DNS --> WEB
     DNS --> CADDY
-    BROWSER -->|"hookscope.dev"| WEB
-    BROWSER -->|"api.hookscope.dev/*"| CADDY
+    BROWSER -->|"webhooktrap.dev"| WEB
+    BROWSER -->|"api.webhooktrap.dev/*"| CADDY
     STRIPE -->|"POST /i/:id"| CADDY
     WEB -->|"fetch /api + rewrite /hooks"| CADDY
     CADDY --> API
@@ -118,8 +118,8 @@ NODE_ENV=production
 PORT=3333
 HOST=127.0.0.1
 APP_KEY=<node ace generate:key>
-APP_URL=https://api.hookscope.dev
-WEB_URL=https://hookscope.dev
+APP_URL=https://api.webhooktrap.dev
+WEB_URL=https://webhooktrap.dev
 DB_CONNECTION=pg
 DATABASE_URL=postgresql://user:pass@ep-xxx.neon.tech/hookscope?sslmode=require
 SESSION_DRIVER=cookie
@@ -148,7 +148,7 @@ REDIS_PASSWORD=
 
 ```caddy
 # /etc/caddy/Caddyfile
-api.hookscope.dev {
+api.webhooktrap.dev {
     reverse_proxy 127.0.0.1:3333
 }
 ```
@@ -226,7 +226,7 @@ supprimés en cascade via les FK Postgres) :
 ### Variables Vercel
 
 ```env
-NEXT_PUBLIC_API_URL=https://api.hookscope.dev
+NEXT_PUBLIC_API_URL=https://api.webhooktrap.dev
 ```
 
 ### Rewrite ingest
@@ -235,12 +235,12 @@ Le proxy Next.js (`apps/web/proxy.ts`) rewrite `/hooks/:inboxId` vers l'API. En 
 
 ```env
 # Vercel (server-side, pas publique)
-APP_URL=https://api.hookscope.dev
+APP_URL=https://api.webhooktrap.dev
 ```
 
 ### Domaine
 
-Vercel → Domains → `hookscope.dev` + `www.hookscope.dev`
+Vercel → Domains → `webhooktrap.dev` + `www.webhooktrap.dev`
 
 DNS :
 
@@ -257,8 +257,8 @@ DNS :
 {
   origin: [
     'http://localhost:7777',
-    'https://hookscope.dev',
-    'https://www.hookscope.dev',
+    'https://webhooktrap.dev',
+    'https://www.webhooktrap.dev',
   ],
   credentials: true,
 }
