@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: `Create a ${productName} account to keep your webhook inboxes beyond 48 hours.`,
 }
 
-export default function RegisterPage() {
+export default function RegisterPage(): React.JSX.Element {
   return (
     <AuthShell
       title="Create account"

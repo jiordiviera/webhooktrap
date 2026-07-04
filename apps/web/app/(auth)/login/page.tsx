@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Sign in to save your webhook inboxes and replay events to localhost.',
 }
 
-export default function LoginPage() {
+export default function LoginPage(): React.JSX.Element {
   return (
     <AuthShell
       title="Sign in"

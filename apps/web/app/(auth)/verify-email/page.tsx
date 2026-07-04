@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Verify your email address to access all features.',
 }
 
-export default function VerifyEmailPage() {
+export default function VerifyEmailPage(): React.JSX.Element {
   return (
     <AuthShell
       title="Verify your email"
