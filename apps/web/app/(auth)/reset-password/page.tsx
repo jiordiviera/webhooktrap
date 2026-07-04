@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
-export default function ResetPasswordPage(): React.JSX.Element {
+export default function ResetPasswordPage() {
   redirect('/forgot-password')
 }
