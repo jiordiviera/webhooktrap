@@ -1,4 +1,4 @@
-# Hookscope — Agent Guide
+# Webhook Trap — Agent Guide
 
 ## Quick start
 

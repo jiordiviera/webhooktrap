@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { IconCheck, IconCopy } from '@tabler/icons-react'
-import { apiUrl, siteUrl } from '@/lib/config'
+import { IconArrowUpRight, IconCheck, IconCopy } from '@tabler/icons-react'
+import { apiUrl, docsUrl, siteUrl } from '@/lib/config'
 
 const apiOrigin = apiUrl.replace(/\/$/, '')
 const webOrigin = siteUrl.replace(/\/$/, '')
@@ -97,6 +97,15 @@ export function DevelopersSection() {
                 </div>
               ))}
             </div>
+            <a
+              href={docsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              Read the documentation
+              <IconArrowUpRight className="size-4" aria-hidden />
+            </a>
           </div>
 
           <div

@@ -1,4 +1,4 @@
-# Stack technique — Hookscope
+# Stack technique — Webhook Trap
 
 Décisions pour le MVP et évolution V1+. Dernière révision : juin 2026.
 
@@ -341,7 +341,7 @@ Pas de OAuth social au MVP.
 
 ## Hébergement — c'est quoi ?
 
-Tu as **3 briques** à héberger pour Hookscope :
+Tu as **3 briques** à héberger pour Webhook Trap :
 
 | Brique | Rôle | Où ça tourne |
 |--------|------|----------------|
@@ -377,7 +377,7 @@ GitHub push → Railway détecte apps/api → node server.js → URL publique
 fly deploy → image Docker (ou buildpack) → VM Fly en région choisie
 ```
 
-### Comparaison rapide (API Hookscope)
+### Comparaison rapide (API Webhook Trap)
 
 | | **Railway** | **Fly.io** |
 |--|-------------|------------|
@@ -387,7 +387,7 @@ fly deploy → image Docker (ou buildpack) → VM Fly en région choisie
 | Docker requis | Non (souvent) | Parfois oui |
 | Bon pour | **Premier deploy, solo dev** | Scale régional plus tard |
 
-**Recommandation Hookscope** : **Railway** pour l'API au MVP — moins de friction. Fly reste une option si tu veux apprendre ou cibler une région précise.
+**Recommandation Webhook Trap** : **Railway** pour l'API au MVP — moins de friction. Fly reste une option si tu veux apprendre ou cibler une région précise.
 
 ### Neon — PostgreSQL managé
 
@@ -411,17 +411,17 @@ apps/api (.env)  →  DATABASE_URL=postgresql://...@neon.tech/hookscope
 ### DNS cible
 
 ```
-hookscope.dev        → Vercel (web)
-api.hookscope.dev    → Railway (api)
+webhooktrap.dev        → Vercel (web)
+api.webhooktrap.dev    → Railway (api)
 ```
 
-Ingest peut passer par `hookscope.dev/i/*` (rewrite vers API) ou directement `api.hookscope.dev`.
+Ingest peut passer par `webhooktrap.dev/i/*` (rewrite vers API) ou directement `api.webhooktrap.dev`.
 
-**Recommandé MVP** : `api.hookscope.dev/i/:id` pour ingest + CORS simple, ou rewrite Next :
+**Recommandé MVP** : `api.webhooktrap.dev/i/:id` pour ingest + CORS simple, ou rewrite Next :
 
 ```js
 // next.config — rewrite ingest vers API
-{ source: '/i/:path*', destination: 'https://api.hookscope.dev/i/:path*' }
+{ source: '/i/:path*', destination: 'https://api.webhooktrap.dev/i/:path*' }
 ```
 
 ---
@@ -473,7 +473,7 @@ Pas obligatoire semaine 1.
 
 ## Alternatives globales (rappel)
 
-| Stack alternative | Pourquoi pas (pour Hookscope) |
+| Stack alternative | Pourquoi pas (pour Webhook Trap) |
 |-------------------|-------------------------------|
 | **Hono + Prisma** | Plus de assembly manuel, moins d'auth batteries |
 | **Remix + Express** | Moins aligné avec expérience récente |
@@ -488,7 +488,7 @@ Pas obligatoire semaine 1.
 | # | Question | Options | Recommandation |
 |---|----------|---------|----------------|
 | 1 | Package manager | pnpm vs bun | **pnpm** (turbo docs, stable) |
-| 2 | Ingest URL | rewrite Next vs sous-domaine API | **Rewrite** `hookscope.dev/i/*` — UX propre |
+| 2 | Ingest URL | rewrite Next vs sous-domaine API | **Rewrite** `webhooktrap.dev/i/*` — UX propre |
 | 3 | Temps réel | polling / SSE | **Polling** MVP, pas de Redis |
 | 7 | Postgres dev | native / Neon | **Neon** si zéro install, sinon `apt install postgresql` |
 | 4 | API host | — | **Railway** ✓ validé |

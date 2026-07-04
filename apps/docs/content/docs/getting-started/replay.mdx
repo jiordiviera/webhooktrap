@@ -1,0 +1,43 @@
+---
+title: Replay
+description: Send captured webhooks to your own server and see the response.
+---
+
+Replay re-sends a captured webhook to a URL you choose, then shows you exactly how your server answered. No waiting for the provider to fire again.
+
+## Run a replay
+
+1. Open an event and click **Replay**.
+2. Enter the target URL, for example `https://staging.myapp.com/webhooks/stripe`.
+3. Send.
+
+The result appears with the response status, latency in milliseconds, headers, and body. Every attempt is kept in the event's replay history, so you can compare a failing run against a passing one.
+
+## What gets sent
+
+The stored request, faithfully: same method, same body, same headers, with two exceptions.
+
+- Sensitive headers (`Authorization`, `Cookie`, `X-API-Key`) were redacted at capture time and are never forwarded. If your endpoint verifies signatures, re-sign with your provider's SDK or disable verification in the environment you replay into.
+- Hop-by-hop headers (`Connection`, `Transfer-Encoding`, `Host`, and similar) are dropped, as any proxy would.
+
+Replays time out after 30 seconds.
+
+## Choosing a target
+
+Replays are sent **from the Webhook Trap server**, so the target must be reachable from it.
+
+- **Staging or production URLs** work directly.
+- **localhost** works only when you self-host Webhook Trap on the same machine or network. On a hosted instance, use a tunnel (ngrok, cloudflared) and replay to the tunnel URL.
+- Private and internal addresses (`10.x`, `192.168.x`, cloud metadata endpoints) are blocked by SSRF protection; you'll see `Target resolves to a private or internal address`.
+
+## Errors you might see
+
+| Message | Meaning |
+|---|---|
+| `Connection refused` | Nothing is listening at the target. Check the app is up and the port is right. |
+| `Replay timed out after 30 seconds` | The handler took too long. Look for slow downstream calls. |
+| `Target resolves to a private or internal address` | SSRF guard. Use a public URL or a tunnel. |
+
+## Next
+
+[Share events with teammates](/docs/getting-started/sharing).

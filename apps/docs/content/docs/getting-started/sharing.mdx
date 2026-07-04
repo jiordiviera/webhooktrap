@@ -1,0 +1,32 @@
+---
+title: Sharing
+description: Read-only links so teammates can inspect an event without an account.
+---
+
+A share link gives read-only access to a single event: payload, headers, metadata, and replay history. The recipient needs no account.
+
+## Create a share link
+
+1. Open an event and click **Share**.
+2. Copy the link:
+
+```
+https://webhooktrap.dev/s/<token>
+```
+
+Recipients can look but not touch: no replaying, no deleting, no access to other events in the inbox.
+
+## When it's useful
+
+- **Debugging across a team.** A webhook fails in production; share the event so the backend team sees the exact payload and response without production access.
+- **Documenting provider behavior.** Capture a real Stripe event once, share it with whoever writes the parser.
+- **Incident review.** Share the 3am webhook with the morning shift.
+
+## Security notes
+
+- Tokens are long and random; the link is the credential. Share it like a secret.
+- Links don't expire yet. To cut off access, delete the event or its inbox.
+
+## Next
+
+Self-hosting your own instance? See the [deployment guide](/docs/deployment). Want to contribute? Read the [contributing guidelines](https://github.com/jiordiviera/webhooktrap/blob/main/CONTRIBUTING.md).

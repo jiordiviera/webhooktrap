@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --port 7777",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 7777",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit"
   },

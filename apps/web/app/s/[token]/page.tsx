@@ -42,7 +42,7 @@ function buildEventCurl(event: {
   bodyJson: unknown;
   bodyText: string | null;
 }) {
-  const url = `https://hookscope.dev${event.path}`;
+  const url = `https://webhooktrap.dev${event.path}`;
   const parts = [`curl -X ${event.method} '${url}'`];
 
   for (const [key, value] of Object.entries(event.headers)) {

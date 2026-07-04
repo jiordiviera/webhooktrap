@@ -31,8 +31,8 @@
 }
 
 @theme inline {
-  --font-heading: var(--font-bricolage);
-  --font-sans: var(--font-bricolage);
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 
   --color-sidebar-ring: var(--sidebar-ring);
@@ -182,7 +182,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply font-sans scrollbar-thin scrollbar-thumb-muted/80 bg-background text-foreground;
+    @apply font-sans! scrollbar-thin scrollbar-thumb-muted/80 bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
   }
   button:not(:disabled),
@@ -194,7 +194,7 @@
   h2,
   h3,
   h4 {
-    @apply font-heading;
+    @apply font-heading!;
   }
   button {
     @apply cursor-pointer;

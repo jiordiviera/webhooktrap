@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import {
-  JetBrains_Mono,
-  Bricolage_Grotesque,
-} from "next/font/google";
+import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/app/components/providers";
 import "@workspace/ui/globals.css";
 import { cn } from "@workspace/ui/lib/utils";
 import { siteUrl, productName } from "@/lib/config";
 
-
 const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
-  variable: "--font-bricolage",
+  variable: "--font-sans",
   display: "swap",
 });
 
-const jetBrainsMono = JetBrains_Mono({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 });
@@ -63,7 +59,8 @@ export default function RootLayout({
       lang="en"
       className={cn(
         bricolageGrotesque.variable,
-        jetBrainsMono.variable,
+        jetbrainsMono.variable,
+        "font-sans"
       )}
       suppressHydrationWarning
     >

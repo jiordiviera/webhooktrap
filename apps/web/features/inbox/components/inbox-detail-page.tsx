@@ -26,6 +26,7 @@ import { ApiError } from '@/lib/api'
 import { useAuth } from '@/contexts/auth-context'
 import { useConfirm } from '@/contexts/confirm-context'
 import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
+import { docsUrl } from '@/lib/config'
 import { deleteInbox, updateInbox } from '@/lib/inboxes'
 
 const POLL_INTERVAL_MS = 3000
@@ -371,6 +372,32 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
             onDataChangeAction={({ total }) => {
               setEventsTotal(total)
             }}
+            emptyState={
+              <div className="space-y-3">
+                <p className="text-base font-medium text-foreground">
+                  Waiting for your first webhook
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Point a provider at your ingest URL, or try it from the terminal:
+                </p>
+                {ingestUrl ? (
+                  <pre className="mx-auto max-w-full overflow-x-auto rounded-lg border border-border bg-card p-3 text-left font-mono text-xs text-muted-foreground">
+                    {`curl -X POST ${ingestUrl} \\\n  -H "Content-Type: application/json" \\\n  -d '{"hello":"world"}'`}
+                  </pre>
+                ) : null}
+                <p className="text-sm text-muted-foreground">
+                  New events appear here automatically.{' '}
+                  <a
+                    href={`${docsUrl}/docs/getting-started/inboxes`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary transition-colors hover:text-primary/80"
+                  >
+                    Read the guide
+                  </a>
+                </p>
+              </div>
+            }
           />
         </div>
       </section>
