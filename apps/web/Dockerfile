@@ -20,6 +20,8 @@ RUN pnpm install --frozen-lockfile
 # Build web app
 RUN pnpm --filter web build
 
-EXPOSE 3000
+EXPOSE 7777
+
+ENV PORT=7777
 
 CMD ["pnpm", "--filter", "web", "start"]
