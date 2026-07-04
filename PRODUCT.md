@@ -16,7 +16,7 @@ product
 
 ## Product Purpose
 
-Hookscope is a developer-first webhook debugger: capture any HTTP webhook, inspect it faithfully, replay it to a destination URL, and surface the app's response.
+Webhook Trap is a developer-first webhook debugger: capture any HTTP webhook, inspect it faithfully, replay it to a destination URL, and surface the app's response.
 
 **Wedge:** The Stripe CLI for every webhook provider, not just payload viewing but replay plus response visibility.
 
@@ -28,7 +28,7 @@ Hookscope is a developer-first webhook debugger: capture any HTTP webhook, inspe
 
 **Three words:** Warm · Precise · Trustworthy
 
-**Voice:** Direct, technical, calm. Short sentences. No hype. Copy earns its place (Inspect. Replay. See the response.).
+**Voice:** Direct, technical, calm. Short sentences. No hype. Copy earns its place (Capture. Inspect. Replay.).
 
 **Emotional goal (product surfaces):** Confidence that nothing was lost in translation (headers, body, method) and control over retry without guesswork.
 
@@ -67,6 +67,6 @@ Hookscope is a developer-first webhook debugger: capture any HTTP webhook, inspe
 
 ## Strategic notes
 
-- **Tagline:** Inspect. Replay. See the response.
-- **Core URL pattern:** `https://hookscope.dev/i/:id`
+- **Tagline:** Capture. Inspect. Replay.
+- **Core URL pattern:** `https://webhooktrap.dev/i/:id`
 - **Personas:** solo backend dev (primary), small team sharing events, debugger in incident/replay mode

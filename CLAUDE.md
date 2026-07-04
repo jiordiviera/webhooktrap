@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Hookscope — a developer-first webhook debugger. Receive a webhook → inspect the raw payload → replay it to a destination → see the response (status, latency, body). Tagline: "Inspect. Replay. See the response."
+Webhook Trap — a developer-first webhook debugger. Receive a webhook → inspect the raw payload → replay it to a destination → see the response (status, latency, body). Tagline: "Capture. Inspect. Replay."
 
 ## Commands
 

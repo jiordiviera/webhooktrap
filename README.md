@@ -1,6 +1,6 @@
-# Hookscope
+# Webhook Trap
 
-> Webhook debugging, simplified. Receive → Replay → See the response.
+> Webhook debugging, simplified. Capture → Inspect → Replay.
 
 ## Stack
 

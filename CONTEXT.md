@@ -1,6 +1,6 @@
-# Hookscope — CONTEXT
+# Webhook Trap — CONTEXT
 
-> Debugger de webhooks developer-first. Receive → Replay → See the response.
+> Debugger de webhooks developer-first. Capture → Inspect → Replay.
 
 ## Quick links
 
@@ -30,7 +30,7 @@ MVP avancé. 20+ commits, 9 migrations. Backend complet : ingest (toujours 200),
 ## Prochaine action
 
 1. Tests — couverture pour ingest, replay, auth, share
-2. CLI light (Epic E) — npx @hookscope/cli
+2. CLI light (Epic E) — npx @webhooktrap/cli
 
 ## Changements récents
 

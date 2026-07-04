@@ -206,6 +206,17 @@ node apps/api/ace migration:run --force
 pnpm pm2:restart
 ```
 
+### Purge des inboxes anonymes expirées
+
+Les inboxes anonymes (`expiresAt` à 48h) ne sont **jamais supprimées automatiquement** —
+`node ace purge:expired-inboxes` doit être planifié en cron sur le VPS (events/replays sont
+supprimés en cascade via les FK Postgres) :
+
+```bash
+# crontab -e (utilisateur deploy)
+0 * * * * cd /home/deploy/hookscope/apps/api && /usr/bin/node ace purge:expired-inboxes >> /var/log/hookscope/purge.log 2>&1
+```
+
 ## 3. Vercel — Web Next.js
 
 1. [vercel.com](https://vercel.com) → importer le repo
