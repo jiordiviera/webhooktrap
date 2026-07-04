@@ -11,6 +11,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@workspace/types": "workspace:*",
+    "@workspace/ui": "workspace:*",
     "cnfast": "^0.0.8",
     "fumadocs-core": "16.10.7",
     "fumadocs-mdx": "15.0.13",

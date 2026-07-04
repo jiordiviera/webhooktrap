@@ -1,4 +1,4 @@
-import { Bricolage_Grotesque, JetBrains_Mono } from 'geist/font'
+import { Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 
 /**
  * Shared fonts for Webhook Trap
@@ -6,15 +6,15 @@ import { Bricolage_Grotesque, JetBrains_Mono } from 'geist/font'
  */
 
 export const bricolageGrotesque = Bricolage_Grotesque({
-  subsets: ['latin'],
-  variable: '--font-ui',
-})
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  weight: ['400', '500'],
-})
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500"],
+});
 
 /**
  * Font class names for use in html/body
@@ -23,4 +23,4 @@ export const jetbrainsMono = JetBrains_Mono({
 export const fontClasses = [
   bricolageGrotesque.variable,
   jetbrainsMono.variable,
-].join(' ')
+].join(" ");
