@@ -15,10 +15,10 @@
       "port": 7777
     },
     {
-      "name": "videos",
+      "name": "docs",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "videos", "dev"],
-      "port": 3100
+      "runtimeArgs": ["--filter", "docs", "dev"],
+      "port": 4444
     }
   ]
 }

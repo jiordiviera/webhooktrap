@@ -1,91 +1,55 @@
 ---
-title: Creating & Managing Inboxes
-description: Generate unique webhook URLs and capture events
+title: Inboxes
+description: Create inboxes and capture your first webhook.
 ---
 
-# Inboxes
+An inbox is a unique URL that captures every HTTP request sent to it.
 
-An **inbox** is a unique webhook URL that captures incoming HTTP requests from webhook providers.
+## Create an inbox
 
-## Creating an Inbox
+On the landing page, click **Open a free inbox** and choose how long to keep it:
 
-### Via Web UI
+- **Just try it.** No account. The inbox expires after 48 hours.
+- **Save to my account.** Kept until you delete it. Requires a free account.
 
-1. Go to http://localhost:7777
-2. Click **"Create Inbox"**
-3. Choose:
-   - **Name**: Friendly identifier (e.g., "Stripe Dev")
-   - **Expiration**: How long to keep events (7 days, 30 days, never)
-4. Click **Create**
+You land directly on the inbox page with its ingest URL (a 12-character ID):
 
-You'll get a unique inbox URL:
 ```
-https://webhooktrap.dev/i/ABC123xyz789
+https://webhooktrap.dev/i/xK9m2pQ7nR4a
 ```
 
-### Key Features
+Ingest always answers `200 OK`, even for unknown or expired inboxes, so webhook providers never see failures and never learn whether an inbox exists.
 
-✅ **Always Returns 200 OK** — Webhook providers never see failures, ensuring reliability  
-✅ **Captures Everything** — Headers, body, method, query params, IP address  
-✅ **Anonymous by Default** — No signup required for the first inbox  
-✅ **Auto-Expires** — Events deleted after expiration to save storage  
-
----
-
-## Testing Your Inbox
-
-### Send a Test Webhook
+## Send a test webhook
 
 ```bash
-curl -X POST https://webhooktrap.dev/i/ABC123xyz789 \
+curl -X POST https://webhooktrap.dev/i/xK9m2pQ7nR4a \
   -H "Content-Type: application/json" \
   -d '{"event": "test", "timestamp": 1234567890}'
 ```
 
-### You'll see:
-- ✅ Method: POST
-- ✅ Headers: Content-Type, etc.
-- ✅ Body: Your JSON payload
-- ✅ Status: 200 OK (always)
+The event appears in the inbox within seconds (the page polls, no refresh needed).
 
----
+## Inspect an event
 
-## Managing Inboxes
+Click any event to open the inspector:
 
-### View Events
+- **Headers**, as they arrived. `Authorization`, `Cookie`, and `X-API-Key` are stored as `[REDACTED]`; they never touch the database.
+- **Body**, formatted JSON or raw text, up to 1MB.
+- **Metadata**: method, path, query, source IP, size, timestamp.
 
-1. Click on an inbox
-2. See all captured webhooks in a table
-3. Click an event to inspect details
+## Anonymous vs. account
 
-### Inspect an Event
+| | Anonymous | With account |
+|---|---|---|
+| Capture and inspect | Yes | Yes |
+| Replay | Yes | Yes |
+| Lifetime | 48 hours | Until deleted |
+| Dashboard and inbox list | No | Yes |
+| API tokens | No | Yes |
 
-Click on any event to see:
-- **Raw Headers** — Authorization (redacted), Content-Type, etc.
-- **Raw Body** — Formatted JSON or raw text
-- **Metadata** — IP, timestamp, size, method
+Anyone who knows an anonymous inbox URL can open it: treat the ID as a secret.
 
-### Share with Teammates
+## Next
 
-1. Click **"Share"** on an event
-2. Copy the read-only link
-3. Share without requiring signup
-
----
-
-## Anonymous vs. Authenticated
-
-| Feature | Anonymous | Authenticated |
-|---------|-----------|---|
-| Create inbox | ✅ | ✅ |
-| Capture webhooks | ✅ | ✅ |
-| View events | ✅ (5 min) | ✅ |
-| Replay | ❌ | ✅ |
-| Share links | ❌ | ✅ |
-| Persistence | 24h | Configurable |
-
----
-
-## Next: Replay Webhooks
-
-Once you've captured events, [replay them to your app →](/docs/getting-started/replay)
+[Replay captured webhooks to your server](/docs/getting-started/replay).

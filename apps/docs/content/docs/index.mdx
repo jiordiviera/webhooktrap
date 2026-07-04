@@ -1,124 +1,63 @@
 ---
-title: Webhook Trap Documentation
-description: Open-source webhook debugger. Capture, inspect, replay webhooks.
+title: Introduction
+description: Capture, inspect, and replay webhooks. Open source, self-hosted.
 ---
 
-# Webhook Trap
+Webhook Trap is a developer-first webhook debugger. Point any provider (Stripe, GitHub, Shopify, anything that speaks HTTP) at an inbox URL, read the payload exactly as it arrived, then replay it to your own server and see the response: status, latency, headers, body.
 
-Welcome to the **Webhook Trap** documentation. This is your guide to capturing, inspecting, and replaying webhooks for local development and debugging.
+No tunnels. No SaaS lock-in. MIT licensed.
 
-## What is Webhook Trap?
-
-Webhook Trap is a **self-hosted webhook debugger** for developers. It allows you to:
-
-- **Capture** incoming webhooks from any provider (Stripe, GitHub, Shopify, etc.)
-- **Inspect** raw payloads, headers, and request details
-- **Replay** webhooks to localhost, staging, or production
-- **Share** events with teammates via read-only links
-
-No tunnels. No SaaS lock-in. Fully open source.
-
-## Quick Start
-
-### Local Docker (5 minutes)
+## Try it in two minutes
 
 ```bash
 git clone https://github.com/jiordiviera/webhooktrap.git
 cd webhooktrap
-
 docker compose up
 ```
 
-Visit **http://localhost:7777** and create your first inbox.
+Open [http://localhost:7777](http://localhost:7777), click **Open a free inbox**, and send it a request:
 
-## Getting Started
+```bash
+curl -X POST http://localhost:7777/i/<your-inbox-id> \
+  -H "Content-Type: application/json" \
+  -d '{"hello":"world"}'
+```
+
+The event appears in your inbox within seconds.
+
+## Guides
 
 <Cards>
-  <Card 
-    title="Installation" 
-    description="Set up Webhook Trap locally or on production"
+  <Card
+    title="Installation"
+    description="Run locally with Docker or pnpm"
     href="/docs/getting-started/installation"
   />
-  <Card 
-    title="Creating Inboxes" 
-    description="Generate unique webhook URLs and inspect events"
+  <Card
+    title="Inboxes"
+    description="Create inboxes and capture your first webhook"
     href="/docs/getting-started/inboxes"
   />
-  <Card 
-    title="Replaying Webhooks" 
-    description="Send webhooks to your local app or staging"
+  <Card
+    title="Replay"
+    description="Send captured webhooks to your own server"
     href="/docs/getting-started/replay"
   />
-  <Card 
-    title="Sharing Events" 
-    description="Create read-only share links for teammates"
+  <Card
+    title="Sharing"
+    description="Read-only links for teammates, no signup needed"
     href="/docs/getting-started/sharing"
   />
 </Cards>
 
-## Deployment
+## Deploy your own
 
-<Cards>
-  <Card 
-    title="Railway" 
-    description="Deploy in 5 minutes with auto-scaling"
-    href="/docs/deployment/railway"
-  />
-  <Card 
-    title="Fly.io" 
-    description="Global deployments with edge caching"
-    href="/docs/deployment/flyio"
-  />
-  <Card 
-    title="Self-Hosted" 
-    description="VPS or Kubernetes with full control"
-    href="/docs/deployment/self-hosted"
-  />
-</Cards>
+Webhook Trap self-hosts anywhere Docker runs: Railway, Fly.io, or a plain VPS behind Caddy. The [deployment guide](/docs/deployment) covers all three, plus backups and monitoring.
 
-## API Reference
+## How it works
 
-Webhook Trap provides a REST API for programmatic access.
+- **Capture.** Each inbox gets a unique URL. Ingest always returns `200 OK` in under 100ms, so providers never retry against you.
+- **Inspect.** Method, path, query, headers, body, IP, and size are stored as they arrived. Sensitive headers (`Authorization`, `Cookie`, `X-API-Key`) are redacted before storage.
+- **Replay.** The stored request is re-sent to any public URL with a 30-second timeout. SSRF protection blocks private and internal addresses.
 
-- **Authentication**: OAuth + API tokens
-- **Inboxes**: Create, list, manage webhook endpoints
-- **Events**: List, view, and delete captured webhooks
-- **Replays**: Send webhooks to target URLs
-- **Sharing**: Generate read-only share tokens
-
-[View API Reference →](/docs/api/overview)
-
-## Key Features
-
-✅ **Receive webhooks** — Unique URL per inbox, always returns 200 OK  
-✅ **Inspect payloads** — Raw headers, body, method, IP, timestamp  
-✅ **Replay to any URL** — Localhost, staging, production  
-✅ **See responses** — Status, latency, body, headers  
-✅ **Share read-only links** — Show events to teammates without signup  
-✅ **Anonymous mode** — No account required for first capture  
-✅ **OAuth + 2FA** — GitHub/Google login, TOTP  
-✅ **Self-hosted** — Full control, no vendor lock-in  
-
-## Architecture
-
-Webhook Trap is built with modern, production-grade tech:
-
-- **Frontend**: Next.js 16 + React 19 + Tailwind CSS
-- **Backend**: AdonisJS 6 + TypeScript
-- **Database**: PostgreSQL 16
-- **Storage**: Cloudflare R2 (media) or local
-- **Monorepo**: pnpm + Turborepo
-
-[Learn more about architecture →](/docs/architecture/overview)
-
-## Community & Support
-
-- **Issues & Bugs**: [GitHub Issues](https://github.com/jiordiviera/webhooktrap/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/jiordiviera/webhooktrap/discussions)
-- **Security**: Email `security@jiordiviera.me`
-
-## License
-
-MIT — Free for personal and commercial use.
-
-[Read the full license →](https://github.com/jiordiviera/webhooktrap/blob/main/LICENSE)
+Built with AdonisJS 6, Next.js, and PostgreSQL. Source on [GitHub](https://github.com/jiordiviera/webhooktrap); found a security issue? See the [security policy](https://github.com/jiordiviera/webhooktrap/blob/main/SECURITY.md).

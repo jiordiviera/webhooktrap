@@ -1,123 +1,43 @@
 ---
-title: Replaying Webhooks
-description: Send captured webhooks to your app or staging
+title: Replay
+description: Send captured webhooks to your own server and see the response.
 ---
 
-# Replaying Webhooks
+Replay re-sends a captured webhook to a URL you choose, then shows you exactly how your server answered. No waiting for the provider to fire again.
 
-Once you've captured a webhook, **replay** it to test your application's webhook handler without waiting for the provider to resend.
+## Run a replay
 
-## How Replay Works
+1. Open an event and click **Replay**.
+2. Enter the target URL, for example `https://staging.myapp.com/webhooks/stripe`.
+3. Send.
 
-1. **Capture** a webhook from Stripe, GitHub, etc.
-2. **Select** a target URL (localhost, staging, or production)
-3. **Replay** — Webhook Trap sends the exact same request
-4. **See Response** — Status code, latency, response body
+The result appears with the response status, latency in milliseconds, headers, and body. Every attempt is kept in the event's replay history, so you can compare a failing run against a passing one.
 
----
+## What gets sent
 
-## Starting a Replay
+The stored request, faithfully: same method, same body, same headers, with two exceptions.
 
-### Via Web UI
+- Sensitive headers (`Authorization`, `Cookie`, `X-API-Key`) were redacted at capture time and are never forwarded. If your endpoint verifies signatures, re-sign with your provider's SDK or disable verification in the environment you replay into.
+- Hop-by-hop headers (`Connection`, `Transfer-Encoding`, `Host`, and similar) are dropped, as any proxy would.
 
-1. Go to an inbox and click an event
-2. Click **"Replay"** button
-3. Enter target URL:
-   ```
-   http://localhost:3000/webhook/stripe
-   ```
-4. Click **Send**
+Replays time out after 30 seconds.
 
-### View Replay Result
+## Choosing a target
 
-After replay completes, you'll see:
-- **Status Code**: 200, 500, etc.
-- **Latency**: How long it took (ms)
-- **Response Headers**: Content-Type, etc.
-- **Response Body**: HTML, JSON, or text
+Replays are sent **from the Webhook Trap server**, so the target must be reachable from it.
 
----
+- **Staging or production URLs** work directly.
+- **localhost** works only when you self-host Webhook Trap on the same machine or network. On a hosted instance, use a tunnel (ngrok, cloudflared) and replay to the tunnel URL.
+- Private and internal addresses (`10.x`, `192.168.x`, cloud metadata endpoints) are blocked by SSRF protection; you'll see `Target resolves to a private or internal address`.
 
-## Target URLs
+## Errors you might see
 
-### Localhost
-```
-http://localhost:3000/webhook
-```
-**Limitation:** Works only if your app is reachable from Webhook Trap's server.
+| Message | Meaning |
+|---|---|
+| `Connection refused` | Nothing is listening at the target. Check the app is up and the port is right. |
+| `Replay timed out after 30 seconds` | The handler took too long. Look for slow downstream calls. |
+| `Target resolves to a private or internal address` | SSRF guard. Use a public URL or a tunnel. |
 
-**Solutions:**
-- Use ngrok, localtunnel, or similar tunnel
-- Replay to staging instead of localhost
-- Self-host Webhook Trap on your network
+## Next
 
-### Staging
-```
-https://staging.myapp.com/webhook/stripe
-```
-**Recommended** for safe testing before production.
-
-### Production
-```
-https://api.myapp.com/webhook/stripe
-```
-Use with caution — replaying in production affects real data.
-
----
-
-## Replay History
-
-Each event shows all replay attempts:
-- Timestamp of each replay
-- Status code received
-- Response time
-- Error (if any)
-
-Useful for debugging: "Did my webhook handler crash?" vs "Did it succeed?"
-
----
-
-## What Gets Replayed
-
-✅ **Exact payload** — Body, query params, path  
-✅ **Headers** (except sensitive):
-   - Original headers forwarded
-   - Auth headers redacted (never sent)
-   - Connection/transfer headers filtered for safety
-✅ **Method** — POST, PUT, PATCH, etc.  
-❌ **NOT sent**: Authorization, Cookie, Set-Cookie, X-API-Key (redacted for security)
-
----
-
-## Timeout & Limits
-
-- **Timeout**: 30 seconds per replay
-- **Retries**: Manual — click replay again
-- **Rate Limit**: None at MVP (add if abuse occurs)
-
----
-
-## Common Issues
-
-### "Connection Refused"
-Target URL is not reachable.
-- Check your app is running
-- Verify IP/hostname is correct
-- If localhost, use a tunnel or staging
-
-### "Timeout after 30 seconds"
-Your webhook handler is slow.
-- Optimize your handler
-- Check for network latency
-- Increase timeout in settings (future feature)
-
-### "Auth headers missing"
-Expected — auth headers are redacted before storage for security.
-- Webhook Trap never stores real tokens
-- Re-sign the webhook using provider's SDK
-
----
-
-## Next: Share with Teammates
-
-[Create read-only share links →](/docs/getting-started/sharing)
+[Share events with teammates](/docs/getting-started/sharing).

@@ -146,7 +146,7 @@ REDIS_PASSWORD=
 
 ### Caddyfile
 
-```caddy
+```
 # /etc/caddy/Caddyfile
 api.webhooktrap.dev {
     reverse_proxy 127.0.0.1:3333

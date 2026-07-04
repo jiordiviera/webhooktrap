@@ -1,0 +1,76 @@
+---
+title: Deployment
+description: Self-host Webhook Trap on Railway, Fly.io, or a VPS.
+---
+
+Webhook Trap runs anywhere Docker runs. Three tested paths, from most to least managed.
+
+## Railway
+
+Railway deploys from GitHub and handles SSL and domains.
+
+1. Create a project at [railway.app](https://railway.app) and connect your fork.
+2. Add the Postgres plugin; it provisions `DATABASE_URL`.
+3. Set the remaining variables in the dashboard: `APP_KEY`, `WEB_URL`, OAuth and R2 credentials if you use them (see [.env.example](https://github.com/jiordiviera/webhooktrap/blob/main/.env.example)).
+4. Point your domain at Railway via CNAME.
+
+Expect $5–20/month depending on traffic.
+
+## Fly.io
+
+```bash
+flyctl launch
+flyctl secrets set DATABASE_URL="postgresql://..." APP_KEY="..."
+flyctl deploy
+```
+
+Expect $7–15/month including Postgres.
+
+## VPS (Docker Compose + Caddy)
+
+On Ubuntu 22.04+:
+
+```bash
+curl -fsSL https://get.docker.com | sh
+
+git clone https://github.com/jiordiviera/webhooktrap.git
+cd webhooktrap
+cp .env.example .env   # fill in production values
+docker compose up -d
+```
+
+Put Caddy in front for automatic HTTPS:
+
+```txt
+webhooktrap.example.com {
+  reverse_proxy localhost:7777
+}
+
+api.webhooktrap.example.com {
+  reverse_proxy localhost:3333
+}
+```
+
+Expect $5–50/month depending on the provider.
+
+## Backups
+
+```bash
+# dump
+docker compose exec postgres pg_dump -U local webhooktrap > backup.sql
+
+# restore
+cat backup.sql | docker compose exec -T postgres psql -U local webhooktrap
+```
+
+For managed Postgres, [Neon](https://neon.tech) works out of the box: replace `DATABASE_URL` and redeploy.
+
+## Checklist before going live
+
+- [ ] `.env` secrets are set on the host, never committed
+- [ ] Database backed up on a schedule
+- [ ] TLS terminates at Caddy (or your platform's edge)
+- [ ] Error tracking configured (`SENTRY_DSN`, optional)
+- [ ] Firewall allows inbound traffic only on 80/443
+
+Logs: `docker compose logs -f api` (ingest and replay), `docker compose logs -f web` (frontend).

@@ -1,87 +1,32 @@
 ---
-title: Sharing Events
-description: Create read-only links for teammates
+title: Sharing
+description: Read-only links so teammates can inspect an event without an account.
 ---
 
-# Sharing Events
+A share link gives read-only access to a single event: payload, headers, metadata, and replay history. The recipient needs no account.
 
-Share captured webhooks with teammates without requiring them to sign up.
+## Create a share link
 
-## Creating a Share Link
+1. Open an event and click **Share**.
+2. Copy the link:
 
-### Via Web UI
+```
+https://webhooktrap.dev/s/<token>
+```
 
-1. Open an inbox
-2. Click an event
-3. Click **"Share"**
-4. Copy the generated link:
-   ```
-   https://webhooktrap.dev/share/token_ABC123xyz789
-   ```
-5. Send to teammate
+Recipients can look but not touch: no replaying, no deleting, no access to other events in the inbox.
 
-### What Teammates Can See
+## When it's useful
 
-✅ **Event details**:
-   - Full payload (body, headers, metadata)
-   - Timestamp, IP, request size
-   - Method, path, query params
+- **Debugging across a team.** A webhook fails in production; share the event so the backend team sees the exact payload and response without production access.
+- **Documenting provider behavior.** Capture a real Stripe event once, share it with whoever writes the parser.
+- **Incident review.** Share the 3am webhook with the morning shift.
 
-✅ **Replay history**:
-   - Previous replay attempts
-   - Response status & latency
-   - Response body
+## Security notes
 
-❌ **What they CANNOT do**:
-   - Create new replays
-   - Modify or delete events
-   - Access other events in the inbox
-   - Create accounts or manage inboxes
+- Tokens are long and random; the link is the credential. Share it like a secret.
+- Links don't expire yet. To cut off access, delete the event or its inbox.
 
----
+## Next
 
-## Link Security
-
-- **Read-only** — Recipients can only view, not modify
-- **Expires** — Links can auto-expire (future feature)
-- **Private** — Share tokens are long and random (36 chars)
-- **No signup required** — Anyone with the link can view
-
----
-
-## Use Cases
-
-### Debugging Together
-1. Webhook fails in production
-2. Create share link
-3. Send to backend team
-4. They inspect the exact payload & response
-5. Everyone has same context
-
-### Documenting Webhook Behavior
-1. Capture a real webhook from provider
-2. Share with frontend team
-3. They see exact structure for parsing
-
-### Incident Investigation
-1. Something went wrong at 3 AM
-2. Share the webhook
-3. Team analyzes without needing access to production
-
----
-
-## Revoking Share Links
-
-Once created, share links are permanent. To prevent access:
-
-**Option 1:** Delete the event (future feature)
-
-**Option 2:** Create new inboxes for new requests
-
-**Option 3:** Self-host and use IP whitelisting
-
----
-
-## Next: Contributing
-
-[Help improve Webhook Trap →](https://github.com/jiordiviera/webhooktrap/blob/main/CONTRIBUTING.md)
+Self-hosting your own instance? See the [deployment guide](/docs/deployment). Want to contribute? Read the [contributing guidelines](https://github.com/jiordiviera/webhooktrap/blob/main/CONTRIBUTING.md).
