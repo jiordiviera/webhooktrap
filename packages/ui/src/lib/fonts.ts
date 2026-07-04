@@ -1,36 +1,18 @@
-import { Bricolage_Grotesque, Geist_Mono, JetBrains_Mono, Lora, Cormorant_Garamond } from 'geist/font'
+import { Bricolage_Grotesque, JetBrains_Mono } from 'geist/font'
 
 /**
  * Shared fonts for Webhook Trap
- * Used across web, docs, and other apps
+ * UI Sans-serif + Monospace
  */
 
-// Landing page serif fonts
-export const cormorantGaramond = Cormorant_Garamond({
-  subsets: ['latin'],
-  variable: '--font-cormorant',
-  weight: ['600'],
-})
-
-export const lora = Lora({
-  subsets: ['latin'],
-  variable: '--font-lora',
-  weight: ['400'],
-})
-
-// App UI fonts
 export const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ['latin'],
-  variable: '--font-bricolage',
-})
-
-export const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+  variable: '--font-ui',
 })
 
 export const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
+  variable: '--font-mono',
   weight: ['400', '500'],
 })
 
@@ -39,9 +21,6 @@ export const jetbrainsMono = JetBrains_Mono({
  * Usage: <html className={fontClasses}>
  */
 export const fontClasses = [
-  cormorantGaramond.variable,
-  lora.variable,
   bricolageGrotesque.variable,
-  geistMono.variable,
   jetbrainsMono.variable,
 ].join(' ')
