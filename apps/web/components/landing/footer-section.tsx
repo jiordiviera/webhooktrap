@@ -9,10 +9,10 @@ import { GithubDark } from '@workspace/ui/components/svgs/githubDark'
 import { GithubLight } from '@workspace/ui/components/svgs/githubLight'
 import { X as XIcon } from '@workspace/ui/components/ui/svgs/x'
 import { XDark } from '@workspace/ui/components/ui/svgs/xDark'
-import { productName } from '@/lib/config'
+import { docsUrl, productName } from '@/lib/config'
 
 const X_URL = 'https://x.com/jiordiviera'
-const GITHUB_URL = 'https://github.com/jiordiviera'
+const GITHUB_URL = 'https://github.com/jiordiviera/webhooktrap'
 
 const footerLinks = {
   Product: [
@@ -22,10 +22,10 @@ const footerLinks = {
     { name: 'Pricing', href: '#pricing' },
   ],
   Developers: [
+    { name: 'Documentation', href: docsUrl },
     { name: 'API flows', href: '#developers' },
     { name: 'Open inbox', href: '#cta' },
     { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Inboxes', href: '/inboxes' },
   ],
   Account: [
     { name: 'Sign in', href: '/login' },

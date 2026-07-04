@@ -6,7 +6,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { AuthNav } from "@/app/components/auth-nav";
-import { productName } from "@/lib/config";
+import { docsUrl, productName } from "@/lib/config";
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -14,6 +14,7 @@ const navLinks = [
   { name: "Integrations", href: "#integrations" },
   { name: "Developers", href: "#developers" },
   { name: "Pricing", href: "#pricing" },
+  { name: "Docs", href: docsUrl },
 ] as const;
 
 export function Navigation() {
