@@ -18,7 +18,7 @@ Webhook Trap is a self-hosted webhook debugging tool. Receive webhooks from Stri
 git clone https://github.com/jiordiviera/webhooktrap.git
 cd webhooktrap
 
-docker-compose up
+docker compose up
 ```
 
 Visit **http://localhost:7777** and create your first inbox.
@@ -72,8 +72,7 @@ pnpm format           # Prettier format
 webhooktrap/
 ├── apps/
 │   ├── api/          AdonisJS 6 — webhook ingest, replay, auth
-│   ├── web/          Next.js — landing, dashboard, inbox UI
-│   └── videos/       Remotion — demo videos (optional)
+│   └── web/          Next.js — landing, dashboard, inbox UI
 ├── packages/
 │   ├── ui/           shadcn/ui components + Tailwind
 │   ├── types/        Shared TypeScript types
@@ -108,7 +107,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, testing, and PR guidelines.
 
 ## Deployment
 
-- **Local:** `docker-compose up` (5 min)
+- **Local:** `docker compose up` (5 min)
 - **Railway:** Click "Deploy" in Railway dashboard (~$5/mo)
 - **Fly.io:** `flyctl launch` + env setup (~$7/mo)
 - **VPS:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step Caddy + systemd

@@ -18,7 +18,7 @@ cd webhooktrap
 cp .env.example .env
 
 # Start services (postgres, api, web)
-docker-compose up
+docker compose up
 ```
 
 Visit:
@@ -29,7 +29,7 @@ The database is seeded with a test user (see logs after first run).
 
 ### Customize Environment
 
-Edit `.env` before running `docker-compose up`:
+Edit `.env` before running `docker compose up`:
 
 ```bash
 # OAuth (optional — leave empty to skip)
@@ -47,13 +47,13 @@ R2_ENDPOINT=https://xxx.r2.cloudflarestorage.com
 ### Stop Services
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 To also remove the database:
 
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ---
@@ -124,7 +124,7 @@ ssh root@your-vps-ip
 
 ```bash
 curl -fsSL https://get.docker.com | sh
-sudo apt-get install -y docker-compose
+sudo apt-get install -y docker compose
 ```
 
 3. **Clone repo and configure**
@@ -164,8 +164,8 @@ Requires=docker.service
 [Service]
 Type=simple
 WorkingDirectory=/root/webhooktrap
-ExecStart=/usr/bin/docker-compose up
-ExecStop=/usr/bin/docker-compose down
+ExecStart=/usr/bin/docker compose up
+ExecStop=/usr/bin/docker compose down
 Restart=always
 RestartSec=10
 
@@ -190,13 +190,13 @@ systemctl start webhooktrap
 ### Backup Postgres (Docker)
 
 ```bash
-docker-compose exec postgres pg_dump -U local webhooktrap > backup.sql
+docker compose exec postgres pg_dump -U local webhooktrap > backup.sql
 ```
 
 ### Restore from Backup
 
 ```bash
-cat backup.sql | docker-compose exec -T postgres psql -U local webhooktrap
+cat backup.sql | docker compose exec -T postgres psql -U local webhooktrap
 ```
 
 ### Migrate to Neon (Managed Postgres)
@@ -212,9 +212,9 @@ cat backup.sql | docker-compose exec -T postgres psql -U local webhooktrap
 ### Local Docker Logs
 
 ```bash
-docker-compose logs -f api   # API logs
-docker-compose logs -f web   # Web logs
-docker-compose logs -f postgres  # Database logs
+docker compose logs -f api   # API logs
+docker compose logs -f web   # Web logs
+docker compose logs -f postgres  # Database logs
 ```
 
 ### Production (Railway/Fly)
@@ -251,7 +251,7 @@ DATABASE_URL="postgresql://user:pass@host/db?sslmode=require&max_pool_size=20"
 For high webhook volume:
 
 ```bash
-# Set in docker-compose or systemd
+# Set in docker compose or systemd
 NODE_OPTIONS="--max-old-space-size=2048"
 ```
 
@@ -266,7 +266,7 @@ Point `MEDIA_CDN_BASE_URL` to a CDN (Cloudflare, Bunny) for faster downloads.
 ### Port Already in Use
 
 ```bash
-# Local dev: change ports in docker-compose.yml
+# Local dev: change ports in docker compose.yml
 # Or kill the process:
 lsof -ti :3333 | xargs kill -9
 ```
@@ -274,14 +274,14 @@ lsof -ti :3333 | xargs kill -9
 ### Database Connection Failed
 
 Check:
-- Postgres is running: `docker-compose ps`
+- Postgres is running: `docker compose ps`
 - `DATABASE_URL` is correct
-- Network: `docker-compose logs postgres`
+- Network: `docker compose logs postgres`
 
 ### Webhooks Not Being Received
 
 - Verify firewall allows inbound traffic on port 3333
-- Check API logs: `docker-compose logs -f api`
+- Check API logs: `docker compose logs -f api`
 - Confirm webhook provider is sending to correct URL
 
 ---
