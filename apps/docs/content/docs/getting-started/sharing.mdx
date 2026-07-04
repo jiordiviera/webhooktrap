@@ -1,0 +1,87 @@
+---
+title: Sharing Events
+description: Create read-only links for teammates
+---
+
+# Sharing Events
+
+Share captured webhooks with teammates without requiring them to sign up.
+
+## Creating a Share Link
+
+### Via Web UI
+
+1. Open an inbox
+2. Click an event
+3. Click **"Share"**
+4. Copy the generated link:
+   ```
+   https://webhooktrap.dev/share/token_ABC123xyz789
+   ```
+5. Send to teammate
+
+### What Teammates Can See
+
+✅ **Event details**:
+   - Full payload (body, headers, metadata)
+   - Timestamp, IP, request size
+   - Method, path, query params
+
+✅ **Replay history**:
+   - Previous replay attempts
+   - Response status & latency
+   - Response body
+
+❌ **What they CANNOT do**:
+   - Create new replays
+   - Modify or delete events
+   - Access other events in the inbox
+   - Create accounts or manage inboxes
+
+---
+
+## Link Security
+
+- **Read-only** — Recipients can only view, not modify
+- **Expires** — Links can auto-expire (future feature)
+- **Private** — Share tokens are long and random (36 chars)
+- **No signup required** — Anyone with the link can view
+
+---
+
+## Use Cases
+
+### Debugging Together
+1. Webhook fails in production
+2. Create share link
+3. Send to backend team
+4. They inspect the exact payload & response
+5. Everyone has same context
+
+### Documenting Webhook Behavior
+1. Capture a real webhook from provider
+2. Share with frontend team
+3. They see exact structure for parsing
+
+### Incident Investigation
+1. Something went wrong at 3 AM
+2. Share the webhook
+3. Team analyzes without needing access to production
+
+---
+
+## Revoking Share Links
+
+Once created, share links are permanent. To prevent access:
+
+**Option 1:** Delete the event (future feature)
+
+**Option 2:** Create new inboxes for new requests
+
+**Option 3:** Self-host and use IP whitelisting
+
+---
+
+## Next: Contributing
+
+[Help improve Webhook Trap →](https://github.com/jiordiviera/webhooktrap/blob/main/CONTRIBUTING.md)

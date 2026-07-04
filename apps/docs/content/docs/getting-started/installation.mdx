@@ -1,0 +1,94 @@
+---
+title: Installation
+description: Get Webhook Trap running in minutes
+---
+
+# Installation
+
+Choose your deployment method:
+
+## Local Development (Docker)
+
+### Prerequisites
+- Docker & Docker Compose
+- 2GB RAM
+- Git
+
+### Steps
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/jiordiviera/webhooktrap.git
+cd webhooktrap
+```
+
+2. **Copy environment template**
+```bash
+cp .env.example .env
+```
+
+3. **Start services**
+```bash
+docker compose up
+```
+
+4. **Access the app**
+- Web: http://localhost:7777
+- API: http://localhost:3333
+
+The database initializes automatically on first run.
+
+### Stop & Cleanup
+
+```bash
+# Stop services
+docker compose down
+
+# Stop and remove database
+docker compose down -v
+```
+
+---
+
+## Production Deployment
+
+For production, choose one of:
+
+### Railway (Easiest)
+Auto-deploys from GitHub, handles SSL/domains.
+- Cost: ~$5–20/month
+- [Railway Setup Guide →](/docs/deployment/railway)
+
+### Fly.io (Global)
+Manages deployments across regions with edge caching.
+- Cost: ~$7–15/month
+- [Fly.io Setup Guide →](/docs/deployment/flyio)
+
+### Self-Hosted VPS (Full Control)
+Deploy on any VPS (AWS EC2, DigitalOcean, Hetzner, etc.).
+- Cost: $5–50/month
+- [Self-Hosted Guide →](/docs/deployment/self-hosted)
+
+---
+
+## Verify Installation
+
+### Check Web
+```bash
+curl http://localhost:7777
+```
+Should return HTML (Next.js landing page).
+
+### Check API
+```bash
+curl http://localhost:3333/api/v1/inboxes
+```
+Should return JSON (requires authentication).
+
+---
+
+## Next Steps
+
+1. [Create your first inbox →](/docs/getting-started/inboxes)
+2. [Send a test webhook](/docs/getting-started/inboxes#testing)
+3. [Replay to localhost](/docs/getting-started/replay)

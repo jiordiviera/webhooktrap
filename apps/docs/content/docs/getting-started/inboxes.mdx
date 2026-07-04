@@ -1,0 +1,91 @@
+---
+title: Creating & Managing Inboxes
+description: Generate unique webhook URLs and capture events
+---
+
+# Inboxes
+
+An **inbox** is a unique webhook URL that captures incoming HTTP requests from webhook providers.
+
+## Creating an Inbox
+
+### Via Web UI
+
+1. Go to http://localhost:7777
+2. Click **"Create Inbox"**
+3. Choose:
+   - **Name**: Friendly identifier (e.g., "Stripe Dev")
+   - **Expiration**: How long to keep events (7 days, 30 days, never)
+4. Click **Create**
+
+You'll get a unique inbox URL:
+```
+https://webhooktrap.dev/i/ABC123xyz789
+```
+
+### Key Features
+
+✅ **Always Returns 200 OK** — Webhook providers never see failures, ensuring reliability  
+✅ **Captures Everything** — Headers, body, method, query params, IP address  
+✅ **Anonymous by Default** — No signup required for the first inbox  
+✅ **Auto-Expires** — Events deleted after expiration to save storage  
+
+---
+
+## Testing Your Inbox
+
+### Send a Test Webhook
+
+```bash
+curl -X POST https://webhooktrap.dev/i/ABC123xyz789 \
+  -H "Content-Type: application/json" \
+  -d '{"event": "test", "timestamp": 1234567890}'
+```
+
+### You'll see:
+- ✅ Method: POST
+- ✅ Headers: Content-Type, etc.
+- ✅ Body: Your JSON payload
+- ✅ Status: 200 OK (always)
+
+---
+
+## Managing Inboxes
+
+### View Events
+
+1. Click on an inbox
+2. See all captured webhooks in a table
+3. Click an event to inspect details
+
+### Inspect an Event
+
+Click on any event to see:
+- **Raw Headers** — Authorization (redacted), Content-Type, etc.
+- **Raw Body** — Formatted JSON or raw text
+- **Metadata** — IP, timestamp, size, method
+
+### Share with Teammates
+
+1. Click **"Share"** on an event
+2. Copy the read-only link
+3. Share without requiring signup
+
+---
+
+## Anonymous vs. Authenticated
+
+| Feature | Anonymous | Authenticated |
+|---------|-----------|---|
+| Create inbox | ✅ | ✅ |
+| Capture webhooks | ✅ | ✅ |
+| View events | ✅ (5 min) | ✅ |
+| Replay | ❌ | ✅ |
+| Share links | ❌ | ✅ |
+| Persistence | 24h | Configurable |
+
+---
+
+## Next: Replay Webhooks
+
+Once you've captured events, [replay them to your app →](/docs/getting-started/replay)

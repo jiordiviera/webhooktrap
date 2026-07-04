@@ -1,0 +1,124 @@
+---
+title: Webhook Trap Documentation
+description: Open-source webhook debugger. Capture, inspect, replay webhooks.
+---
+
+# Webhook Trap
+
+Welcome to the **Webhook Trap** documentation. This is your guide to capturing, inspecting, and replaying webhooks for local development and debugging.
+
+## What is Webhook Trap?
+
+Webhook Trap is a **self-hosted webhook debugger** for developers. It allows you to:
+
+- **Capture** incoming webhooks from any provider (Stripe, GitHub, Shopify, etc.)
+- **Inspect** raw payloads, headers, and request details
+- **Replay** webhooks to localhost, staging, or production
+- **Share** events with teammates via read-only links
+
+No tunnels. No SaaS lock-in. Fully open source.
+
+## Quick Start
+
+### Local Docker (5 minutes)
+
+```bash
+git clone https://github.com/jiordiviera/webhooktrap.git
+cd webhooktrap
+
+docker compose up
+```
+
+Visit **http://localhost:7777** and create your first inbox.
+
+## Getting Started
+
+<Cards>
+  <Card 
+    title="Installation" 
+    description="Set up Webhook Trap locally or on production"
+    href="/docs/getting-started/installation"
+  />
+  <Card 
+    title="Creating Inboxes" 
+    description="Generate unique webhook URLs and inspect events"
+    href="/docs/getting-started/inboxes"
+  />
+  <Card 
+    title="Replaying Webhooks" 
+    description="Send webhooks to your local app or staging"
+    href="/docs/getting-started/replay"
+  />
+  <Card 
+    title="Sharing Events" 
+    description="Create read-only share links for teammates"
+    href="/docs/getting-started/sharing"
+  />
+</Cards>
+
+## Deployment
+
+<Cards>
+  <Card 
+    title="Railway" 
+    description="Deploy in 5 minutes with auto-scaling"
+    href="/docs/deployment/railway"
+  />
+  <Card 
+    title="Fly.io" 
+    description="Global deployments with edge caching"
+    href="/docs/deployment/flyio"
+  />
+  <Card 
+    title="Self-Hosted" 
+    description="VPS or Kubernetes with full control"
+    href="/docs/deployment/self-hosted"
+  />
+</Cards>
+
+## API Reference
+
+Webhook Trap provides a REST API for programmatic access.
+
+- **Authentication**: OAuth + API tokens
+- **Inboxes**: Create, list, manage webhook endpoints
+- **Events**: List, view, and delete captured webhooks
+- **Replays**: Send webhooks to target URLs
+- **Sharing**: Generate read-only share tokens
+
+[View API Reference →](/docs/api/overview)
+
+## Key Features
+
+✅ **Receive webhooks** — Unique URL per inbox, always returns 200 OK  
+✅ **Inspect payloads** — Raw headers, body, method, IP, timestamp  
+✅ **Replay to any URL** — Localhost, staging, production  
+✅ **See responses** — Status, latency, body, headers  
+✅ **Share read-only links** — Show events to teammates without signup  
+✅ **Anonymous mode** — No account required for first capture  
+✅ **OAuth + 2FA** — GitHub/Google login, TOTP  
+✅ **Self-hosted** — Full control, no vendor lock-in  
+
+## Architecture
+
+Webhook Trap is built with modern, production-grade tech:
+
+- **Frontend**: Next.js 16 + React 19 + Tailwind CSS
+- **Backend**: AdonisJS 6 + TypeScript
+- **Database**: PostgreSQL 16
+- **Storage**: Cloudflare R2 (media) or local
+- **Monorepo**: pnpm + Turborepo
+
+[Learn more about architecture →](/docs/architecture/overview)
+
+## Community & Support
+
+- **Issues & Bugs**: [GitHub Issues](https://github.com/jiordiviera/webhooktrap/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/jiordiviera/webhooktrap/discussions)
+- **Security**: Email `security@jiordiviera.me`
+
+## License
+
+MIT — Free for personal and commercial use.
+
+[Read the full license →](https://github.com/jiordiviera/webhooktrap/blob/main/LICENSE)
