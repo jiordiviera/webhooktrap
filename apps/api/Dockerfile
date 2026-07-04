@@ -14,12 +14,11 @@ COPY packages ./packages
 # Copy API app
 COPY apps/api ./apps/api
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
-
-# Build API
-RUN pnpm --filter api build
+# Install dependencies (allow lockfile updates for monorepo)
+RUN pnpm install
 
 EXPOSE 3333
 
-CMD ["node", "apps/api/build/bin/server.js"]
+# Default: dev mode (overridden in docker-compose)
+# Production should use: node apps/api/build/bin/server.js
+CMD ["pnpm", "--filter", "api", "dev"]

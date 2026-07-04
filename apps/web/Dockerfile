@@ -14,14 +14,13 @@ COPY packages ./packages
 # Copy web app
 COPY apps/web ./apps/web
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
-
-# Build web app
-RUN pnpm --filter web build
+# Install dependencies (allow lockfile updates for monorepo)
+RUN pnpm install
 
 EXPOSE 7777
 
 ENV PORT=7777
 
-CMD ["pnpm", "--filter", "web", "start"]
+# Default: dev mode (overridden in docker-compose)
+# Production should use: pnpm --filter web build && pnpm --filter web start
+CMD ["pnpm", "--filter", "web", "dev"]
