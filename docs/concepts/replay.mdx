@@ -1,0 +1,82 @@
+---
+title: "Replaying Webhooks to Localhost or Staging Environments"
+sidebarTitle: "Replay"
+description: "Re-send any captured webhook to a URL you control. Webhooktrap forwards the original payload and returns the HTTP status code, latency, and response body."
+---
+
+Replay lets you re-send any captured webhook event to a URL you control. Instead of asking a provider to resend a webhook — or trying to reproduce the exact payload by hand — you point Webhooktrap at your local server or staging environment and it fires the original request for you, returning everything your handler said back.
+
+## How replay works
+
+When you trigger a replay, Webhooktrap's server sends the stored event to your destination URL using the same HTTP method, headers, and raw body that were originally captured. Your server processes the request as if the provider sent it directly.
+
+<Steps>
+  <Step title="Choose an event">
+    Find the captured event you want to replay — in the dashboard or via `GET /api/v1/inboxes/:id/events` — and note its event ID.
+  </Step>
+  <Step title="Provide a destination URL">
+    Supply any publicly reachable URL as the replay destination. This can be your local development server, a staging environment, or a feature branch deployment.
+  </Step>
+  <Step title="Webhooktrap forwards the payload">
+    Webhooktrap's server sends the original method, headers, and body to your destination URL exactly as captured.
+  </Step>
+  <Step title="Inspect the result">
+    Webhooktrap returns the HTTP status code, the round-trip latency in milliseconds, and the full response body your handler returned.
+  </Step>
+</Steps>
+
+## What you get back
+
+A successful replay response includes three fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `statusCode` | integer | The HTTP status code your server responded with |
+| `latencyMs` | integer | Round-trip time in milliseconds from Webhooktrap's server to yours |
+| `responseBody` | string | The raw response body returned by your webhook handler |
+
+## Replay API example
+
+Send a `POST` request to `/api/v1/events/:eventId/replay` with a JSON body containing the `destination` field:
+
+```bash
+curl -X POST https://api.webhooktrap.dev/api/v1/events/EVT_4rTx9wBnLp2k/replay \
+  -H "Content-Type: application/json" \
+  -d '{"destination": "http://localhost:3000/webhooks/stripe"}'
+```
+
+Webhooktrap responds with the result of the forwarded request:
+
+```json
+{
+  "data": {
+    "replay": {
+      "statusCode": 200,
+      "latencyMs": 42,
+      "responseBody": "{\"received\":true}"
+    }
+  }
+}
+```
+
+## Use cases
+
+<CardGroup cols={3}>
+  <Card title="Debug a 422" icon="bug">
+    Capture the Stripe checkout event that's returning a 422, replay it against your local handler with a debugger attached, and step through exactly what's going wrong.
+  </Card>
+  <Card title="Test a new handler" icon="flask">
+    Ship a new webhook handler, capture a real event from the provider, and replay it to verify your code responds correctly before it hits production traffic.
+  </Card>
+  <Card title="Reproduce edge cases" icon="rotate">
+    Save a tricky production event and replay it on demand during development or in CI, without needing to trigger the exact provider action again.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Point replay at a staging URL — for example `https://staging.yourapp.com/webhooks/stripe` — to run a full end-to-end test of your webhook pipeline with real payloads before merging a pull request.
+</Tip>
+
+<Note>
+  The destination URL must be publicly reachable from Webhooktrap's servers. If you're replaying to a local server running behind NAT (such as `localhost` on your laptop), use a local tunnel tool like `ngrok` or `cloudflared` to expose your port, then supply the tunnel URL as the destination.
+</Note>

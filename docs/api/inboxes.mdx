@@ -1,0 +1,70 @@
+---
+title: "Inboxes API: Create Webhook Inboxes Programmatically"
+sidebarTitle: "Inboxes"
+description: "POST /api/v1/inboxes creates a new webhook inbox and returns its unique ingest URL. Use this endpoint to programmatically set up capture endpoints."
+---
+
+An inbox is a unique capture endpoint that records every HTTP request sent to it — method, headers, body, query string, and all. Use the Inboxes API to create inboxes programmatically so your CI pipeline or test setup can spin up a fresh capture target for each run without any manual steps in the dashboard.
+
+---
+
+## Create an inbox
+
+<api-endpoint method="POST" url="https://api.webhooktrap.dev/api/v1/inboxes" />
+
+Creates a new inbox and returns its unique ID and ingest URL. No authentication is required to create an anonymous inbox.
+
+### Request
+
+No request body is required.
+
+```bash
+curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "inbox": {
+      "id": "xK9m2pQ7nR4a",
+      "ingestUrl": "/i/xK9m2pQ7nR4a"
+    }
+  }
+}
+```
+
+<ResponseField name="id" type="string" required>
+  The unique identifier for the inbox. Use this value as the `:inboxId` path parameter when listing events or constructing the full ingest URL.
+</ResponseField>
+
+<ResponseField name="ingestUrl" type="string" required>
+  The relative path of the ingest endpoint for this inbox. Prepend `https://webhooktrap.dev` to get the full URL — for example, `https://webhooktrap.dev/i/xK9m2pQ7nR4a`. Point your webhook source at this address.
+</ResponseField>
+
+---
+
+## Send events to an inbox
+
+The ingest endpoint is hosted at a separate origin from the REST API. To capture a webhook, direct your provider or test script to send an HTTP request to:
+
+```text
+https://webhooktrap.dev/i/:inboxId
+```
+
+The ingest endpoint accepts any HTTP method — `POST`, `GET`, `PUT`, `PATCH`, or `DELETE` — and always returns `200 OK`. Webhooktrap records the full request exactly as received, including all headers and the raw body, without modifying anything.
+
+```bash
+# Example: simulate a Stripe webhook being delivered to your inbox
+curl -X POST https://webhooktrap.dev/i/xK9m2pQ7nR4a \
+  -H "Content-Type: application/json" \
+  -H "Stripe-Signature: t=1705312200,v1=abc123" \
+  -d '{"type":"checkout.session.completed","id":"cs_test_..."}'
+```
+
+After the request lands, you can retrieve it through the [Events API](/api/events) or replay it to a local server using the [Replay API](/api/replay).
+
+<Note>
+  Anonymous inboxes expire automatically after **48 hours**. If you need an inbox that persists beyond that window, sign in to your account and create an authenticated inbox — authenticated inboxes remain active until you delete them.
+</Note>

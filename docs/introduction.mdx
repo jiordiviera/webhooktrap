@@ -1,0 +1,35 @@
+---
+title: Introduction
+description: Capture, inspect, and replay webhooks. Open source, self-hosted.
+icon: "book"
+---
+
+Webhook Trap is a developer-first webhook debugger. Point any provider (Stripe, GitHub, Shopify, anything that speaks HTTP) at an inbox URL, read the payload exactly as it arrived, then replay it to your own server and see the response: status, latency, headers, body.
+
+No tunnels. No SaaS lock-in. MIT licensed.
+
+## Try it in two minutes
+
+```bash
+git clone https://github.com/jiordiviera/webhooktrap.git
+cd webhooktrap
+docker compose up
+```
+
+Open [http://localhost:7777](http://localhost:7777), click **Open a free inbox**, and send it a request:
+
+```bash
+curl -X POST http://localhost:7777/i/<your-inbox-id> \
+  -H "Content-Type: application/json" \
+  -d '{"hello":"world"}'
+```
+
+The event appears in your inbox within seconds.
+
+## How it works
+
+- **Capture.** Each inbox gets a unique URL. Ingest always returns `200 OK` in under 100ms, so providers never retry against you.
+- **Inspect.** Method, path, query, headers, body, IP, and size are stored as they arrived. Sensitive headers (`Authorization`, `Cookie`, `X-API-Key`) are redacted before storage.
+- **Replay.** The stored request is re-sent to any public URL with a 30-second timeout. SSRF protection blocks private and internal addresses.
+
+Built with AdonisJS 6, Next.js, and PostgreSQL. Source on [GitHub](https://github.com/jiordiviera/webhooktrap); found a security issue? See the [security policy](https://github.com/jiordiviera/webhooktrap/blob/main/SECURITY.md).

@@ -1,0 +1,74 @@
+---
+title: "Replay API: Forward Captured Events to Any Destination"
+sidebarTitle: "Replay"
+description: "POST /api/v1/events/:eventId/replay forwards a captured event to any URL and returns the HTTP status code, latency, and response body from your server."
+---
+
+Replaying an event lets you resend a captured webhook — with its original headers, body, and method intact — to any URL you choose. Use this to test your handler against a real production payload, iterate on a bug fix without waiting for your provider to retrigger, or validate that a new endpoint behaves correctly before you deploy.
+
+---
+
+## Replay an event
+
+<api-endpoint method="POST" url="https://api.webhooktrap.dev/api/v1/events/:eventId/replay" />
+
+Forwards the captured event to the specified destination URL and returns the HTTP response your server sent back, including the status code, latency, and response body.
+
+### Path parameters
+
+<ParamField path="eventId" type="string" required>
+  The unique ID of the event to replay. You can find this in the `id` field of any event returned by the [Events API](/api/events).
+</ParamField>
+
+### Request body
+
+<ParamField body="destination" type="string" required>
+  The full URL to forward the event to. Webhooktrap sends the original request — preserving method, headers, and body — to this address and records the response. Must be a valid, fully-qualified URL including scheme, for example `http://localhost:3000/webhooks/stripe` or `https://staging.example.com/webhooks`.
+</ParamField>
+
+### Authentication
+
+Authentication is required. Pass your Bearer token in the `Authorization` header.
+
+### Request
+
+```bash
+curl -X POST https://api.webhooktrap.dev/api/v1/events/evt_abc123/replay \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"destination": "http://localhost:3000/webhooks/stripe"}'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "replay": {
+      "statusCode": 200,
+      "latencyMs": 37,
+      "responseBody": "{\"received\":true}"
+    }
+  }
+}
+```
+
+<ResponseField name="statusCode" type="number">
+  The HTTP status code returned by your destination server. A value of `200` indicates your handler accepted the event successfully. Any other value — such as `500` or `404` — means your server returned an error and is worth investigating.
+</ResponseField>
+
+<ResponseField name="latencyMs" type="number">
+  Round-trip latency in milliseconds measured from when Webhooktrap dispatched the replay request to when it received the full response. Use this to spot unexpectedly slow handler paths.
+</ResponseField>
+
+<ResponseField name="responseBody" type="string">
+  The raw response body returned by your destination server, as a string. If your handler returns JSON, it will appear here as a JSON-encoded string. Inspect this to confirm your handler processed the event as expected.
+</ResponseField>
+
+<Note>
+  The destination URL must be reachable from Webhooktrap's servers. If you want to replay to a local development server, expose it using a tunneling tool such as [ngrok](https://ngrok.com) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) and pass the public tunnel URL as the `destination`.
+</Note>
+
+<Tip>
+  Replay to your staging environment to verify a bug fix before rolling it out to production. Capture the failing event in your production inbox, replay it against `https://staging.example.com/webhooks`, confirm you get a `200` back, then deploy with confidence.
+</Tip>

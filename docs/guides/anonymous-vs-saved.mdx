@@ -1,0 +1,47 @@
+---
+title: "Anonymous vs Saved Inboxes: Choosing the Right Mode"
+sidebarTitle: "Anonymous vs Saved"
+description: "Webhooktrap offers anonymous inboxes for instant testing and saved inboxes for ongoing integrations. Learn the differences and when to use each."
+---
+
+Webhooktrap works in two modes. Anonymous inboxes are available instantly — no account, no sign-up, just an ingest URL you can use right now. Saved inboxes are tied to a free account and persist until you choose to delete them. Both modes capture webhook events identically; the difference is entirely about how long your data sticks around and what features you can use alongside it.
+
+## Comparison
+
+| Feature | Anonymous | Saved |
+|---|---|---|
+| Account required | No | Yes (free) |
+| Retention | 48 hours | Until deleted |
+| Replay history | No | Yes |
+| Share links | No | Yes |
+| Named integrations | No | Yes |
+| Dashboard workspace | No | Yes |
+
+## When to use an anonymous inbox
+
+An anonymous inbox is the right choice when speed matters more than persistence:
+
+- **Quick one-off test** — you want to see what payload a provider actually sends before writing any handler code
+- **Evaluating Webhooktrap** — you're exploring the product and don't want to commit to an account yet
+- **No time to sign up** — you're in the middle of debugging and need an ingest URL in the next ten seconds
+
+Run `curl -X POST https://api.webhooktrap.dev/api/v1/inboxes`, grab the URL, and you're ready. Events you capture are available for 48 hours, which is enough time to inspect the payload and prototype your handler.
+
+## When to use a saved inbox
+
+A saved inbox makes sense for anything you'll return to:
+
+- **Ongoing development** — you're actively building or maintaining a webhook integration and need to re-examine events across multiple sessions
+- **Team project** — you want to share events with colleagues using read-only links
+- **Named integrations** — you want your Stripe inbox labelled "Stripe Production" and your GitHub inbox labelled "Repo Events", not random IDs
+- **Replay history** — you want to replay an event you captured last week to test a bug fix
+
+A free Webhooktrap account is all that's required. Sign up with GitHub, Google, or email and password at [webhooktrap.dev](https://webhooktrap.dev).
+
+## Upgrading from anonymous to saved
+
+If you started with an anonymous inbox and decide you want to keep working with it, sign in to your account — your subsequent inboxes will be saved automatically. If the 48-hour window hasn't expired, you may still be able to view the events from an anonymous inbox, but the cleanest approach is to create a new saved inbox after signing in and re-configure your provider to point at the new ingest URL.
+
+<Tip>
+  There's no penalty for starting anonymous. Many developers use an anonymous inbox for a first look at a new provider's payload format, then sign up and create a proper saved inbox once they're ready to build the integration. Your free account persists all future inboxes indefinitely — no time pressure after that first sign-in.
+</Tip>

@@ -1,0 +1,78 @@
+---
+title: "Debug and Replay GitHub Webhook Events with Webhooktrap"
+sidebarTitle: "GitHub"
+description: "Route GitHub webhook events to Webhooktrap to inspect push, pull request, and issue payloads before forwarding to your app server."
+---
+
+GitHub can deliver webhook events for nearly every action that happens in a repository — pushes, pull requests, issue comments, workflow runs, and more. Webhooktrap gives you a stable ingest URL to capture those events during development so you can examine exactly what GitHub sends before wiring up your own handler. No need to expose a local server or keep a tunnel running.
+
+<Steps>
+  <Step title="Create a Webhooktrap inbox">
+    Create a new inbox from the Webhooktrap dashboard, or use the API:
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+    ```
+
+    Copy the full ingest URL from the response:
+
+    ```json
+    {
+      "data": {
+        "inbox": {
+          "id": "xK9m2pQ7nR4a",
+          "ingestUrl": "/i/xK9m2pQ7nR4a"
+        }
+      }
+    }
+    ```
+
+    Your ingest URL is `https://webhooktrap.dev/i/xK9m2pQ7nR4a`.
+  </Step>
+  <Step title="Add the ingest URL as a GitHub webhook">
+    1. Open your GitHub repository and go to **Settings → Webhooks → Add webhook**.
+       - For a GitHub App, navigate to your app's settings page and open the **Webhook** section instead.
+    2. Paste your Webhooktrap ingest URL into the **Payload URL** field.
+    3. Set **Content type** to `application/json`.
+    4. Leave the **Secret** field empty for now, or add one if you want to test HMAC signature verification.
+    5. Click **Add webhook** to save.
+  </Step>
+  <Step title="Choose the events to subscribe to">
+    GitHub lets you subscribe to individual events or receive everything:
+
+    - **Just the push event** — fires on every `git push`
+    - **Send me everything** — delivers all event types to your inbox
+    - **Let me select individual events** — choose from pull requests, issues, workflow runs, releases, and more
+
+    Select what you need and click **Update webhook**.
+  </Step>
+  <Step title="Trigger an event">
+    Push a commit, open a pull request, or create an issue in the repository. GitHub immediately delivers the event payload to your Webhooktrap ingest URL. You can also click **Redeliver** on any past delivery from the GitHub webhook settings page.
+  </Step>
+  <Step title="Inspect the payload in Webhooktrap">
+    Open your Webhooktrap dashboard and click the event that arrived. Pay attention to these GitHub-specific headers:
+
+    - `X-GitHub-Event` — the event type, e.g. `push`, `pull_request`, `issues`
+    - `X-GitHub-Delivery` — a unique UUID for this delivery
+    - `X-Hub-Signature-256` — the HMAC-SHA256 signature of the payload, signed with your webhook secret
+
+    The full request body is shown exactly as GitHub sent it, with no modifications.
+  </Step>
+  <Step title="Replay the event to your handler">
+    Click **Replay** on any captured event and set the destination URL to your local or staging handler, for example:
+
+    ```
+    http://localhost:4000/webhooks/github
+    ```
+
+    Webhooktrap replays the original headers and body and shows you the status code, response latency, and full response body from your server.
+  </Step>
+</Steps>
+
+## X-Hub-Signature-256 header is preserved
+
+Webhooktrap stores the `X-Hub-Signature-256` header exactly as GitHub sent it. When you replay the event, your handler receives the same signature it would have received in production, so you can test your HMAC verification logic — using `crypto.timingSafeEqual` or a library like `@octokit/webhooks` — without needing a live connection from GitHub.
+
+<Note>
+  GitHub requires your webhook endpoint to return a `2xx` status code within a few seconds, or it marks the delivery as failed and may retry. Webhooktrap always responds with `200 OK` instantly, so you'll never see a delivery failure in your GitHub webhook logs just because your local server is slow or offline.
+</Note>

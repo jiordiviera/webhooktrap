@@ -1,0 +1,89 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Webhook T.",
+  "theme": "maple",
+  "favicon": "https://media.brand.dev/3cf47fbc-4fa9-4fbc-a05a-d9a02b1520d6.png",
+  "colors": {
+    "primary": "#ac754e",
+    "light": "#ccb49c"
+  },
+  "logo": "https://media.brand.dev/3cf47fbc-4fa9-4fbc-a05a-d9a02b1520d6.png",
+  "fonts": {
+    "body": {
+      "family": "Raleway"
+    },
+    "heading": {
+      "family": "Bricolage Grotesque"
+    }
+  },
+  "icons": {
+    "library": "tabler"
+  },
+  "background": {
+    "decoration": "grid"
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Open Inbox",
+      "href": "https://webhooktrap.dev"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart", "account-setup"]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/inboxes",
+              "concepts/capture",
+              "concepts/replay",
+              "concepts/sharing"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/overview",
+              "integrations/stripe",
+              "integrations/github",
+              "integrations/shopify",
+              "integrations/other-providers"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/debug-locally",
+              "guides/team-debugging",
+              "guides/anonymous-vs-saved"
+            ]
+          },
+          {
+            "group": "Security & Privacy",
+            "pages": ["security/overview", "security/data-storage"]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["api/overview", "api/authentication"]
+          },
+          {
+            "group": "Endpoints",
+            "pages": ["api/inboxes", "api/events", "api/replay"]
+          }
+        ]
+      }
+    ]
+  }
+}

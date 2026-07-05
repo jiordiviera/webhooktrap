@@ -1,0 +1,56 @@
+{
+  "name": "Webhook Trap",
+  "logo": "/logo/logo.png",
+  "favicon": "/favicon.ico",
+  "colors": {
+    "primary": "#6F4E3E",
+    "light": "#F5F0E8",
+    "dark": "#2D1810",
+    "anchors": {
+      "from": "#6F4E3E",
+      "to": "#8B6F47"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/jiordiviera/webhooktrap"
+    },
+    {
+      "name": "App",
+      "url": "https://webhooktrap.dev"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Guides",
+      "icon": "book",
+      "url": "guides"
+    },
+    {
+      "name": "API",
+      "icon": "code",
+      "url": "api"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "guides/installation",
+        "guides/inboxes",
+        "guides/replay",
+        "guides/sharing"
+      ]
+    },
+    {
+      "group": "Deployment",
+      "pages": ["guides/deployment"]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/jiordiviera/webhooktrap",
+    "x": "https://x.com/jiordiviera"
+  }
+}

@@ -1,0 +1,57 @@
+---
+title: "Authenticate Webhooktrap API Requests with Bearer Tokens"
+sidebarTitle: "Authentication"
+description: "Webhooktrap API requests use Bearer token authentication. Get your API token from the dashboard and pass it in the Authorization header."
+---
+
+Webhooktrap uses Bearer token authentication to protect your inboxes and captured events. Most read and write operations on saved resources require a valid token — only a handful of anonymous endpoints, such as creating an inbox without an account, work without one. Include your token in every authenticated request and Webhooktrap will scope all responses to your account.
+
+## Get your API token
+
+1. Sign in to your account at [https://webhooktrap.dev/dashboard](https://webhooktrap.dev/dashboard).
+2. Navigate to **Settings → API Tokens**.
+3. Click **Create token**, give it a descriptive name, and confirm.
+4. Copy the token immediately — it is only shown once.
+
+## Use your token
+
+Pass your token in the `Authorization` header on every authenticated request, using the `Bearer` scheme:
+
+```bash
+curl -X GET https://api.webhooktrap.dev/api/v1/inboxes/xK9m2pQ7nR4a/events \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+If the token is missing or invalid, the API returns a `401 Unauthorized` response:
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Missing or invalid API token"
+  }
+}
+```
+
+## Anonymous endpoints
+
+Some endpoints do not require authentication. Creating an inbox anonymously, for example, works without a token — Webhooktrap generates a short-lived inbox you can use immediately. Anonymous inboxes expire after 48 hours and cannot be retrieved through the API once they expire.
+
+<Warning>
+  Keep your API token secret. Anyone who holds your token can read your captured events and trigger replays on your behalf. Never commit tokens to source control or expose them in client-side code.
+</Warning>
+
+<Tip>
+  Store your token in an environment variable so you can reference it safely in scripts and curl commands:
+
+  ```bash
+  export WEBHOOKTRAP_TOKEN=your_api_token_here
+  ```
+
+  Then pass it directly in any request without hardcoding the value:
+
+  ```bash
+  curl -X GET https://api.webhooktrap.dev/api/v1/inboxes/xK9m2pQ7nR4a/events \
+    -H "Authorization: Bearer $WEBHOOKTRAP_TOKEN"
+  ```
+</Tip>

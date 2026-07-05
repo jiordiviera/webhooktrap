@@ -1,0 +1,111 @@
+---
+title: "Capture and Replay Shopify Webhook Events with Webhooktrap"
+sidebarTitle: "Shopify"
+description: "Capture Shopify order, product, and fulfillment events with Webhooktrap. Inspect raw payloads and replay them to your local server in development."
+---
+
+Shopify fires webhook events across the full commerce lifecycle — new orders, fulfilled shipments, updated inventory, created customers, and dozens more. During development, Webhooktrap captures every one of those events so you can examine the exact payload shape and headers Shopify uses before you build and test your own handler logic.
+
+<Steps>
+  <Step title="Create a Webhooktrap inbox">
+    Create a new inbox from the Webhooktrap dashboard, or use the API:
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+    ```
+
+    Copy the full ingest URL from the response:
+
+    ```json
+    {
+      "data": {
+        "inbox": {
+          "id": "xK9m2pQ7nR4a",
+          "ingestUrl": "/i/xK9m2pQ7nR4a"
+        }
+      }
+    }
+    ```
+
+    Your ingest URL is `https://webhooktrap.dev/i/xK9m2pQ7nR4a`.
+  </Step>
+  <Step title="Add the ingest URL in Shopify Admin">
+    1. Open your Shopify Admin and navigate to **Settings → Notifications**.
+    2. Scroll to the **Webhooks** section at the bottom of the page and click **Create webhook**.
+    3. Paste your Webhooktrap ingest URL into the **URL** field.
+    4. Set the **Format** to `JSON`.
+    5. Click **Save** — Shopify will send a verification request to your ingest URL to confirm it's reachable.
+
+    <Note>
+      If you're using the Shopify Admin API instead of the dashboard, set the `address` field of your webhook subscription to your Webhooktrap ingest URL.
+    </Note>
+  </Step>
+  <Step title="Choose an event topic">
+    Select the event topic you want to subscribe to from the **Event** dropdown. Common topics include:
+
+    - `orders/create` — fires when a new order is placed
+    - `orders/updated` — fires when an order is modified
+    - `fulfillments/create` — fires when a shipment is created
+    - `products/create` — fires when a new product is added
+    - `customers/create` — fires when a new customer account is created
+
+    You can create multiple webhooks, one per topic, all pointing to the same Webhooktrap ingest URL.
+  </Step>
+  <Step title="Trigger the event">
+    Perform the corresponding action in your Shopify store to fire the webhook. For `orders/create`, place a test order using a payment gateway in test mode. For other topics, create or update the relevant resource through the Shopify Admin.
+  </Step>
+  <Step title="Inspect the payload in Webhooktrap">
+    Open your Webhooktrap dashboard and click the event that arrived. Look for these Shopify-specific headers:
+
+    - `X-Shopify-Hmac-Sha256` — the HMAC-SHA256 signature of the payload body
+    - `X-Shopify-Shop-Domain` — the `.myshopify.com` domain of the sending store
+    - `X-Shopify-Topic` — the event topic, e.g. `orders/create`
+    - `X-Shopify-Webhook-Id` — a unique identifier for this webhook delivery
+
+    The full JSON body is shown exactly as Shopify sent it.
+  </Step>
+  <Step title="Replay to your local server">
+    Click **Replay** on any captured event and enter your local handler URL as the destination:
+
+    ```
+    http://localhost:3000/webhooks/shopify
+    ```
+
+    Webhooktrap resends the original headers and body and displays the HTTP status code, latency, and response body from your server so you can verify your handler behaved correctly.
+  </Step>
+</Steps>
+
+## Preserved Shopify headers
+
+Webhooktrap stores `X-Shopify-Hmac-Sha256` and `X-Shopify-Shop-Domain` verbatim on every captured request. This means you can replay a real Shopify event to your local handler and run your actual HMAC verification against the stored signature — without needing a live event from Shopify to hit your server directly.
+
+## Example orders/create payload
+
+Here is an abridged example of what a `orders/create` event body looks like in your Webhooktrap inbox:
+
+```json
+{
+  "id": 5678901234,
+  "email": "customer@example.com",
+  "created_at": "2024-04-01T10:23:45-04:00",
+  "total_price": "49.99",
+  "currency": "USD",
+  "financial_status": "paid",
+  "fulfillment_status": null,
+  "line_items": [
+    {
+      "id": 1122334455,
+      "title": "Example Product",
+      "quantity": 1,
+      "price": "49.99",
+      "sku": "EXAMPLE-SKU-001"
+    }
+  ],
+  "shipping_address": {
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "city": "New York",
+    "country": "United States"
+  }
+}
+```

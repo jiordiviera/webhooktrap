@@ -1,0 +1,119 @@
+---
+title: "Capture and Replay Stripe Webhooks with Webhooktrap"
+sidebarTitle: "Stripe"
+description: "Connect Webhooktrap to Stripe in minutes. Capture payment events, inspect Stripe-Signature headers, and replay to your local handler."
+---
+
+Stripe's webhook system delivers critical payment lifecycle events — completed checkouts, succeeded payment intents, failed invoices — to your server. During development, Webhooktrap acts as a proxy: capture every event Stripe sends, inspect the raw payload and headers, then replay it directly to `localhost` whenever you're ready. No public URL, no tunnel, no missed events.
+
+<Steps>
+  <Step title="Create a Webhooktrap inbox">
+    Create a new inbox from the Webhooktrap dashboard, or use the API:
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+    ```
+
+    Copy the full ingest URL from the response:
+
+    ```json
+    {
+      "data": {
+        "inbox": {
+          "id": "xK9m2pQ7nR4a",
+          "ingestUrl": "/i/xK9m2pQ7nR4a"
+        }
+      }
+    }
+    ```
+
+    Your ingest URL is `https://webhooktrap.dev/i/xK9m2pQ7nR4a`. Keep it handy for the next step.
+  </Step>
+  <Step title="Add the ingest URL as a Stripe webhook endpoint">
+    1. Open the [Stripe Dashboard](https://dashboard.stripe.com) and navigate to **Developers → Webhooks**.
+    2. Click **Add endpoint**.
+    3. Paste your Webhooktrap ingest URL into the **Endpoint URL** field.
+    4. Click **Add endpoint** to save.
+  </Step>
+  <Step title="Select the events to listen for">
+    After saving the endpoint, click **Add events** and choose the Stripe events you want to capture. Common choices include:
+
+    - `checkout.session.completed`
+    - `payment_intent.succeeded`
+    - `payment_intent.payment_failed`
+    - `invoice.paid`
+    - `customer.subscription.updated`
+
+    Select as many events as you need, then click **Add events** to confirm.
+  </Step>
+  <Step title="Trigger a test event">
+    From the Stripe Dashboard, open your newly created endpoint and click **Send test event**. Choose an event type from the dropdown and click **Send test webhook**. You can also wait for a real event to fire if you have an active Stripe integration.
+  </Step>
+  <Step title="Inspect the captured event in Webhooktrap">
+    Open your Webhooktrap dashboard and select the inbox you created. Click the event that just arrived to see:
+
+    - **Headers** — including `Stripe-Signature`, `Content-Type`, and `User-Agent`
+    - **Body** — the full JSON payload sent by Stripe
+    - **Query string** — if any parameters were appended
+
+    You'll see the complete, unmodified request exactly as Stripe sent it.
+  </Step>
+  <Step title="Replay the event to your local handler">
+    Click **Replay** on any captured event. Set the destination URL to your local webhook handler, for example:
+
+    ```
+    http://localhost:3000/webhooks/stripe
+    ```
+
+    Webhooktrap forwards the original headers and body to that URL and shows you the full HTTP response — status code, latency, and response body — so you can confirm your handler processed the event correctly.
+  </Step>
+</Steps>
+
+## Stripe-Signature header is preserved
+
+Webhooktrap preserves the `Stripe-Signature` header on every captured request. This means you can replay a real Stripe event to your local handler and run your actual signature verification code against it — the same `stripe.webhooks.constructEvent()` call you use in production.
+
+<Note>
+  Webhooktrap redacts `Authorization` and `Cookie` headers for security, but all other headers — including `Stripe-Signature` — are stored and replayed verbatim.
+</Note>
+
+## Example captured Stripe payload
+
+Here is an abridged example of a `checkout.session.completed` event as it appears in your Webhooktrap inbox:
+
+```json
+{
+  "id": "evt_1OabcXYZ",
+  "object": "event",
+  "type": "checkout.session.completed",
+  "livemode": false,
+  "created": 1712000000,
+  "data": {
+    "object": {
+      "id": "cs_test_a1B2c3D4e5F6g7H8",
+      "object": "checkout.session",
+      "amount_total": 2000,
+      "currency": "usd",
+      "customer_email": "user@example.com",
+      "payment_status": "paid"
+    }
+  }
+}
+```
+
+<Tip>
+  Use the [Stripe CLI](https://stripe.com/docs/stripe-cli) to stream test events directly to your Webhooktrap ingest URL for faster iteration:
+
+  ```bash
+  stripe trigger checkout.session.completed \
+    --override checkout_session:metadata.source=webhooktrap
+  ```
+
+  Or forward CLI events directly to your ingest URL:
+
+  ```bash
+  stripe listen --forward-to https://webhooktrap.dev/i/YOUR_INBOX_ID
+  ```
+
+  Every triggered event lands in your inbox immediately, ready to inspect and replay.
+</Tip>

@@ -1,0 +1,149 @@
+---
+title: "Connect Twilio, Linear, Vercel, and More to Webhooktrap"
+sidebarTitle: "Other Providers"
+description: "Webhooktrap works with any service that sends HTTP webhooks. Learn how to connect Twilio, Linear, Vercel, Clerk, Resend, and custom APIs."
+---
+
+If a service can send an HTTP request to a URL, it works with Webhooktrap. There is no integration to install, no SDK to import, and no provider-specific configuration on the Webhooktrap side. Create an inbox, copy the ingest URL, and paste it wherever the provider asks for a webhook endpoint. The steps below cover the most common providers — but the same two-step pattern applies to anything that sends HTTP requests.
+
+Before you start, create an inbox and note your ingest URL:
+
+```bash
+curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+```
+
+```json
+{
+  "data": {
+    "inbox": {
+      "id": "xK9m2pQ7nR4a",
+      "ingestUrl": "/i/xK9m2pQ7nR4a"
+    }
+  }
+}
+```
+
+Your full ingest URL is `https://webhooktrap.dev/i/xK9m2pQ7nR4a`. Use it in each of the provider setups below.
+
+---
+
+## Twilio
+
+Twilio fires webhooks when a call connects, a message arrives, a recording is ready, and more. You configure the destination URL directly on the phone number or messaging service.
+
+1. Open the [Twilio Console](https://console.twilio.com) and navigate to **Phone Numbers → Manage → Active Numbers**.
+2. Click the phone number you want to configure.
+3. Under **Voice & Fax** or **Messaging**, find the **A call/message comes in** webhook field.
+4. Paste your Webhooktrap ingest URL and set the request method to `HTTP POST`.
+5. Click **Save** and trigger an event (send an SMS or place a call to the number).
+
+Twilio's request includes form-encoded fields like `Body`, `From`, `To`, and `MessageSid` for SMS events, or `CallSid` and `CallStatus` for voice events. All of them appear verbatim in your Webhooktrap inbox.
+
+---
+
+## Linear
+
+Linear delivers webhooks for issue, comment, project, and cycle events. Configure them in your workspace API settings.
+
+1. Open Linear and go to **Settings → API → Webhooks**.
+2. Click **Add webhook**.
+3. Paste your Webhooktrap ingest URL into the **URL** field.
+4. Select the resource types you want to subscribe to (Issues, Comments, Projects, etc.).
+5. Click **Create webhook** and perform an action in Linear to trigger the first event.
+
+Linear sends a `X-Linear-Signature` header that you can use to verify payload authenticity. Webhooktrap preserves it so you can test your verification logic during development.
+
+---
+
+## Vercel
+
+Vercel's deploy hooks let you trigger and receive notifications about deployments. You can also receive webhook events through Vercel's integration platform.
+
+**Using deploy hooks:**
+
+1. Open your Vercel project and go to **Settings → Git → Deploy Hooks**.
+2. Create a new deploy hook. Vercel generates a unique URL — note that this is an *outbound* trigger URL, not an inbound webhook receiver.
+
+**Using Vercel webhooks (team plan):**
+
+1. Open your Vercel team settings and navigate to **Webhooks**.
+2. Click **Add Webhook**.
+3. Paste your Webhooktrap ingest URL as the endpoint URL.
+4. Select the event types you want to receive (deployment created, deployment succeeded, etc.).
+5. Click **Create** and trigger a deployment to send the first event.
+
+Vercel includes a `x-vercel-signature` header for payload verification. Webhooktrap captures it alongside the full deployment payload.
+
+---
+
+## Clerk
+
+Clerk sends webhook events for user and session lifecycle actions — sign-ups, sign-ins, profile updates, and deletions. Configure them in the Clerk Dashboard.
+
+1. Open the [Clerk Dashboard](https://dashboard.clerk.com) and select your application.
+2. Navigate to **Webhooks** in the left sidebar.
+3. Click **Add Endpoint**.
+4. Paste your Webhooktrap ingest URL into the **Endpoint URL** field.
+5. Select the events you want to receive, such as `user.created`, `user.updated`, and `session.created`.
+6. Click **Create** and perform a sign-up in your app to trigger the first event.
+
+Clerk signs payloads using [Svix](https://svix.com) and includes `svix-id`, `svix-timestamp`, and `svix-signature` headers. All three are captured by Webhooktrap so you can test signature verification with the Clerk SDK.
+
+---
+
+## Resend
+
+Resend delivers webhook events when an email is sent, delivered, opened, clicked, bounced, or marked as spam.
+
+1. Open the [Resend Dashboard](https://resend.com/webhooks) and go to **Settings → Webhooks**.
+2. Click **Add Endpoint**.
+3. Paste your Webhooktrap ingest URL into the **Endpoint URL** field.
+4. Select the event types you want to capture (e.g. `email.sent`, `email.delivered`, `email.bounced`).
+5. Click **Add** and send a test email to trigger the first event.
+
+Resend includes a `Svix-Signature` header for verification. Webhooktrap preserves it alongside the full event payload.
+
+---
+
+## Custom HTTP client / cURL
+
+Any service or script that can make an HTTP request can send events to Webhooktrap. This includes your own backend services, CI pipelines, IoT devices, and anything else that speaks HTTP.
+
+**POST a JSON body:**
+
+```bash
+curl -X POST https://webhooktrap.dev/i/YOUR_INBOX_ID \
+  -H "Content-Type: application/json" \
+  -d '{"event": "order.created", "orderId": "12345", "total": 99.99}'
+```
+
+**POST form-encoded data (like Twilio):**
+
+```bash
+curl -X POST https://webhooktrap.dev/i/YOUR_INBOX_ID \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "From=%2B15555550100&Body=Hello+world&MessageSid=SM123"
+```
+
+**Add custom headers:**
+
+```bash
+curl -X POST https://webhooktrap.dev/i/YOUR_INBOX_ID \
+  -H "Content-Type: application/json" \
+  -H "X-My-Signature: sha256=abc123" \
+  -d '{"event": "test"}'
+```
+
+All headers, the full body, and any query string parameters appear in your inbox immediately.
+
+<Tip>
+  Use cURL to test your inbox before configuring any real provider. It's the fastest way to confirm your inbox is working and to explore what a request looks like in the Webhooktrap dashboard:
+
+  ```bash
+  curl -X POST https://webhooktrap.dev/i/YOUR_INBOX_ID \
+    -H "Content-Type: application/json" \
+    -d '{"event": "test"}'
+  ```
+
+  Open your inbox in the Webhooktrap dashboard and the request appears instantly, ready to inspect and replay.
+</Tip>

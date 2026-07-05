@@ -1,0 +1,64 @@
+---
+title: "Share Webhook Events with Your Team in Webhooktrap"
+sidebarTitle: "Team Debugging"
+description: "Generate read-only share links for captured events so teammates can inspect payloads, copy cURL commands, and review headers — no account needed."
+---
+
+When something goes wrong with a webhook integration, the fastest path to a fix is showing your teammate the exact payload — not a screenshot, not a paraphrased description, but the live event data with every header and every byte of the body intact. Webhooktrap's read-only share links let you do that without adding your colleague to your account or granting them access to your full inbox. They get a focused, single-event view; you keep control of everything else.
+
+## Scenario
+
+Imagine you've captured an event from your payment provider and the payload contains an unexpected field — or a signature header you didn't expect. You want a colleague on the backend team to review the raw request and confirm whether your handler is interpreting it correctly. Instead of copying JSON into a Slack message and losing the header context, you share a direct link to the captured event.
+
+<Steps>
+  <Step title="Open the event in your dashboard">
+    Go to the [Webhooktrap dashboard](https://webhooktrap.dev/dashboard), select the inbox that received the event, and click on the specific event you want to share. The event detail view shows the full HTTP method, all headers, the request body, query string, and timestamp.
+  </Step>
+
+  <Step title="Generate a share link">
+    Click the **Share** button in the event detail view. Webhooktrap generates a read-only link scoped to that single event. The link is immediately available — no expiry date is set manually; it stays valid as long as the event and its inbox exist.
+  </Step>
+
+  <Step title="Send the link to your teammate">
+    Copy the link and send it however you communicate with your team — Slack, email, a GitHub issue comment, a Jira ticket. Your teammate does not need a Webhooktrap account to open the link.
+  </Step>
+
+  <Step title="Your teammate inspects the event">
+    When your teammate opens the link, they land on a read-only view of the event that includes:
+
+    - The full list of **request headers** (with `authorization` and `cookie` already redacted for safety)
+    - The raw **request body**, formatted for readability if it's JSON
+    - The **HTTP method** and path
+    - The **timestamp** the event was captured
+
+    From there they can copy the body as JSON or reconstruct the original request as a cURL command — useful for testing locally or reproducing the issue independently.
+  </Step>
+</Steps>
+
+## What teammates can do
+
+- Inspect all captured request headers and the request body
+- Copy the event payload as formatted JSON
+- Rebuild the original request as a cURL command
+- Review the HTTP method, ingest path, and capture timestamp
+
+## What teammates cannot do
+
+- Replay the event to any destination
+- Delete the event or the inbox
+- Access any other events in your inbox
+- Access your account settings or other inboxes
+
+No Webhooktrap account is required to view a shared event. The recipient just needs the link.
+
+<Note>
+  Share links are tied to the event and its inbox. If you delete the event or the inbox that contains it, the share link stops working immediately. Keep this in mind if you're using a share link in a long-lived document like a bug report or runbook — attach a copy of the payload there too if permanent reference matters.
+</Note>
+
+## Common use cases
+
+**Filing a bug report with a live payload** — Paste the share link into your issue tracker. Anyone triaging the bug sees the exact request that caused the problem, not a reproduction guess.
+
+**Reviewing a provider's signature format** — If you're setting up HMAC signature verification for the first time, share the raw event with the developer implementing the check so they can see the exact header format (`Stripe-Signature`, `X-Hub-Signature-256`, etc.) without needing their own test environment.
+
+**Onboarding a new developer** — Show a new team member what a real production-shaped webhook looks like before they write a single line of handler code. A live captured event is more instructive than a mock fixture.

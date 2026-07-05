@@ -1,0 +1,55 @@
+---
+title: "What Webhooktrap Stores and How Long It Keeps Data"
+sidebarTitle: "Data Storage"
+description: "Webhooktrap stores webhook payloads, account emails, and session data. Learn what is kept, what is redacted, and how long data is retained."
+---
+
+Understanding what Webhooktrap stores — and what it deliberately does not store — helps you make an informed decision about which events to send to your inbox and how long to keep them. This page describes each category of data Webhooktrap handles, how it's retained, and how you can delete it. The content here reflects the [Webhooktrap privacy policy](https://webhooktrap.dev/privacy).
+
+## Webhook payloads
+
+Every request sent to an ingest URL is stored as-is:
+
+- **HTTP method** — `POST`, `GET`, or whatever the provider used
+- **Headers** — all headers the provider included, with the exceptions noted below
+- **Body** — the raw request body, exactly as received
+- **Query string** — any query parameters appended to the ingest URL
+
+**Redacted before storage:** The `authorization` and `cookie` headers are stripped from the incoming request before anything is written to disk. These headers are never persisted, and they will not appear in the event detail view or in any share link.
+
+**Signature headers are kept:** `Stripe-Signature`, `X-Hub-Signature-256`, `X-Shopify-Hmac-Sha256`, and equivalent provider signature headers are preserved in full. You need these to test your HMAC verification logic against real provider values.
+
+<Note>
+  Redaction of `authorization` and `cookie` happens at the point of ingest — before the payload is ever written to storage. There is no window during which these headers exist in a stored state.
+</Note>
+
+**Retention:**
+
+- **Anonymous inboxes** — events expire automatically after 48 hours. No action required on your part.
+- **Account-linked inboxes** — events are kept until you delete the inbox or your account.
+
+## Account and session data
+
+If you create a Webhooktrap account, the following is stored:
+
+- **Email address** — used to identify your account and for authentication with email and password sign-in.
+- **Hashed password** — if you sign up with email and password, your password is stored as a one-way hash. Webhooktrap does not store your plain-text password.
+- **OAuth identifiers** — if you sign in with GitHub or Google, Webhooktrap stores the OAuth profile identifier returned by the provider (not your OAuth access token).
+- **Session cookie** — signing in sets a session cookie to keep you authenticated across requests. This cookie is essential to the product and is set regardless of your analytics consent choice.
+
+## Analytics
+
+Webhooktrap uses [Vercel Analytics](https://vercel.com/analytics) to measure aggregate traffic — page views and referrer information. Vercel Analytics does not use cookies and does not assign a per-visitor identifier, so individual visits are not tracked across sessions.
+
+Analytics only runs after you accept the cookie banner. If you decline or dismiss the banner without accepting, analytics remains off for your session.
+
+## Replay
+
+When you trigger a replay, Webhooktrap reads the stored payload for that event and sends it from its own servers to the destination URL you provide. The payload is not sent to any third party — only to the destination you specify in the replay request.
+
+## Deleting your data
+
+- **Delete an inbox** — removes the inbox and all events it contains. This is permanent.
+- **Delete your account** — removes your account and all associated inboxes and events. Reach out via [jiordiviera.me](https://jiordiviera.me) to request account deletion.
+
+If you used anonymous inboxes, those events expire automatically after 48 hours and are not linked to any account, so there is nothing to delete manually.
