@@ -13,12 +13,6 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "web", "dev"],
       "port": 7777
-    },
-    {
-      "name": "docs",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "docs", "dev"],
-      "port": 4444
     }
   ]
 }
