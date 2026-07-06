@@ -19,9 +19,7 @@
 /**
  * Register hook to process TypeScript files using @poppinss/ts-exec
  */
-
- console.log('ACE FILE FROM GITHUB')
- console.log(import.meta.url)
+ 
 import '@poppinss/ts-exec'
 
 /**
