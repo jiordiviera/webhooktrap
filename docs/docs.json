@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Webhook T.",
-  "theme": "maple",
-  "favicon": "https://media.brand.dev/3cf47fbc-4fa9-4fbc-a05a-d9a02b1520d6.png",
+  "theme": "mint",
+  "favicon": "/favicon.ico",
   "colors": {
     "primary": "#ac754e",
     "light": "#ccb49c"
   },
-  "logo": "https://media.brand.dev/3cf47fbc-4fa9-4fbc-a05a-d9a02b1520d6.png",
+  "logo": "/logo.png",
   "fonts": {
     "body": {
       "family": "Raleway"
@@ -22,14 +22,54 @@
   "background": {
     "decoration": "grid"
   },
+  "styling": {
+    "codeblocks": {
+      "theme": {
+        "dark": "github-dark",
+        "light": "github-light"
+      }
+    }
+  },
   "navbar": {
-    "primary": {
-      "type": "button",
-      "label": "Open Inbox",
-      "href": "https://webhooktrap.dev"
+    "links": [
+      {
+        "type": "github",
+        "href": "https://github.com/jiordiviera/hookscope"
+      }
+    ]
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/jiordiviera",
+      "github": "https://github.com/jiordiviera"
     }
   },
   "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Open App",
+          "icon": "link",
+          "href": "https://webhooktrap.dev/?utm_source=docs"
+        },
+        {
+          "anchor": "Sponsor",
+          "href": "https://webhooktrap.dev/sponsor"
+        }
+      ]
+    },
     "tabs": [
       {
         "tab": "Documentation",

@@ -14,8 +14,8 @@ jobs:
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -24,30 +24,30 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: webhooktrap_test
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/webhooktrap_test
-          NODE_ENV: test
+      - name: Load environment variables
+        run: cp .env.test .env
+      - run: pnpm build
+      - name: Test API direct
+        working-directory: apps/api
+        run: |
+          echo "before test"
+          node ace test --verbose
+          echo "after test"
