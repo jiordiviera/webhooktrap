@@ -30,6 +30,8 @@ jobs:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
           POSTGRES_DB: webhooktrap_test
+          NODE_ENV: test
+        
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -47,6 +49,8 @@ jobs:
           cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
+      - name: Load environment variables
+        run: cp .env.test .env
       - run: pnpm build
       - run: pnpm test
         env:
