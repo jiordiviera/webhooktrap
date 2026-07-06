@@ -45,4 +45,8 @@ jobs:
       - name: Load environment variables
         run: cp .env.test .env
       - run: pnpm build
-      - run: pnpm test
+      - name: Test API direct
+        run: |
+          echo "before test"
+          node ace test --verbose
+          echo "after test"
