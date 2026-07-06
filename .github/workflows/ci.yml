@@ -35,4 +35,4 @@ jobs:
       - name: Load environment variables
         run: cp .env.test .env
       - run: pnpm build
-      - run: pnpm test
+      - run: pnpm turbo test --filter=api --output-logs=full
