@@ -46,6 +46,7 @@ jobs:
         run: cp .env.test .env
       - run: pnpm build
       - name: Test API direct
+        working-directory: apps/api
         run: |
           echo "before test"
           node ace test --verbose
