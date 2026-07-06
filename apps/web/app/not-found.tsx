@@ -9,7 +9,7 @@ export default function NotFound(): React.ReactElement {
           <div className="text-5xl font-semibold text-primary">404</div>
           <h1 className="text-xl font-semibold text-foreground">Not found</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            This route doesn't have a webhook inbox or has expired. Check the URL and try again.
+            This route doesn&apos;t have a webhook inbox or has expired. Check the URL and try again.
           </p>
         </div>
 
