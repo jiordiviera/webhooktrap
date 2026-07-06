@@ -14,8 +14,8 @@ jobs:
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -28,11 +28,16 @@ jobs:
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
       - name: Load environment variables
         run: cp .env.test .env
       - run: pnpm build
-      - run: pnpm turbo test --filter=api --output-logs=full
+      - name: Test API direct
+        working-directory: apps/api
+        run: |
+          echo "before test"
+          node ace test --verbose
+          echo "after test"
