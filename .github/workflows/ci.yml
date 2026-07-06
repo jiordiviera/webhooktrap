@@ -47,6 +47,7 @@ jobs:
           cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm test
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/webhooktrap_test
