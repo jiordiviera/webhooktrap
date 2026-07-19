@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 
 export default function SponsorPage() {
   return (
-    <main className="relative">
+    <>
       <Navigation />
-      <div className="mx-auto min-h-screen max-w-3xl px-6 pt-40 pb-24 lg:px-12">
+      <main className="min-h-screen mx-auto max-w-3xl px-6 pt-40 pb-24 lg:px-12">
         <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
           <span className="h-px w-8 bg-primary/40" />
           Sponsor
@@ -35,8 +35,8 @@ export default function SponsorPage() {
             <IconArrowUpRight className="ml-2 size-4" aria-hidden />
           </a>
         </Button>
-      </div>
+      </main>
       <FooterSection />
-    </main>
+    </>
   )
 }
