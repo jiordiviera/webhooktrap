@@ -32,6 +32,7 @@ const footerLinks = {
     { name: 'Register', href: '/register' },
     { name: 'Security', href: '#security' },
     { name: 'Privacy', href: '/privacy' },
+    { name: 'Sponsor', href: '/sponsor' },
   ],
 }
 
