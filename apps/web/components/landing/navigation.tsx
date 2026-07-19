@@ -10,11 +10,10 @@ import { docsUrl, productName } from "@/lib/config";
 
 const navLinks = [
   { name: "Features", href: "#features" },
-  { name: "How it works", href: "#how-it-works" },
   { name: "Integrations", href: "#integrations" },
-  { name: "Developers", href: "#developers" },
   { name: "Pricing", href: "#pricing" },
   { name: "Docs", href: docsUrl },
+  { name: "Sponsor", href: "/sponsor" },
 ] as const;
 
 export function Navigation() {
