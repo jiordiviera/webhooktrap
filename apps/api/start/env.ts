@@ -11,7 +11,7 @@ while (dir !== dirname(dir)) {
   dir = dirname(dir)
 }
 
-export default await Env.create(new URL(dir + '/', import.meta.url), {
+const env = await Env.create(new URL(dir + '/', import.meta.url), {
   // Node
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
   PORT: Env.schema.number(),
@@ -22,6 +22,12 @@ export default await Env.create(new URL(dir + '/', import.meta.url), {
   APP_KEY: Env.schema.secret(),
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
   WEB_URL: Env.schema.string({ format: 'url', tld: false }),
+
+  // Replay SSRF guard — see app/support/ssrf_guard.ts. Lets local/self-hosted
+  // setups replay events to localhost/RFC1918 targets. Never allowed in
+  // production (enforced below) since it would reintroduce an SSRF exploitable
+  // by any authenticated user against internal infra.
+  ALLOW_INSECURE_REPLAY_TARGETS: Env.schema.boolean.optional(),
 
   // Session
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
@@ -94,3 +100,13 @@ export default await Env.create(new URL(dir + '/', import.meta.url), {
   */
   SENTRY_DSN: Env.schema.string.optional(),
 })
+
+if (env.get('NODE_ENV') === 'production' && env.get('ALLOW_INSECURE_REPLAY_TARGETS', false)) {
+  throw new Error(
+    'ALLOW_INSECURE_REPLAY_TARGETS cannot be enabled when NODE_ENV=production — it would ' +
+      'reintroduce an SSRF vector exploitable by any authenticated user against internal ' +
+      'infra. Unset it or run with a non-production NODE_ENV.'
+  )
+}
+
+export default env

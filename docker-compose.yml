@@ -34,6 +34,10 @@ services:
       SESSION_DRIVER: cookie
       LOG_LEVEL: info
 
+      # Lets replay reach localhost/RFC1918 targets — the quick-start use case.
+      # Never set this in production (see .env.example / README).
+      ALLOW_INSECURE_REPLAY_TARGETS: "true"
+
       # OAuth (configure with your own credentials or leave empty)
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
@@ -55,6 +59,10 @@ services:
       MAIL_FROM_ADDRESS: noreply@webhooktrap.dev
     ports:
       - "3333:3333"
+    extra_hosts:
+      # Lets the container reach an app running on the host machine via
+      # host.docker.internal (built in on Docker Desktop; needs this on Linux).
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
