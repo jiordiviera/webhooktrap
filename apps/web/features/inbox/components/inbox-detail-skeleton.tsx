@@ -1,4 +1,4 @@
-import { Skeleton } from '@workspace/ui/components/skeleton'
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
 function PanelHeaderSkeleton() {
   return (
@@ -6,7 +6,7 @@ function PanelHeaderSkeleton() {
       <Skeleton className="h-4 w-24 rounded-md" />
       <Skeleton className="h-7 w-20 rounded-lg" />
     </div>
-  )
+  );
 }
 
 function JsonBlockSkeleton({ lines = 4 }: { lines?: number }) {
@@ -20,12 +20,15 @@ function JsonBlockSkeleton({ lines = 4 }: { lines?: number }) {
         />
       ))}
     </div>
-  )
+  );
 }
 
 export function EventInspectorSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card" aria-busy="true">
+    <div
+      className="overflow-hidden rounded-xl border border-border bg-card"
+      aria-busy="true"
+    >
       <PanelHeaderSkeleton />
       <div className="space-y-5 p-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -43,12 +46,15 @@ export function EventInspectorSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function ReplayPanelSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card" aria-busy="true">
+    <div
+      className="overflow-hidden rounded-xl border border-border bg-card"
+      aria-busy="true"
+    >
       <div className="space-y-2 border-b border-border px-4 py-3">
         <Skeleton className="h-4 w-16 rounded-md" />
         <Skeleton className="h-3 w-56 max-w-full rounded-md" />
@@ -61,12 +67,15 @@ export function ReplayPanelSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function EventsTableSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card" aria-busy="true">
+    <div
+      className="overflow-hidden rounded-xl border border-border bg-card"
+      aria-busy="true"
+    >
       <div className="border-b border-border px-4 py-3">
         <Skeleton className="h-8 w-full max-w-xs rounded-lg" />
       </div>
@@ -84,12 +93,16 @@ function EventsTableSkeleton() {
         <Skeleton className="h-8 w-32 rounded-lg" />
       </div>
     </div>
-  )
+  );
 }
 
 export function InboxDetailSkeleton() {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6" aria-busy="true" aria-label="Loading inbox">
+    <div
+      className="mx-auto flex w-full max-w-6xl flex-col gap-6"
+      aria-busy="true"
+      aria-label="Loading inbox"
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 space-y-3">
           <Skeleton className="h-8 w-24 rounded-lg" />
@@ -122,5 +135,5 @@ export function InboxDetailSkeleton() {
         </section>
       </div>
     </div>
-  )
+  );
 }

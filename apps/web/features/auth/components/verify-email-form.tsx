@@ -80,9 +80,13 @@ export function VerifyEmailForm() {
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError) {
-        form.setError("otp", { message: err.message || "Invalid code. Try again." });
+        form.setError("otp", {
+          message: err.message || "Invalid code. Try again.",
+        });
       } else {
-        form.setError("otp", { message: "Verification failed. Please try again." });
+        form.setError("otp", {
+          message: "Verification failed. Please try again.",
+        });
       }
     }
   }
@@ -90,7 +94,9 @@ export function VerifyEmailForm() {
   if (status === "loading") {
     return (
       <div className="flex flex-col gap-6">
-        <p className="text-sm text-muted-foreground">Preparing verification...</p>
+        <p className="text-sm text-muted-foreground">
+          Preparing verification...
+        </p>
       </div>
     );
   }
@@ -141,10 +147,7 @@ export function VerifyEmailForm() {
         <span className="font-medium text-foreground">{user?.email}</span>.
       </p>
 
-      <form
-        id="verify-email-form"
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
+      <form id="verify-email-form" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
           <Controller
             name="otp"
@@ -193,9 +196,7 @@ export function VerifyEmailForm() {
             type="submit"
             form="verify-email-form"
             className="h-10 w-full"
-            disabled={
-              form.formState.isSubmitting || otpValue.length < 6
-            }
+            disabled={form.formState.isSubmitting || otpValue.length < 6}
           >
             {form.formState.isSubmitting ? "Verifying…" : "Verify email"}
           </Button>

@@ -1,27 +1,32 @@
-'use client'
+"use client";
 
-import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react'
-import { Button } from '@workspace/ui/components/button'
-import { Label } from '@workspace/ui/components/label'
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
+} from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { Label } from "@workspace/ui/components/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@workspace/ui/components/select'
-import { DEFAULT_PAGE_SIZE_OPTIONS } from '@/features/data-table/utils'
+} from "@workspace/ui/components/select";
+import { DEFAULT_PAGE_SIZE_OPTIONS } from "@/features/data-table/utils";
 
 type DataTablePaginationProps = {
-  page: number
-  pageCount: number
-  pageSize: number
-  total: number
-  pageSizeOptions?: number[]
-  onPageChangeAction: (page: number) => void
-  onPageSizeChangeAction: (pageSize: number) => void
-  selectedCount?: number
-}
+  page: number;
+  pageCount: number;
+  pageSize: number;
+  total: number;
+  pageSizeOptions?: number[];
+  onPageChangeAction: (page: number) => void;
+  onPageSizeChangeAction: (pageSize: number) => void;
+  selectedCount?: number;
+};
 
 export function DataTablePagination({
   page,
@@ -33,10 +38,10 @@ export function DataTablePagination({
   onPageSizeChangeAction,
   selectedCount,
 }: DataTablePaginationProps) {
-  if (total === 0 && !selectedCount) return null
+  if (total === 0 && !selectedCount) return null;
 
-  const from = total > 0 ? (page - 1) * pageSize + 1 : 0
-  const to = Math.min(page * pageSize, total)
+  const from = total > 0 ? (page - 1) * pageSize + 1 : 0;
+  const to = Math.min(page * pageSize, total);
 
   return (
     <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -54,7 +59,10 @@ export function DataTablePagination({
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="hidden items-center gap-2 sm:flex">
-          <Label htmlFor="rows-per-page" className="text-sm text-muted-foreground">
+          <Label
+            htmlFor="rows-per-page"
+            className="text-sm text-muted-foreground"
+          >
             Rows
           </Label>
           <Select
@@ -128,5 +136,5 @@ export function DataTablePagination({
         </div>
       </div>
     </div>
-  )
+  );
 }

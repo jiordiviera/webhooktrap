@@ -125,9 +125,7 @@ export function ReplayPanel({
                 ) : null}
                 {replay.responseHeaders ? (
                   <div className="mt-3">
-                    <p className="mb-1.5 font-medium">
-                      Response headers
-                    </p>
+                    <p className="mb-1.5 font-medium">Response headers</p>
                     <JsonBlock value={replay.responseHeaders} />
                   </div>
                 ) : null}

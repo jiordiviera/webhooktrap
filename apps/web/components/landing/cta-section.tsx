@@ -1,32 +1,36 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
-import { IconArrowRight } from '@tabler/icons-react'
-import { Button } from '@workspace/ui/components/button'
-import { CreateInboxCta } from '@/app/components/create-inbox-cta'
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { IconArrowRight } from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { CreateInboxCta } from "@/app/components/create-inbox-cta";
 
 export function CtaSection() {
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) setIsVisible(true)
+        if (entry?.isIntersecting) setIsVisible(true);
       },
-      { threshold: 0.2 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
+      { threshold: 0.2 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section id="cta" ref={sectionRef} className="relative scroll-mt-24 py-24 lg:py-32">
+    <section
+      id="cta"
+      ref={sectionRef}
+      className="relative scroll-mt-24 py-24 lg:py-32"
+    >
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div
           className={`relative border border-border bg-card transition-all duration-1000 ${
-            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           }`}
         >
           <div className="relative z-10 px-8 py-16 lg:px-16 lg:py-24">
@@ -37,8 +41,8 @@ export function CtaSection() {
                 is already on its way.
               </h2>
               <p className="mb-10 max-w-xl text-xl leading-relaxed text-muted-foreground">
-                Open an inbox in seconds. Point your provider at the ingest URL. Inspect, replay,
-                and see the response.
+                Open an inbox in seconds. Point your provider at the ingest URL.
+                Inspect, replay, and see the response.
               </p>
               <CreateInboxCta showSecondaryLink={false} />
               <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -48,7 +52,9 @@ export function CtaSection() {
                     <IconArrowRight className="ml-2 size-4" />
                   </Link>
                 </Button>
-                <p className="text-sm text-muted-foreground">Anonymous inboxes last 48 hours</p>
+                <p className="text-sm text-muted-foreground">
+                  Anonymous inboxes last 48 hours
+                </p>
               </div>
             </div>
           </div>
@@ -57,5 +63,5 @@ export function CtaSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

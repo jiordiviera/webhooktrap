@@ -20,19 +20,19 @@ hookscope/
 
 Voir le document détaillé : [09-stack.md](./09-stack.md).
 
-| Couche | Technologie |
-|--------|-------------|
-| Monorepo | pnpm + Turborepo |
-| API | AdonisJS 6 (TypeScript) |
-| Web | Next.js 15 + Tailwind 4 + shadcn/ui |
-| ORM | Lucid |
-| Validation | VineJS (API) + Zod (web, `packages/validators`) |
-| Realtime | Polling (MVP) — pas de Redis |
-| Queue | BullMQ — **post-MVP** (+ Upstash si besoin) |
-| DB | PostgreSQL 16 — **native ou Neon, pas de Docker** |
-| IDs | ULID |
-| Tests | Japa (API) + Vitest (web) |
-| Deploy | Web → Vercel, API → VPS (Caddy), DB → Neon |
+| Couche     | Technologie                                       |
+| ---------- | ------------------------------------------------- |
+| Monorepo   | pnpm + Turborepo                                  |
+| API        | AdonisJS 6 (TypeScript)                           |
+| Web        | Next.js 15 + Tailwind 4 + shadcn/ui               |
+| ORM        | Lucid                                             |
+| Validation | VineJS (API) + Zod (web, `packages/validators`)   |
+| Realtime   | Polling (MVP) — pas de Redis                      |
+| Queue      | BullMQ — **post-MVP** (+ Upstash si besoin)       |
+| DB         | PostgreSQL 16 — **native ou Neon, pas de Docker** |
+| IDs        | ULID                                              |
+| Tests      | Japa (API) + Vitest (web)                         |
+| Deploy     | Web → Vercel, API → VPS (Caddy), DB → Neon        |
 
 ## Principes
 
@@ -71,6 +71,7 @@ User/CLI → POST /api/events/:id/replay { url }
 ### Limitation MVP — localhost
 
 Le replay part **du serveur Webhook Trap**. `localhost` ne fonctionne que si :
+
 - L'app est sur une URL **publique** (staging, ngrok, etc.)
 - Ou tunnel natif (V2)
 
@@ -88,11 +89,11 @@ api.webhooktrap.dev          → API (optionnel)
 
 ## Recyclage PulseSend
 
-| Composant PulseSend | Webhook Trap |
-|---------------------|-----------|
-| Multi-tenant / teams | ✓ |
-| API keys | ✓ |
-| Dashboard Next.js | ✓ |
-| Events append-only | ✓ |
-| Queues | ✓ (replays async) |
-| SMTP / email | ✗ |
+| Composant PulseSend  | Webhook Trap      |
+| -------------------- | ----------------- |
+| Multi-tenant / teams | ✓                 |
+| API keys             | ✓                 |
+| Dashboard Next.js    | ✓                 |
+| Events append-only   | ✓                 |
+| Queues               | ✓ (replays async) |
+| SMTP / email         | ✗                 |

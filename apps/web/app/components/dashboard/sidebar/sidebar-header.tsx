@@ -1,14 +1,17 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { SidebarHeader } from '@workspace/ui/components/sidebar'
-import { productName } from '@/lib/config'
+import Image from "next/image";
+import Link from "next/link";
+import { SidebarHeader } from "@workspace/ui/components/sidebar";
+import { productName } from "@/lib/config";
 
 export function DashboardSidebarHeader() {
   return (
     <SidebarHeader className="gap-3 p-4">
-      <Link href="/" className="flex items-center gap-3 rounded-xl p-1 transition-opacity hover:opacity-90">
+      <Link
+        href="/"
+        className="flex items-center gap-3 rounded-xl p-1 transition-opacity hover:opacity-90"
+      >
         <Image
           src="/logo.png"
           alt=""
@@ -18,12 +21,14 @@ export function DashboardSidebarHeader() {
           aria-hidden
         />
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-sidebar-foreground">{productName}</span>
+          <span className="block truncate text-sm font-semibold text-sidebar-foreground">
+            {productName}
+          </span>
           <span className="block truncate text-[0.6875rem] text-sidebar-foreground/65">
             Inspect · Replay · Respond
           </span>
         </span>
       </Link>
     </SidebarHeader>
-  )
+  );
 }

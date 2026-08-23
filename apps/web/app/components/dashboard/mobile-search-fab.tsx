@@ -1,45 +1,47 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { IconSearch } from '@tabler/icons-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { IconSearch } from "@tabler/icons-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@workspace/ui/components/dialog'
-import { Button } from '@workspace/ui/components/button'
-import { Input } from '@workspace/ui/components/input'
-import { useDashboardNav } from '@/features/dashboard/context/dashboard-nav-context'
+} from "@workspace/ui/components/dialog";
+import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
+import { useDashboardNav } from "@/features/dashboard/context/dashboard-nav-context";
 
 export function MobileSearchFab() {
-  const router = useRouter()
-  const navItems = useDashboardNav()
+  const router = useRouter();
+  const navItems = useDashboardNav();
 
-  const [open, setOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const allPages = navItems.map((item) => ({
     label: item.label,
     href: item.href,
     icon: item.icon,
-  }))
+  }));
 
   const filteredPages = searchQuery.trim()
-    ? allPages.filter((page) => page.label.toLowerCase().includes(searchQuery.toLowerCase()))
-    : allPages
+    ? allPages.filter((page) =>
+        page.label.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : allPages;
 
   const handleSelect = (href: string) => {
-    setOpen(false)
-    setSearchQuery('')
-    router.push(href)
-  }
+    setOpen(false);
+    setSearchQuery("");
+    router.push(href);
+  };
 
   const handleOpenChange = (value: boolean) => {
-    setOpen(value)
-    if (!value) setSearchQuery('')
-  }
+    setOpen(value);
+    if (!value) setSearchQuery("");
+  };
 
   return (
     <>
@@ -77,10 +79,12 @@ export function MobileSearchFab() {
 
           <div className="max-h-72 overflow-y-auto py-1" role="listbox">
             {filteredPages.length === 0 ? (
-              <p className="text-muted-foreground px-4 py-8 text-center text-sm">No pages found.</p>
+              <p className="text-muted-foreground px-4 py-8 text-center text-sm">
+                No pages found.
+              </p>
             ) : (
               filteredPages.map((page) => {
-                const Icon = page.icon
+                const Icon = page.icon;
 
                 return (
                   <button
@@ -91,15 +95,19 @@ export function MobileSearchFab() {
                     className="hover:bg-accent flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors"
                     onClick={() => handleSelect(page.href)}
                   >
-                    <Icon className="text-muted-foreground size-4 shrink-0" stroke={1.8} aria-hidden />
+                    <Icon
+                      className="text-muted-foreground size-4 shrink-0"
+                      stroke={1.8}
+                      aria-hidden
+                    />
                     {page.label}
                   </button>
-                )
+                );
               })
             )}
           </div>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

@@ -1,121 +1,129 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { productName } from '@/lib/config'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
+import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { productName } from "@/lib/config";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
 import {
   IconBell,
   IconBuilding,
   IconCamera,
   IconCheck,
   IconShieldLock,
-} from '@tabler/icons-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/avatar'
-import { Button } from '@workspace/ui/components/button'
+} from "@tabler/icons-react";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
+import { Button } from "@workspace/ui/components/button";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@workspace/ui/components/field'
-import { Input } from '@workspace/ui/components/input'
-import { useAuth } from '@/contexts/auth-context'
-import { useMediaUpload } from '@/hooks/use-media-upload'
-import { ApiError } from '@/lib/api'
-import { resolveAvatarSrc } from '@/lib/avatar'
-import { updateProfile } from '@/lib/profile'
-import { type ProfileValues, profileSchema } from '@/lib/schemas/profile'
-import { TwoFactorSection } from './two-factor-section'
+} from "@workspace/ui/components/field";
+import { Input } from "@workspace/ui/components/input";
+import { useAuth } from "@/contexts/auth-context";
+import { useMediaUpload } from "@/hooks/use-media-upload";
+import { ApiError } from "@/lib/api";
+import { resolveAvatarSrc } from "@/lib/avatar";
+import { updateProfile } from "@/lib/profile";
+import { type ProfileValues, profileSchema } from "@/lib/schemas/profile";
+import { TwoFactorSection } from "./two-factor-section";
 
-type SectionId = 'account' | 'security' | 'notifications'
+type SectionId = "account" | "security" | "notifications";
 
 interface Section {
-  id: SectionId
-  label: string
-  icon: typeof IconBuilding
+  id: SectionId;
+  label: string;
+  icon: typeof IconBuilding;
 }
 
 const sections: Section[] = [
-  { id: 'account', label: 'Account', icon: IconBuilding },
-  { id: 'security', label: 'Security', icon: IconShieldLock },
-  { id: 'notifications', label: 'Notifications', icon: IconBell },
-]
+  { id: "account", label: "Account", icon: IconBuilding },
+  { id: "security", label: "Security", icon: IconShieldLock },
+  { id: "notifications", label: "Notifications", icon: IconBell },
+];
 
 function formatMemberSince(createdAt?: string) {
-  if (!createdAt) return '\u2014'
-  return new Intl.DateTimeFormat('en', {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(createdAt))
+  if (!createdAt) return "\u2014";
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(createdAt));
 }
 
 export function SettingsPage() {
-  const { user, setUser, refreshProfile } = useAuth()
-  const { upload, isUploading, error: uploadError } = useMediaUpload()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [activeSection, setActiveSection] = useState<SectionId>('account')
-  const [saveMessage, setSaveMessage] = useState<string | null>(null)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const { user, setUser, refreshProfile } = useAuth();
+  const { upload, isUploading, error: uploadError } = useMediaUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeSection, setActiveSection] = useState<SectionId>("account");
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     values: {
-      fullName: user?.fullName?.trim() || user?.email.split('@')[0] || '',
+      fullName: user?.fullName?.trim() || user?.email.split("@")[0] || "",
     },
-  })
+  });
 
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '') as SectionId
+    const hash = window.location.hash.replace("#", "") as SectionId;
     if (hash && sections.some((s) => s.id === hash)) {
-      setActiveSection(hash)
+      setActiveSection(hash);
     }
-  }, [])
+  }, []);
 
   const handleNavClick = useCallback((sectionId: SectionId) => {
-    setActiveSection(sectionId)
-    window.history.replaceState(null, '', `#${sectionId}`)
-  }, [])
+    setActiveSection(sectionId);
+    window.history.replaceState(null, "", `#${sectionId}`);
+  }, []);
 
   async function onSubmit(values: ProfileValues) {
-    setSaveMessage(null)
-    setSaveError(null)
+    setSaveMessage(null);
+    setSaveError(null);
     try {
-      const updated = await updateProfile({ fullName: values.fullName })
-      setUser(updated)
-      setSaveMessage('Profile updated.')
+      const updated = await updateProfile({ fullName: values.fullName });
+      setUser(updated);
+      setSaveMessage("Profile updated.");
     } catch (error) {
-      setSaveError(error instanceof ApiError ? error.message : 'Could not save profile.')
+      setSaveError(
+        error instanceof ApiError ? error.message : "Could not save profile.",
+      );
     }
   }
 
   async function onAvatarSelected(file: File | undefined) {
-    if (!file || !user) return
-    setSaveMessage(null)
-    setSaveError(null)
+    if (!file || !user) return;
+    setSaveMessage(null);
+    setSaveError(null);
     const media = await upload({
-      modelType: 'users',
+      modelType: "users",
       modelId: String(user.id),
-      collection: 'avatar',
+      collection: "avatar",
       file,
-    })
+    });
     if (media) {
-      await refreshProfile()
-      setSaveMessage('Avatar updated.')
+      await refreshProfile();
+      setSaveMessage("Avatar updated.");
     }
   }
 
-  if (!user) return null
+  if (!user) return null;
 
-  const displayName = user.fullName ?? user.email
-  const avatarSrc = resolveAvatarSrc(user.avatar)
+  const displayName = user.fullName ?? user.email;
+  const avatarSrc = resolveAvatarSrc(user.avatar);
 
   return (
     <div className="mx-auto w-full max-w-5xl">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Settings
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Manage your account, security, and notification preferences.
         </p>
@@ -136,7 +144,7 @@ export function SettingsPage() {
       <div className="mt-4 flex gap-10 lg:gap-14 sm:mt-8">
         <nav className="sticky top-24 hidden h-fit w-44 shrink-0 space-y-1 sm:block">
           {sections.map((section) => {
-            const Icon = section.icon
+            const Icon = section.icon;
             return (
               <button
                 key={section.id}
@@ -148,12 +156,12 @@ export function SettingsPage() {
                 <Icon className="size-4 shrink-0" stroke={1.8} />
                 {section.label}
               </button>
-            )
+            );
           })}
         </nav>
 
         <div className="min-w-0 flex-1">
-          {activeSection === 'account' && (
+          {activeSection === "account" && (
             <div className="space-y-8">
               <section className="rounded-2xl border border-border bg-card">
                 <div className="border-b border-border px-6 py-5">
@@ -169,7 +177,11 @@ export function SettingsPage() {
                 <div className="flex flex-col gap-8 px-6 py-6">
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                     <Avatar className="size-20 rounded-2xl ring-1 ring-border">
-                      <AvatarImage src={avatarSrc} alt={displayName} className="object-cover" />
+                      <AvatarImage
+                        src={avatarSrc}
+                        alt={displayName}
+                        className="object-cover"
+                      />
                       <AvatarFallback className="rounded-2xl text-lg font-semibold">
                         {user.initials}
                       </AvatarFallback>
@@ -177,8 +189,12 @@ export function SettingsPage() {
 
                     <div className="flex flex-col gap-3">
                       <div>
-                        <p className="text-sm font-medium text-foreground">Profile photo</p>
-                        <p className="text-sm text-muted-foreground">JPG, PNG or WebP. Max 2 MB.</p>
+                        <p className="text-sm font-medium text-foreground">
+                          Profile photo
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          JPG, PNG or WebP. Max 2 MB.
+                        </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-3">
                         <input
@@ -187,8 +203,8 @@ export function SettingsPage() {
                           accept="image/jpeg,image/png,image/webp"
                           className="sr-only"
                           onChange={(event) => {
-                            void onAvatarSelected(event.target.files?.[0])
-                            event.target.value = ''
+                            void onAvatarSelected(event.target.files?.[0]);
+                            event.target.value = "";
                           }}
                         />
                         <Button
@@ -198,23 +214,41 @@ export function SettingsPage() {
                           disabled={isUploading}
                           onClick={() => fileInputRef.current?.click()}
                         >
-                          <IconCamera className="size-4" stroke={1.8} aria-hidden />
-                          {isUploading ? 'Uploading\u2026' : 'Change photo'}
+                          <IconCamera
+                            className="size-4"
+                            stroke={1.8}
+                            aria-hidden
+                          />
+                          {isUploading ? "Uploading\u2026" : "Change photo"}
                         </Button>
                       </div>
-                      {uploadError ? <p className="text-sm text-destructive">{uploadError}</p> : null}
+                      {uploadError ? (
+                        <p className="text-sm text-destructive">
+                          {uploadError}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
 
-                  <form id="profile-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <form
+                    id="profile-form"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
                     <FieldGroup>
                       <Controller
                         name="fullName"
                         control={form.control}
                         render={({ field, fieldState }) => (
                           <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="fullName">Display name</FieldLabel>
-                            <Input id="fullName" autoComplete="name" {...field} />
+                            <FieldLabel htmlFor="fullName">
+                              Display name
+                            </FieldLabel>
+                            <Input
+                              id="fullName"
+                              autoComplete="name"
+                              {...field}
+                            />
                             <FieldDescription>
                               Used in the sidebar, header, and shared views.
                             </FieldDescription>
@@ -227,7 +261,12 @@ export function SettingsPage() {
 
                       <Field>
                         <FieldLabel htmlFor="email">Email</FieldLabel>
-                        <Input id="email" value={user.email} disabled readOnly />
+                        <Input
+                          id="email"
+                          value={user.email}
+                          disabled
+                          readOnly
+                        />
                         <FieldDescription>
                           Email changes are not supported yet.
                         </FieldDescription>
@@ -238,9 +277,13 @@ export function SettingsPage() {
                       <Button
                         type="submit"
                         form="profile-form"
-                        disabled={form.formState.isSubmitting || !form.formState.isDirty}
+                        disabled={
+                          form.formState.isSubmitting || !form.formState.isDirty
+                        }
                       >
-                        {form.formState.isSubmitting ? 'Saving\u2026' : 'Save changes'}
+                        {form.formState.isSubmitting
+                          ? "Saving\u2026"
+                          : "Save changes"}
                       </Button>
                       {saveMessage ? (
                         <p className="inline-flex items-center gap-1.5 text-sm text-primary">
@@ -248,14 +291,18 @@ export function SettingsPage() {
                           {saveMessage}
                         </p>
                       ) : null}
-                      {saveError ? <p className="text-sm text-destructive">{saveError}</p> : null}
+                      {saveError ? (
+                        <p className="text-sm text-destructive">{saveError}</p>
+                      ) : null}
                     </div>
                   </form>
                 </div>
               </section>
 
               <section className="rounded-2xl border border-border bg-card px-6 py-5">
-                <h2 className="text-sm font-semibold text-foreground">Details</h2>
+                <h2 className="text-sm font-semibold text-foreground">
+                  Details
+                </h2>
                 <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div>
                     <dt className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
@@ -269,18 +316,18 @@ export function SettingsPage() {
                     <dt className="text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase">
                       User ID
                     </dt>
-                    <dd className="mt-1 font-mono text-sm text-foreground">{user.id}</dd>
+                    <dd className="mt-1 font-mono text-sm text-foreground">
+                      {user.id}
+                    </dd>
                   </div>
                 </dl>
               </section>
             </div>
           )}
 
-          {activeSection === 'security' && (
-            <TwoFactorSection />
-          )}
+          {activeSection === "security" && <TwoFactorSection />}
 
-          {activeSection === 'notifications' && (
+          {activeSection === "notifications" && (
             <section className="rounded-2xl border border-border bg-card">
               <div className="border-b border-border px-6 py-5">
                 <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -292,7 +339,10 @@ export function SettingsPage() {
                 </p>
               </div>
               <div className="px-6 py-12 text-center">
-                <IconBell className="mx-auto mb-3 size-8 text-muted-foreground" stroke={1.5} />
+                <IconBell
+                  className="mx-auto mb-3 size-8 text-muted-foreground"
+                  stroke={1.5}
+                />
                 <p className="text-sm text-muted-foreground">Coming soon.</p>
               </div>
             </section>
@@ -300,5 +350,5 @@ export function SettingsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

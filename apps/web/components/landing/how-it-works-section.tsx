@@ -1,21 +1,23 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { siteUrl as webOrigin } from '@/lib/config'
+import { useEffect, useRef, useState } from "react";
+import { siteUrl as webOrigin } from "@/lib/config";
 
 const steps = [
   {
-    number: 'I',
-    title: 'Receive',
-    description: 'Drop the ingest URL into Stripe, GitHub, Shopify, or curl. Every byte lands in one inbox.',
+    number: "I",
+    title: "Receive",
+    description:
+      "Drop the ingest URL into Stripe, GitHub, Shopify, or curl. Every byte lands in one inbox.",
     code: `curl -X POST ${webOrigin}/i/xK9m2pQ7nR4a \\
   -H "Content-Type: application/json" \\
   -d '{"type":"checkout.session.completed"}'`,
   },
   {
-    number: 'II',
-    title: 'Inspect',
-    description: 'Read the payload as it arrived. Copy JSON, rebuild cURL, share a read-only link.',
+    number: "II",
+    title: "Inspect",
+    description:
+      "Read the payload as it arrived. Copy JSON, rebuild cURL, share a read-only link.",
     code: `GET /i/xK9m2pQ7nR4a/events/evt_8f2a
 
 {
@@ -25,46 +27,47 @@ const steps = [
 }`,
   },
   {
-    number: 'III',
-    title: 'Replay',
-    description: 'Send the same event to localhost. See status, headers, latency, and response body.',
+    number: "III",
+    title: "Replay",
+    description:
+      "Send the same event to localhost. See status, headers, latency, and response body.",
     code: `POST /replay
   destination: http://localhost:7777/webhooks/stripe
 
 → 200 OK · 142ms
 ← { "received": true }`,
   },
-]
+];
 
 export function HowItWorksSection() {
-  const [activeStep, setActiveStep] = useState(0)
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef<HTMLDivElement>(null)
+  const [activeStep, setActiveStep] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) setIsVisible(true)
+        if (entry?.isIntersecting) setIsVisible(true);
       },
-      { threshold: 0.1 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
+      { threshold: 0.1 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [])
+      setActiveStep((prev) => (prev + 1) % steps.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-      <section
-        id="how-it-works"
-        ref={sectionRef}
-        className="relative scroll-mt-24 overflow-hidden bg-primary py-16 text-primary-foreground lg:py-32"
-      >
+    <section
+      id="how-it-works"
+      ref={sectionRef}
+      className="relative scroll-mt-24 overflow-hidden bg-primary py-16 text-primary-foreground lg:py-32"
+    >
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]">
         <div
           className="absolute inset-0"
@@ -82,13 +85,16 @@ export function HowItWorksSection() {
           </span>
           <h2
             className={`font-heading text-3xl tracking-tight transition-all duration-700 sm:text-4xl lg:text-6xl ${
-              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              isVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-4 opacity-0"
             }`}
           >
             Three moves.
             <br className="hidden sm:inline" />
             <span className="text-primary-foreground/55">
-              {' '}The whole product.
+              {" "}
+              The whole product.
             </span>
           </h2>
         </div>
@@ -101,19 +107,29 @@ export function HowItWorksSection() {
                 type="button"
                 onClick={() => setActiveStep(index)}
                 className={`w-full border-b border-primary-foreground/15 py-6 text-left transition-all duration-500 sm:py-8 ${
-                  activeStep === index ? 'opacity-100' : 'opacity-45 hover:opacity-70'
+                  activeStep === index
+                    ? "opacity-100"
+                    : "opacity-45 hover:opacity-70"
                 }`}
               >
                 <div className="flex items-start gap-6">
-                  <span className="font-heading text-2xl text-primary-foreground/30 sm:text-3xl">{step.number}</span>
+                  <span className="font-heading text-2xl text-primary-foreground/30 sm:text-3xl">
+                    {step.number}
+                  </span>
                   <div className="flex-1">
-                    <h3 className="font-heading mb-2 text-xl sm:mb-3 sm:text-2xl lg:text-3xl">{step.title}</h3>
-                    <p className="text-sm leading-relaxed text-primary-foreground/70 sm:text-base">{step.description}</p>
+                    <h3 className="font-heading mb-2 text-xl sm:mb-3 sm:text-2xl lg:text-3xl">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-primary-foreground/70 sm:text-base">
+                      {step.description}
+                    </p>
                     {activeStep === index && (
                       <div className="mt-4 h-px overflow-hidden bg-primary-foreground/20">
                         <div
                           className="h-full w-0 bg-primary-foreground"
-                          style={{ animation: 'landing-progress 5s linear forwards' }}
+                          style={{
+                            animation: "landing-progress 5s linear forwards",
+                          }}
                         />
                       </div>
                     )}
@@ -131,29 +147,37 @@ export function HowItWorksSection() {
                   <div className="size-2.5 rounded-full bg-primary-foreground/20 sm:size-3" />
                   <div className="size-2.5 rounded-full bg-primary-foreground/20 sm:size-3" />
                 </div>
-                <span className="text-[0.625rem] text-primary-foreground/45 sm:text-xs">inbox.ts</span>
+                <span className="text-[0.625rem] text-primary-foreground/45 sm:text-xs">
+                  inbox.ts
+                </span>
               </div>
               <div className="min-h-[200px] overflow-x-auto p-3 font-mono text-[0.625rem] sm:min-h-[280px] sm:p-8 sm:text-sm">
                 <pre className="text-primary-foreground/75">
-                  {(steps[activeStep] ?? steps[0]!).code.split('\n').map((line, lineIndex) => (
-                    <div key={`${activeStep}-${lineIndex}`} className="whitespace-pre leading-loose">
-                      <span className="inline-block w-6 select-none text-primary-foreground/25 sm:w-8">
-                        {lineIndex + 1}
-                      </span>
-                      {line}
-                    </div>
-                  ))}
+                  {(steps[activeStep] ?? steps[0]!).code
+                    .split("\n")
+                    .map((line, lineIndex) => (
+                      <div
+                        key={`${activeStep}-${lineIndex}`}
+                        className="whitespace-pre leading-loose"
+                      >
+                        <span className="inline-block w-6 select-none text-primary-foreground/25 sm:w-8">
+                          {lineIndex + 1}
+                        </span>
+                        {line}
+                      </div>
+                    ))}
                 </pre>
               </div>
               <div className="flex items-center gap-3 border-t border-primary-foreground/15 px-4 py-3 sm:px-6 sm:py-4">
                 <span className="size-1.5 animate-pulse rounded-full bg-signal sm:size-2" />
-                <span className="text-[0.625rem] text-primary-foreground/45 sm:text-xs">Live capture</span>
+                <span className="text-[0.625rem] text-primary-foreground/45 sm:text-xs">
+                  Live capture
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-
     </section>
-  )
+  );
 }

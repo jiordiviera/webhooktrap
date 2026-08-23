@@ -10,33 +10,33 @@ Le style visé (DreamBell → Webhook Trap) correspond à un **serif classique, 
 
 ## Style typographique (cible marque)
 
-| Élément | Recommandation |
-|---------|----------------|
-| **Famille** | Serif transitoire / classique (lisible, un peu premium, pas Times cheap) |
-| **Graisse** | Regular ou Medium pour tout le mot ; parfois SemiBold sur « Hook » seulement |
-| **Casse** | `Webhook Trap` — H majuscule, reste en minuscules (ou title case selon préférence) |
-| **Interlettrage** | Légèrement ouvert : `letter-spacing: 0.02em` à `0.06em` |
-| **Couleur clair** | Brun terracotta ~ `#6B4A3A` – `#7D5A45` |
-| **Couleur dark mode** | Crème ~ `#F5F0E8` – `#E8E0D5` |
+| Élément               | Recommandation                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| **Famille**           | Serif transitoire / classique (lisible, un peu premium, pas Times cheap)           |
+| **Graisse**           | Regular ou Medium pour tout le mot ; parfois SemiBold sur « Hook » seulement       |
+| **Casse**             | `Webhook Trap` — H majuscule, reste en minuscules (ou title case selon préférence) |
+| **Interlettrage**     | Légèrement ouvert : `letter-spacing: 0.02em` à `0.06em`                            |
+| **Couleur clair**     | Brun terracotta ~ `#6B4A3A` – `#7D5A45`                                            |
+| **Couleur dark mode** | Crème ~ `#F5F0E8` – `#E8E0D5`                                                      |
 
 ## Polices les plus proches
 
 ### Gratuites (Google Fonts) — recommandé pour Webhook Trap
 
-| Police | Usage | Note |
-|--------|-------|------|
-| **[Cormorant Garamond](https://fonts.google.com/specimen/Cormorant+Garamond)** | Wordmark, marketing | **La plus proche** d’un logo « DreamBell » élégant |
-| [Fraunces](https://fonts.google.com/specimen/Fraunces) | Alternative wordmark | Plus moderne / startup |
-| [Lora](https://fonts.google.com/specimen/Lora) | Corps UI + wordmark secondaire | Très équilibrée |
-| [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville) | Corps long | Sobre, lisible en petit |
+| Police                                                                         | Usage                          | Note                                               |
+| ------------------------------------------------------------------------------ | ------------------------------ | -------------------------------------------------- |
+| **[Cormorant Garamond](https://fonts.google.com/specimen/Cormorant+Garamond)** | Wordmark, marketing            | **La plus proche** d’un logo « DreamBell » élégant |
+| [Fraunces](https://fonts.google.com/specimen/Fraunces)                         | Alternative wordmark           | Plus moderne / startup                             |
+| [Lora](https://fonts.google.com/specimen/Lora)                                 | Corps UI + wordmark secondaire | Très équilibrée                                    |
+| [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville)       | Corps long                     | Sobre, lisible en petit                            |
 
 ### Recommandation pratique
 
-| Contexte | Police |
-|----------|--------|
-| **Wordmark / marketing** | Cormorant Garamond **600** (ou 500) |
-| **App / docs (corps)** | Lora ou Inter |
-| **Logo texte seul** | Cormorant Garamond — pas de sans-serif sur le nom |
+| Contexte                 | Police                                            |
+| ------------------------ | ------------------------------------------------- |
+| **Wordmark / marketing** | Cormorant Garamond **600** (ou 500)               |
+| **App / docs (corps)**   | Lora ou Inter                                     |
+| **Logo texte seul**      | Cormorant Garamond — pas de sans-serif sur le nom |
 
 ### Payantes (optionnel, plus « brand »)
 
@@ -47,11 +47,11 @@ Le style visé (DreamBell → Webhook Trap) correspond à un **serif classique, 
 
 ```css
 :root {
-  --hookscope-wordmark-light: #6B4A3A;
-  --hookscope-wordmark-light-alt: #7D5A45;
-  --hookscope-wordmark-dark: #F2EBE3;
-  --hookscope-wordmark-dark-alt: #E8E0D5;
-  --hookscope-cream-bg: #F5F0E8;
+  --hookscope-wordmark-light: #6b4a3a;
+  --hookscope-wordmark-light-alt: #7d5a45;
+  --hookscope-wordmark-dark: #f2ebe3;
+  --hookscope-wordmark-dark-alt: #e8e0d5;
+  --hookscope-cream-bg: #f5f0e8;
 }
 ```
 
@@ -60,28 +60,28 @@ Le style visé (DreamBell → Webhook Trap) correspond à un **serif classique, 
 Voir aussi `../branding/brand.css`.
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Lora:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Lora:wght@400;500&display=swap");
 
 .logo-wordmark {
-  font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+  font-family: "Cormorant Garamond", "Times New Roman", serif;
   font-weight: 600;
   font-size: 1.75rem;
   letter-spacing: 0.04em;
-  color: var(--hookscope-wordmark-light, #6B4A3A);
+  color: var(--hookscope-wordmark-light, #6b4a3a);
 }
 
 .logo-wordmark--dark {
-  color: var(--hookscope-wordmark-dark, #F2EBE3);
+  color: var(--hookscope-wordmark-dark, #f2ebe3);
 }
 
 /* Corps app / docs */
 .body-text {
-  font-family: 'Lora', Georgia, serif;
+  font-family: "Lora", Georgia, serif;
   font-weight: 400;
 }
 
 .ui-text {
-  font-family: ui-sans-serif, system-ui, 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, "Inter", sans-serif;
 }
 ```
 
@@ -89,23 +89,25 @@ Voir aussi `../branding/brand.css`.
 
 ```ts
 // apps/web — exemple next/font
-import { Cormorant_Garamond, Lora } from 'next/font/google'
+import { Cormorant_Garamond, Lora } from "next/font/google";
 
 export const wordmarkFont = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['500', '600'],
-  variable: '--font-wordmark',
-})
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-wordmark",
+});
 
 export const bodyFont = Lora({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-body',
-})
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-body",
+});
 ```
 
 ```html
-<span class="font-[family-name:var(--font-wordmark)] font-semibold tracking-wide text-[#6B4A3A]">
+<span
+  class="font-[family-name:var(--font-wordmark)] font-semibold tracking-wide text-[#6B4A3A]"
+>
   Webhook Trap
 </span>
 ```
@@ -121,20 +123,20 @@ Upload l’image du mot **DreamBell** ou **Webhook Trap** → nom commercial le 
 
 ## Résumé
 
-| Usage | Choix |
-|-------|--------|
+| Usage                            | Choix                           |
+| -------------------------------- | ------------------------------- |
 | Équivalent gratuit du PNG généré | **Cormorant Garamond SemiBold** |
-| Clair | `#6B4A3A` |
-| Dark | `#F2EBE3` |
-| Corps produit | Lora ou Inter |
+| Clair                            | `#6B4A3A`                       |
+| Dark                             | `#F2EBE3`                       |
+| Corps produit                    | Lora ou Inter                   |
 
 Ce n’est pas la police « officielle » des PNG Imagine, mais c’est le **meilleur équivalent reproductible** pour site, Figma et README.
 
 ## Assets logo
 
-| Fichier | Usage |
-|---------|--------|
+| Fichier                | Usage                                                  |
+| ---------------------- | ------------------------------------------------------ |
 | `../branding/logo.png` | Wordmark complet (Imagine) — header, README, marketing |
-| `../branding/icon.jpg` | Pictogramme / favicon source (Imagine) |
+| `../branding/icon.jpg` | Pictogramme / favicon source (Imagine)                 |
 
 Pour le favicon en prod : exporter `icon.jpg` en `.ico` / `favicon-32.png` ou recréer en SVG à partir du pictogramme.

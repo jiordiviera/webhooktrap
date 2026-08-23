@@ -5,6 +5,7 @@
 ## Local Development with Docker
 
 ### Prerequisites
+
 - Docker & Docker Compose
 - 2GB available RAM
 
@@ -22,6 +23,7 @@ docker compose up
 ```
 
 Visit:
+
 - **Web:** http://localhost:7777
 - **API:** http://localhost:3333
 
@@ -220,6 +222,7 @@ docker compose logs -f postgres  # Database logs
 ### Production (Railway/Fly)
 
 Use their built-in dashboards:
+
 - **Railway:** Dashboard → Logs tab
 - **Fly.io:** `flyctl logs -a your-app-name`
 
@@ -274,6 +277,7 @@ lsof -ti :3333 | xargs kill -9
 ### Database Connection Failed
 
 Check:
+
 - Postgres is running: `docker compose ps`
 - `DATABASE_URL` is correct
 - Network: `docker compose logs postgres`

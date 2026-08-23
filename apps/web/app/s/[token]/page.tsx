@@ -230,9 +230,7 @@ export default function SharedEventPage({
         >
           {productName}
         </Link>
-        <span className="text-xs text-muted-foreground">
-          Webhook debugger
-        </span>
+        <span className="text-xs text-muted-foreground">Webhook debugger</span>
       </div>
 
       {/* Hero: event identity + copy actions */}

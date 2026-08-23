@@ -14,7 +14,9 @@ async function handler(req: NextRequest) {
   };
 
   if (token) {
-    headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    headers["Authorization"] = token.startsWith("Bearer ")
+      ? token
+      : `Bearer ${token}`;
   }
 
   const accept = req.headers.get("accept");
@@ -59,4 +61,11 @@ async function handler(req: NextRequest) {
   }
 }
 
-export { handler as GET, handler as POST, handler as PATCH, handler as DELETE, handler as OPTIONS, handler as HEAD };
+export {
+  handler as GET,
+  handler as POST,
+  handler as PATCH,
+  handler as DELETE,
+  handler as OPTIONS,
+  handler as HEAD,
+};

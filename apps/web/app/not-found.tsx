@@ -1,5 +1,5 @@
-import Link from 'next/link'
-import { Button } from '@workspace/ui/components/button'
+import Link from "next/link";
+import { Button } from "@workspace/ui/components/button";
 
 export default function NotFound(): React.ReactElement {
   return (
@@ -9,7 +9,8 @@ export default function NotFound(): React.ReactElement {
           <div className="text-5xl font-semibold text-primary">404</div>
           <h1 className="text-xl font-semibold text-foreground">Not found</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            This route doesn&apos;t have a webhook inbox or has expired. Check the URL and try again.
+            This route doesn&apos;t have a webhook inbox or has expired. Check
+            the URL and try again.
           </p>
         </div>
 
@@ -26,7 +27,7 @@ export default function NotFound(): React.ReactElement {
 
         <div className="pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            Lost? Read the{' '}
+            Lost? Read the{" "}
             <a
               href="https://docs.webhooktrap.dev"
               target="_blank"
@@ -39,5 +40,5 @@ export default function NotFound(): React.ReactElement {
         </div>
       </div>
     </div>
-  )
+  );
 }

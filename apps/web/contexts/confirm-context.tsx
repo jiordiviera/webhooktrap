@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   createContext,
@@ -8,8 +8,8 @@ import {
   useRef,
   useState,
   type ReactNode,
-} from 'react'
-import { Button } from '@workspace/ui/components/button'
+} from "react";
+import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -17,55 +17,55 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@workspace/ui/components/dialog'
+} from "@workspace/ui/components/dialog";
 export type ConfirmOptions = {
-  title: string
-  description: ReactNode
-  confirmLabel?: string
-  cancelLabel?: string
-  destructive?: boolean
-}
+  title: string;
+  description: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  destructive?: boolean;
+};
 
 type ConfirmRequest = ConfirmOptions & {
-  open: boolean
-}
+  open: boolean;
+};
 
 type ConfirmContextValue = {
-  confirm: (options: ConfirmOptions) => Promise<boolean>
-}
+  confirm: (options: ConfirmOptions) => Promise<boolean>;
+};
 
-const ConfirmContext = createContext<ConfirmContextValue | null>(null)
+const ConfirmContext = createContext<ConfirmContextValue | null>(null);
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
-  const [request, setRequest] = useState<ConfirmRequest | null>(null)
-  const resolveRef = useRef<((value: boolean) => void) | null>(null)
+  const [request, setRequest] = useState<ConfirmRequest | null>(null);
+  const resolveRef = useRef<((value: boolean) => void) | null>(null);
 
   const settle = useCallback((result: boolean) => {
-    const resolve = resolveRef.current
-    if (!resolve) return
+    const resolve = resolveRef.current;
+    if (!resolve) return;
 
-    resolveRef.current = null
-    setRequest(null)
-    resolve(result)
-  }, [])
+    resolveRef.current = null;
+    setRequest(null);
+    resolve(result);
+  }, []);
 
   const confirm = useCallback((options: ConfirmOptions) => {
     return new Promise<boolean>((resolve) => {
-      resolveRef.current = resolve
-      setRequest({ ...options, open: true })
-    })
-  }, [])
+      resolveRef.current = resolve;
+      setRequest({ ...options, open: true });
+    });
+  }, []);
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
-        settle(false)
+        settle(false);
       }
     },
-    [settle]
-  )
+    [settle],
+  );
 
-  const value = useMemo(() => ({ confirm }), [confirm])
+  const value = useMemo(() => ({ confirm }), [confirm]);
 
   return (
     <ConfirmContext.Provider value={value}>
@@ -75,7 +75,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>{request.title}</DialogTitle>
-              {typeof request.description === 'string' ? (
+              {typeof request.description === "string" ? (
                 <DialogDescription>{request.description}</DialogDescription>
               ) : (
                 <DialogDescription asChild>
@@ -85,30 +85,34 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             </DialogHeader>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => settle(false)}>
-                {request.cancelLabel ?? 'Cancel'}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => settle(false)}
+              >
+                {request.cancelLabel ?? "Cancel"}
               </Button>
               <Button
                 type="button"
-                variant={request.destructive ? 'destructive' : 'default'}
+                variant={request.destructive ? "destructive" : "default"}
                 onClick={() => settle(true)}
               >
-                {request.confirmLabel ?? 'Confirm'}
+                {request.confirmLabel ?? "Confirm"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       ) : null}
     </ConfirmContext.Provider>
-  )
+  );
 }
 
 export function useConfirm() {
-  const context = useContext(ConfirmContext)
+  const context = useContext(ConfirmContext);
 
   if (!context) {
-    throw new Error('useConfirm must be used within ConfirmProvider')
+    throw new Error("useConfirm must be used within ConfirmProvider");
   }
 
-  return context.confirm
+  return context.confirm;
 }

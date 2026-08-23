@@ -1,28 +1,31 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import Link from 'next/link'
-import { Button } from '@workspace/ui/components/button'
+import { useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@workspace/ui/components/button";
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }): React.ReactElement {
   useEffect(() => {
-    console.error(error)
-  }, [error])
+    console.error(error);
+  }, [error]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-20 text-center">
       <div className="max-w-sm space-y-8">
         <div className="space-y-3">
           <div className="text-5xl font-semibold text-destructive">Error</div>
-          <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
+          <h1 className="text-xl font-semibold text-foreground">
+            Something went wrong
+          </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            An unexpected error occurred. Try refreshing the page or return to your inboxes.
+            An unexpected error occurred. Try refreshing the page or return to
+            your inboxes.
           </p>
         </div>
 
@@ -39,7 +42,7 @@ export default function Error({
 
         <div className="pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            Need help?{' '}
+            Need help?{" "}
             <a
               href="https://docs.webhooktrap.dev"
               target="_blank"
@@ -52,5 +55,5 @@ export default function Error({
         </div>
       </div>
     </div>
-  )
+  );
 }

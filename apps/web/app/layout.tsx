@@ -60,7 +60,7 @@ export default function RootLayout({
       className={cn(
         bricolageGrotesque.variable,
         jetbrainsMono.variable,
-        "font-sans"
+        "font-sans",
       )}
       suppressHydrationWarning
     >

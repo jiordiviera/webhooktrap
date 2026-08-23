@@ -5,18 +5,21 @@
 **Problème**: La page Settings scrollait toutes les sections (scroll-spy avec IntersectionObserver). Pas assez lisible, mélangeait `profile` et `settings`.
 
 **Changement d'architecture :**
+
 - Scroll-spy et IntersectionObserver retirés
 - Navigation par section **active unique** (une section visible à la fois)
 - URL hash (`#account`, `#security`, `#notifications`) pour navigation directe
 - Sidebar gauche sticky pour basculer entre sections
 
 **Route `/profile` supprimée :**
+
 - Le contenu de ProfilePage a été intégré dans la section **Account** des Settings
 - `features/profile/components/profile-page.tsx` supprimé
 - `app/(workspace)/profile/page.tsx` supprimé
 - Le dropdown utilisateur pointe maintenant vers `/settings#account`
 
 **Account section** (nouveau) :
+
 - Avatar upload (via `useMediaUpload`, accepte jpg/png/webp)
 - Formulaire display name (react-hook-form + zod, validation `profileSchema`)
 - Email (readonly), Member since, User ID

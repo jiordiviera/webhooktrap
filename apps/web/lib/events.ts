@@ -1,89 +1,95 @@
-import type { DataTableParams } from '@/features/data-table/types'
-import type { EventSummaryDTO, EventDetailDTO, ReplayDTO } from '@workspace/types'
-import { apiFetch } from '@/lib/api'
-import { buildListQueryString, parsePaginatedResponse } from '@/lib/list-query'
+import type { DataTableParams } from "@/features/data-table/types";
+import type {
+  EventSummaryDTO,
+  EventDetailDTO,
+  ReplayDTO,
+} from "@workspace/types";
+import { apiFetch } from "@/lib/api";
+import { buildListQueryString, parsePaginatedResponse } from "@/lib/list-query";
 
-export type EventSummary = EventSummaryDTO
-export type EventDetail = EventDetailDTO
-export type ReplayRecord = ReplayDTO
+export type EventSummary = EventSummaryDTO;
+export type EventDetail = EventDetailDTO;
+export type ReplayRecord = ReplayDTO;
 
 type EventsListResponse = {
   data: {
-    events: EventSummaryDTO[]
-  }
-}
+    events: EventSummaryDTO[];
+  };
+};
 
 type EventDetailResponse = {
   data: {
-    event: EventDetailDTO
-  }
-}
+    event: EventDetailDTO;
+  };
+};
 
 type ReplayResponse = {
   data: {
-    replay: ReplayDTO
-  }
-}
+    replay: ReplayDTO;
+  };
+};
 
 type ReplaysListResponse = {
   data: {
-    replays: ReplayDTO[]
-  }
-}
+    replays: ReplayDTO[];
+  };
+};
 
 export async function fetchInboxEvents(inboxId: string) {
   const page = await fetchInboxEventsPage(inboxId, {
     page: 1,
     pageSize: 100,
-    sort: { id: 'receivedAt', desc: true },
+    sort: { id: "receivedAt", desc: true },
     filters: {},
-    search: '',
-  })
-  return page.rows
+    search: "",
+  });
+  return page.rows;
 }
 
 export async function fetchInboxEventsPage(
   inboxId: string,
-  params: DataTableParams
+  params: DataTableParams,
 ) {
-  const body = await apiFetch<EventsListResponse & { data: { meta?: unknown } }>(
-    `/inboxes/${inboxId}/events${buildListQueryString(params)}`
-  )
-  return parsePaginatedResponse<'events', EventSummaryDTO>(body, 'events')
+  const body = await apiFetch<
+    EventsListResponse & { data: { meta?: unknown } }
+  >(`/inboxes/${inboxId}/events${buildListQueryString(params)}`);
+  return parsePaginatedResponse<"events", EventSummaryDTO>(body, "events");
 }
 
 export async function fetchEvent(eventId: string) {
-  const body = await apiFetch<EventDetailResponse>(`/events/${eventId}`)
-  return body.data.event
+  const body = await apiFetch<EventDetailResponse>(`/events/${eventId}`);
+  return body.data.event;
 }
 
 export async function replayEvent(
   eventId: string,
-  input?: { targetUrl?: string }
+  input?: { targetUrl?: string },
 ) {
   const body = await apiFetch<ReplayResponse>(`/events/${eventId}/replay`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(
-      input?.targetUrl ? { target_url: input.targetUrl } : {}
+      input?.targetUrl ? { target_url: input.targetUrl } : {},
     ),
-  })
-  return body.data.replay
+  });
+  return body.data.replay;
 }
 
 export async function fetchEventReplays(eventId: string) {
-  const body = await apiFetch<ReplaysListResponse>(`/events/${eventId}/replays`)
-  return body.data.replays
+  const body = await apiFetch<ReplaysListResponse>(
+    `/events/${eventId}/replays`,
+  );
+  return body.data.replays;
 }
 
 type ShareTokenResponse = {
   data: {
-    token: string
-  }
-}
+    token: string;
+  };
+};
 
 export async function generateShareToken(eventId: string) {
   const body = await apiFetch<ShareTokenResponse>(`/events/${eventId}/share`, {
-    method: 'POST',
-  })
-  return body.data.token
+    method: "POST",
+  });
+  return body.data.token;
 }

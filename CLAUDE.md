@@ -64,6 +64,7 @@ AdonisJS 6, TypeScript strict, ESM with `#alias/*` subpath imports (see `imports
 **Request flow**: Controller (`app/controllers`) → Service (`app/services`) → Model (`app/models`, Lucid `@belongsTo`/`@hasMany`). Transformers (`app/transformers`) serialize models for responses. Policy objects (e.g. `InboxPolicy`) gate CRUD by ownership — check these before adding new mutating routes.
 
 **Routes** (`start/routes.ts`, plus `start/routes/2fa.ts`):
+
 - `POST/GET/PUT/PATCH/DELETE /i/:inboxId` — public ingest, always returns `{ received: true }` even for unknown/expired inbox or oversized body (never leak inbox existence via status code)
 - `/api/v1/auth/*`, `/api/v1/account/*` — auth (access tokens, GitHub/Google OAuth via Ally, TOTP 2FA via `@nulix/adonis-2fa`)
 - `/api/v1/inboxes/*`, `/api/v1/events/*` — dashboard CRUD, replay, share links
@@ -72,6 +73,7 @@ AdonisJS 6, TypeScript strict, ESM with `#alias/*` subpath imports (see `imports
 **ID formats are enforced at the route level** — reuse these regexes when adding routes: inbox = `/^[A-Za-z0-9]{12}$/` (nanoid(12)), event = `/^evt_[0-9A-Z]{26}$/` (`evt_${ulid()}`), replay = `rpl_${ulid()}`.
 
 **Security & replay constraints**:
+
 - `authorization` and `cookie` headers are sanitized to `[REDACTED]` before storage
 - Replay uses native `fetch()` with **30s timeout** (non-negotiable for API reliability)
 - Blocks forwarding of `connection`/`transfer-encoding`/`upgrade` headers (HTTP/2 incompatible)
@@ -84,6 +86,7 @@ AdonisJS 6, TypeScript strict, ESM with `#alias/*` subpath imports (see `imports
 Japa (`@japa/runner` + `@japa/api-client` + `@japa/plugin-adonisjs`), config in `apps/api/tests/bootstrap.ts`. Suites: `tests/unit/` (2s timeout) and `tests/functional/` (30s timeout, boots the HTTP server). Test env forces SQLite in-memory, `SESSION_DRIVER=memory`, and stubs R2/S3 vars — no real network/DB needed.
 
 Patterns seen throughout the suite:
+
 - Each functional test group calls `testUtils.db().migrate()` in its `group.setup()`
 - Create auth: `User.create()` then `User.accessTokens.create()`, send as `Authorization: Bearer ${token.value!.release()}`
 - Use `client.get/post/patch/delete(...)` from `@japa/api-client`, assert via `response.assertStatus()` / `response.assertBodyContains()`
@@ -100,13 +103,14 @@ In production (VPS), managed via PM2 with `pm2:start:worker` / `pm2:logs:worker`
 
 ## Web (`apps/web`)
 
-Next.js 16.2 App Router on port 7777. Tailwind CSS 4 (`@tailwindcss/postcss`, config lives in `packages/ui`). Components from shadcn/ui in `packages/ui/src/components`. 
+Next.js 16.2 App Router on port 7777. Tailwind CSS 4 (`@tailwindcss/postcss`, config lives in `packages/ui`). Components from shadcn/ui in `packages/ui/src/components`.
 
 **Data fetching**: TanStack Query v5 with house defaults: `staleTime: 30s`, `retry: 1`, `refetchOnWindowFocus: false`. Polling (no websockets) — use `refetchInterval` for live updates (events/replays). Query keys follow `['resource', id]` convention (e.g., `['inbox', inboxId]`, `['events', inboxId]`).
 
 **Path aliases**: `@/` → `apps/web/`, `@workspace/ui/*` → `packages/ui/src/*`.
 
 **API access**: two mechanisms coexist —
+
 - **Dashboard API**: `apps/web/app/api/backend/[...path]/route.ts` proxies authenticated XHR calls to AdonisJS. `lib/api/client.ts` (axios with auth interceptor + token refresh) uses `baseURL: '/api/backend'`, so components call `/inboxes`, `/events/${id}`, etc.
 - **Public ingest alias**: `proxy.ts` (Next middleware) routes `/hooks/:inboxId` → `/i/:inboxId` on AdonisJS (never authenticated, returns 200 OK always).
 

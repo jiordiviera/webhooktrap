@@ -2,11 +2,11 @@
 
 ## Fichiers
 
-| Fichier | Source | Usage |
-|---------|--------|--------|
-| `logo.png` | Grok Imagine | Wordmark complet (texte + pictogramme). Header, landing, README, OG image |
-| `icon.jpg` | Grok Imagine | Pictogramme seul. Favicon source, app icon, avatars sociaux |
-| `brand.css` | Maintenu à la main | Tokens couleur + classes `.logo-wordmark` (Cormorant Garamond) |
+| Fichier     | Source             | Usage                                                                     |
+| ----------- | ------------------ | ------------------------------------------------------------------------- |
+| `logo.png`  | Grok Imagine       | Wordmark complet (texte + pictogramme). Header, landing, README, OG image |
+| `icon.jpg`  | Grok Imagine       | Pictogramme seul. Favicon source, app icon, avatars sociaux               |
+| `brand.css` | Maintenu à la main | Tokens couleur + classes `.logo-wordmark` (Cormorant Garamond)            |
 
 ## Typographie
 

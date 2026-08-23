@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { SidebarTrigger } from '@workspace/ui/components/sidebar'
-import { ThemeToggle } from '@/app/components/theme-toggle'
-import { DashboardBreadcrumb } from './breadcrumb'
+import { SidebarTrigger } from "@workspace/ui/components/sidebar";
+import { ThemeToggle } from "@/app/components/theme-toggle";
+import { DashboardBreadcrumb } from "./breadcrumb";
 
 export function DashboardHeader() {
   return (
@@ -18,5 +18,5 @@ export function DashboardHeader() {
         <DashboardBreadcrumb />
       </div>
     </>
-  )
+  );
 }

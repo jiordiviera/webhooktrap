@@ -5,6 +5,7 @@ Thanks for your interest! We welcome contributions of all kinds.
 ## What to Contribute
 
 **Yes, please:**
+
 - Bug fixes (broken replay, UI crashes, UX friction)
 - Performance improvements (API latency, bundle size)
 - Documentation (missing steps, unclear config)
@@ -12,6 +13,7 @@ Thanks for your interest! We welcome contributions of all kinds.
 - Feature requests in issues first before implementing
 
 **Not at this stage:**
+
 - Major architectural changes (design first in an issue)
 - SAML/SSO (out of MVP scope)
 - Async replay with queues (post-MVP)
@@ -34,7 +36,7 @@ See [CLAUDE.md](./CLAUDE.md) for project conventions.
 - **TypeScript strict mode** — no `any`
 - **ESLint + Prettier** — `pnpm format` before committing
 - **Meaningful names** — prefer `calculateHashForEvent` over `calc`
-- **No comments** — code should explain itself; only comment *why*, not *what*
+- **No comments** — code should explain itself; only comment _why_, not _what_
 
 ## Testing
 
@@ -57,7 +59,7 @@ For new features: write tests first (TDD), then implement.
 2. **Push to your fork**
 3. **Open PR with:**
    - Clear title (e.g. "Fix: Prevent webhook timeout crashes")
-   - Description of *what* changed and *why*
+   - Description of _what_ changed and _why_
    - Link related issues
 4. **Wait for CI** (ESLint, TypeScript, tests)
 5. **Address feedback** — maintainers will review within 48h

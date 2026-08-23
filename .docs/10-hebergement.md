@@ -1,10 +1,10 @@
 # Hébergement — Vercel + VPS + Neon
 
-| Service | Rôle |
-|---------|------|
+| Service    | Rôle                                         |
+| ---------- | -------------------------------------------- |
 | **Vercel** | Frontend Next.js (landing, inbox, dashboard) |
-| **VPS** | API AdonisJS derrière Caddy |
-| **Neon** | PostgreSQL (production uniquement) |
+| **VPS**    | API AdonisJS derrière Caddy                  |
+| **Neon**   | PostgreSQL (production uniquement)           |
 
 > **Dev local** : PostgreSQL natif (`brew install postgresql` / `apt install postgresql`)
 > **Prod** : Neon
@@ -244,11 +244,11 @@ Vercel → Domains → `webhooktrap.dev` + `www.webhooktrap.dev`
 
 DNS :
 
-| Type | Nom | Valeur |
-|------|-----|--------|
-| CNAME | `@` | `cname.vercel-dns.com` |
+| Type  | Nom   | Valeur                 |
+| ----- | ----- | ---------------------- |
+| CNAME | `@`   | `cname.vercel-dns.com` |
 | CNAME | `www` | `cname.vercel-dns.com` |
-| A | `api` | IP du VPS |
+| A     | `api` | IP du VPS              |
 
 ## CORS (API)
 
@@ -272,10 +272,10 @@ pnpm dev   # api :3333 + web :7777
 
 ## Coûts
 
-| Service | Free tier |
-|---------|-----------|
-| **Neon** | 0.5 GB, branches limitées |
-| **Vercel** | Hobby gratuit |
-| **VPS** | ~4–6€/mois (Hetzner CX22) |
+| Service    | Free tier                 |
+| ---------- | ------------------------- |
+| **Neon**   | 0.5 GB, branches limitées |
+| **Vercel** | Hobby gratuit             |
+| **VPS**    | ~4–6€/mois (Hetzner CX22) |
 
 **Total MVP solo : ~4–6€/mois**

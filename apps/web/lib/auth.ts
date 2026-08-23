@@ -1,47 +1,50 @@
-import type { UserProfileDTO } from '@workspace/types'
-import { sanitizeAvatarUrl } from '@/lib/avatar'
-import { apiUrl } from '@/lib/config'
+import type { UserProfileDTO } from "@workspace/types";
+import { sanitizeAvatarUrl } from "@/lib/avatar";
+import { apiUrl } from "@/lib/config";
 
-export const AUTH_TOKEN_KEY = 'hookscope_token'
+export const AUTH_TOKEN_KEY = "hookscope_token";
 
-export type AuthUser = UserProfileDTO
+export type AuthUser = UserProfileDTO;
 
 export type AuthData = {
-  user: UserProfileDTO
-  token: string
-  email_verified?: boolean
-}
+  user: UserProfileDTO;
+  token: string;
+  email_verified?: boolean;
+};
 
 export type ChallengeData = {
-  requires_2fa: true
-  challenge_token: string
-}
+  requires_2fa: true;
+  challenge_token: string;
+};
 
 export type AuthPayload = {
-  data: AuthData | ChallengeData
-}
+  data: AuthData | ChallengeData;
+};
 
 export function normalizeAuthUser(user: UserProfileDTO): AuthUser {
   return {
     ...user,
     avatar: sanitizeAvatarUrl(user.avatar),
-  }
+  };
 }
 
 export function saveAuthToken(token: string) {
-  localStorage.setItem(AUTH_TOKEN_KEY, token)
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
 }
 
 export function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem(AUTH_TOKEN_KEY)
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 export function clearAuthToken() {
-  localStorage.removeItem(AUTH_TOKEN_KEY)
+  localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
-export function getOAuthRedirectUrl(provider: 'github' | 'google', returnTo: string) {
-  const params = new URLSearchParams({ return_to: returnTo })
-  return `${apiUrl}/api/v1/auth/oauth/${provider}/redirect?${params}`
+export function getOAuthRedirectUrl(
+  provider: "github" | "google",
+  returnTo: string,
+) {
+  const params = new URLSearchParams({ return_to: returnTo });
+  return `${apiUrl}/api/v1/auth/oauth/${provider}/redirect?${params}`;
 }

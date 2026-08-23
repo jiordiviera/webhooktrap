@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
-import { productName } from '@/lib/config'
+import type { Metadata } from "next";
+import { productName } from "@/lib/config";
 import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
 import { FeaturesSection } from "@/components/landing/features-section";
@@ -18,14 +18,14 @@ import "@/styles/landing-v2.css";
 export const metadata: Metadata = {
   title: `${productName} — Webhook debugger`,
   description:
-    'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
+    "Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.",
   openGraph: {
     title: `${productName} — Webhook debugger`,
     description:
-      'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
+      "Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.",
     images: [
       {
-        url: '/og-image.jpg',
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: `${productName} — Webhook debugging, simplified.`,
@@ -33,33 +33,33 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: "summary_large_image",
     title: `${productName} — Webhook debugger`,
     description:
-      'Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.',
-    images: ['/og-image.jpg'],
+      "Catch every webhook. Inspect headers and body, replay to localhost, share read-only links. Developer-first debugging without the tunnel maze.",
+    images: ["/og-image.jpg"],
   },
-}
+};
 
 const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
   name: productName,
-  url: 'https://webhooktrap.dev',
+  url: "https://webhooktrap.dev",
   description:
-    'Webhook debugging tool. Receive, inspect, replay, and share webhook payloads.',
-  applicationCategory: 'DeveloperApplication',
-  operatingSystem: 'All',
+    "Webhook debugging tool. Receive, inspect, replay, and share webhook payloads.",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "All",
   author: {
-    '@type': 'Person',
-    name: 'Jiordi Viera',
+    "@type": "Person",
+    name: "Jiordi Viera",
   },
   offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
   },
-}
+};
 
 export default function Home() {
   return (
