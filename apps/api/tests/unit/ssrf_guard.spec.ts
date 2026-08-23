@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import env from '#start/env'
 import { assertSafeReplayTarget, SsrfBlockedError } from '#support/ssrf_guard'
 
 test.group('assertSafeReplayTarget', () => {
@@ -33,6 +34,47 @@ test.group('assertSafeReplayTarget', () => {
   })
 
   test('allows public IPv4 targets', async ({ assert }) => {
+    await assert.doesNotReject(() => assertSafeReplayTarget('https://93.184.216.34/hook'))
+  })
+})
+
+test.group('assertSafeReplayTarget with ALLOW_INSECURE_REPLAY_TARGETS=true', (group) => {
+  group.each.setup(() => {
+    env.set('ALLOW_INSECURE_REPLAY_TARGETS', true)
+    return () => env.set('ALLOW_INSECURE_REPLAY_TARGETS', false)
+  })
+
+  test('allows the literal localhost hostname', async ({ assert }) => {
+    await assert.doesNotReject(() => assertSafeReplayTarget('http://localhost:3000/hook'))
+  })
+
+  test('allows loopback addresses', async ({ assert }) => {
+    await assert.doesNotReject(() => assertSafeReplayTarget('http://127.0.0.1/hook'))
+    await assert.doesNotReject(() => assertSafeReplayTarget('http://[::1]/hook'))
+  })
+
+  test('allows RFC1918 private ranges', async ({ assert }) => {
+    await assert.doesNotReject(() => assertSafeReplayTarget('http://10.0.0.5/hook'))
+    await assert.doesNotReject(() => assertSafeReplayTarget('http://172.20.0.5/hook'))
+    await assert.doesNotReject(() => assertSafeReplayTarget('http://192.168.1.1/hook'))
+  })
+
+  test('still blocks cloud metadata endpoints', async ({ assert }) => {
+    await assert.rejects(
+      () => assertSafeReplayTarget('http://169.254.169.254/latest/meta-data/'),
+      SsrfBlockedError
+    )
+    await assert.rejects(
+      () => assertSafeReplayTarget('http://metadata.google.internal/'),
+      SsrfBlockedError
+    )
+  })
+
+  test('still blocks non-http(s) protocols', async ({ assert }) => {
+    await assert.rejects(() => assertSafeReplayTarget('ftp://93.184.216.34/hook'), SsrfBlockedError)
+  })
+
+  test('still allows public IPv4 targets', async ({ assert }) => {
     await assert.doesNotReject(() => assertSafeReplayTarget('https://93.184.216.34/hook'))
   })
 })

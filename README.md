@@ -23,6 +23,14 @@ docker compose up
 
 Visit **http://localhost:7777** and create your first inbox.
 
+> **Replaying to an app on your machine:** the API runs inside a container, so
+> from its point of view `localhost` is the container itself. Target
+> `http://host.docker.internal:<port>` instead of `http://localhost:<port>`
+> to reach an app running on your host. (Outside Docker — `pnpm dev` — plain
+> `localhost` works as-is.) Local replay targets are only allowed because
+> `docker-compose.yml` sets `ALLOW_INSECURE_REPLAY_TARGETS=true`; never enable
+> that in production.
+
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for production setup (Railway, Fly.io, VPS).
 
 ---
