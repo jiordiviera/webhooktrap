@@ -5,7 +5,7 @@ import { Navigation } from '@/components/landing/navigation'
 import { FooterSection } from '@/components/landing/footer-section'
 import { productName } from '@/lib/config'
 
-const SPONSOR_URL = 'https://support.jiordiviera.me/prd_vdzyfncp'
+const SPONSOR_URL = 'https://buymeacoffee.com/jiordiviera'
 
 export const metadata: Metadata = {
   title: 'Sponsor',
