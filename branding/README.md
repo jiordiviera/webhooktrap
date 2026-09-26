@@ -31,5 +31,5 @@ Combiner **image** (rendu premium du PNG) + **texte stylé** (accessibilité, `p
 
 ## Historique
 
-- Symbole initial en cloche remplacé par un W géométrique cuivre, sans étincelle. Les formats favicon et app icon dérivent du même symbole.
+- Symbole initial en cloche remplacé par le symbole cuivré fourni par Jiordi. Les formats favicon et app icon dérivent du même symbole.
 - Direction typographique initialement explorée via le nom de travail **DreamBell**, puis **Webhook Trap**.
