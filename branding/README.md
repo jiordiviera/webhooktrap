@@ -31,5 +31,10 @@ Combiner **image** (rendu premium du PNG) + **texte stylé** (accessibilité, `p
 
 ## Historique
 
+<<<<<<< HEAD
+- Premiers SVG (cyan / fond sombre) — remplacés par la direction **terracotta / crème** et assets Imagine.
+- Direction typographique initialement explorée via le nom de travail **DreamBell**, puis **Webhook Trap**.
+=======
 - Symbole initial en cloche remplacé par le symbole cuivré fourni par Jiordi. Les formats favicon et app icon dérivent du même symbole.
 - Direction typographique initialement explorée via le nom de travail **DreamBell**, puis **Webhook Trap**.
+>>>>>>> 9905a1233f396eb15b9f36470bad40bac67e3419

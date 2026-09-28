@@ -1,17 +1,22 @@
-'use client'
+"use client";
 
-import { IconCopy } from '@tabler/icons-react'
-import { Button } from '@workspace/ui/components/button'
-import { Skeleton } from '@workspace/ui/components/skeleton'
+import { IconCopy } from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
 interface IngestUrlCardProps {
-  ingestUrl: string
-  inboxLoading: boolean
-  copied: boolean
-  onCopyUrl: () => void
+  ingestUrl: string;
+  inboxLoading: boolean;
+  copied: boolean;
+  onCopyUrl: () => void;
 }
 
-export function IngestUrlCard({ ingestUrl, inboxLoading, copied, onCopyUrl }: IngestUrlCardProps) {
+export function IngestUrlCard({
+  ingestUrl,
+  inboxLoading,
+  copied,
+  onCopyUrl,
+}: IngestUrlCardProps) {
   return (
     <section
       aria-labelledby="ingest-url-heading"
@@ -40,14 +45,14 @@ export function IngestUrlCard({ ingestUrl, inboxLoading, copied, onCopyUrl }: In
               size="sm"
               className="shrink-0"
               onClick={onCopyUrl}
-              aria-label={copied ? 'URL copied' : 'Copy ingest URL'}
+              aria-label={copied ? "URL copied" : "Copy ingest URL"}
             >
               <IconCopy className="size-3.5" aria-hidden />
-              {copied ? 'Copied' : 'Copy URL'}
+              {copied ? "Copied" : "Copy URL"}
             </Button>
           </>
         )}
       </div>
     </section>
-  )
+  );
 }

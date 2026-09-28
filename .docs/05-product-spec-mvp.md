@@ -7,49 +7,49 @@
 
 ### Epic A — Inbox & capture
 
-| ID | Story | Priorité |
-|----|-------|----------|
-| A1 | Visiteur crée une inbox sans compte | P0 |
-| A2 | Events arrivent en quasi temps réel (polling 2–3 s) | P0 |
-| A3 | Détail event : method, headers, body, query | P0 |
-| A4 | Copier URL inbox en un clic | P0 |
-| A5 | Inbox anonyme expire après 48h | P1 |
+| ID  | Story                                               | Priorité |
+| --- | --------------------------------------------------- | -------- |
+| A1  | Visiteur crée une inbox sans compte                 | P0       |
+| A2  | Events arrivent en quasi temps réel (polling 2–3 s) | P0       |
+| A3  | Détail event : method, headers, body, query         | P0       |
+| A4  | Copier URL inbox en un clic                         | P0       |
+| A5  | Inbox anonyme expire après 48h                      | P1       |
 
 ### Epic B — Replay
 
-| ID | Story | Priorité |
-|----|-------|----------|
-| B1 | Configurer URL de destination replay | P0 |
-| B2 | Rejouer un event en un clic | P0 |
-| B3 | Voir response status, headers, body | P0 |
-| B4 | Voir latence replay (ms) | P1 |
-| B5 | Historique replays par event | P0 |
-| B6 | Erreur claire si connection refused / timeout | P0 |
+| ID  | Story                                         | Priorité |
+| --- | --------------------------------------------- | -------- |
+| B1  | Configurer URL de destination replay          | P0       |
+| B2  | Rejouer un event en un clic                   | P0       |
+| B3  | Voir response status, headers, body           | P0       |
+| B4  | Voir latence replay (ms)                      | P1       |
+| B5  | Historique replays par event                  | P0       |
+| B6  | Erreur claire si connection refused / timeout | P0       |
 
 ### Epic C — Compte & persistance
 
-| ID | Story | Priorité |
-|----|-------|----------|
-| C1 | Créer un compte pour sauvegarder inboxes | P0 |
-| C2 | Inboxes ne expirent plus avec compte | P0 |
-| C3 | Lister toutes les inboxes | P0 |
-| C4 | Renommer une inbox | P1 |
-| C5 | Supprimer une inbox | P1 |
+| ID  | Story                                    | Priorité |
+| --- | ---------------------------------------- | -------- |
+| C1  | Créer un compte pour sauvegarder inboxes | P0       |
+| C2  | Inboxes ne expirent plus avec compte     | P0       |
+| C3  | Lister toutes les inboxes                | P0       |
+| C4  | Renommer une inbox                       | P1       |
+| C5  | Supprimer une inbox                      | P1       |
 
 ### Epic D — Partage
 
-| ID | Story | Priorité |
-|----|-------|----------|
-| D1 | Générer lien read-only vers un event | P0 |
-| D2 | Collègue voit event + replays sans compte | P0 |
+| ID  | Story                                     | Priorité |
+| --- | ----------------------------------------- | -------- |
+| D1  | Générer lien read-only vers un event      | P0       |
+| D2  | Collègue voit event + replays sans compte | P0       |
 
 ### Epic E — CLI (light)
 
-| ID | Story | Priorité |
-|----|-------|----------|
-| E1 | Créer inbox via CLI | P1 |
-| E2 | Afficher URL pour provider | P1 |
-| E3 | Replay par event ID via CLI | P2 |
+| ID  | Story                       | Priorité |
+| --- | --------------------------- | -------- |
+| E1  | Créer inbox via CLI         | P1       |
+| E2  | Afficher URL pour provider  | P1       |
+| E3  | Replay par event ID via CLI | P2       |
 
 ## Wireframes — Inbox `/i/:inboxId`
 
@@ -127,12 +127,12 @@ npx @hookscope/cli replay evt_01HXXX --to http://localhost:7777/webhook
 
 ## Limites Free
 
-| Ressource | Anonyme | Compte free |
-|-----------|---------|-------------|
-| Inboxes | 1 | 3 |
-| Events/mois | 50 | 100 |
-| Retention | 48h | 7 jours |
-| Share links | 1 | 5 |
+| Ressource   | Anonyme | Compte free |
+| ----------- | ------- | ----------- |
+| Inboxes     | 1       | 3           |
+| Events/mois | 50      | 100         |
+| Retention   | 48h     | 7 jours     |
+| Share links | 1       | 5           |
 
 ## Hors scope MVP
 

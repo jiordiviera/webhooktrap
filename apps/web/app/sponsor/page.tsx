@@ -1,16 +1,16 @@
-import type { Metadata } from 'next'
-import { IconArrowUpRight, IconCoffee } from '@tabler/icons-react'
-import { Button } from '@workspace/ui/components/button'
-import { Navigation } from '@/components/landing/navigation'
-import { FooterSection } from '@/components/landing/footer-section'
-import { productName } from '@/lib/config'
+import type { Metadata } from "next";
+import { IconArrowUpRight, IconCoffee } from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { Navigation } from "@/components/landing/navigation";
+import { FooterSection } from "@/components/landing/footer-section";
+import { productName } from "@/lib/config";
 
 const SPONSOR_URL = 'https://buymeacoffee.com/jiordiviera'
 
 export const metadata: Metadata = {
-  title: 'Sponsor',
+  title: "Sponsor",
   description: `Support the development of ${productName}.`,
-}
+};
 
 export default function SponsorPage() {
   return (
@@ -25,8 +25,9 @@ export default function SponsorPage() {
           Keep {productName} running.
         </h1>
         <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          {productName} is free to use and built in the open. If it saves you time debugging
-          webhooks, a coffee goes a long way toward keeping it maintained and hosted.
+          {productName} is free to use and built in the open. If it saves you
+          time debugging webhooks, a coffee goes a long way toward keeping it
+          maintained and hosted.
         </p>
         <Button size="lg" className="rounded-full" asChild>
           <a href={SPONSOR_URL} target="_blank" rel="noopener noreferrer">
@@ -38,5 +39,5 @@ export default function SponsorPage() {
       </main>
       <FooterSection />
     </>
-  )
+  );
 }

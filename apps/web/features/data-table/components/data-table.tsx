@@ -185,7 +185,6 @@ export function DataTable<TModel extends DataTableModelId>({
   const allPageSelected =
     rows.length > 0 && rows.every((r) => selectedRowIds.has(model.getRowId(r)));
 
-
   const toggleRowSelection = useCallback((rowId: string) => {
     setSelectedRowIds((prev) => {
       const next = new Set(prev);
@@ -263,12 +262,7 @@ export function DataTable<TModel extends DataTableModelId>({
   const visibleColumnCount = allColumns.length;
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border bg-card",
-        className,
-      )}
-    >
+    <div className={cn("rounded-2xl border border-border bg-card", className)}>
       {showToolbar ? (
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-start gap-3">

@@ -63,6 +63,7 @@ pnpm test                         # from root (turbo --filter=api)
 - Each test group calls `testUtils.db().migrate()` in setup
 
 **Key patterns from tests:**
+
 - Create user via `User.create()` then generate token via `User.accessTokens.create()`
 - Pass token as `Authorization: Bearer ${token.value!.release()}`
 - Use `client.get/post/delete(...)` from `@japa/api-client`
@@ -126,6 +127,7 @@ lib/                       Shared utilities
 Source of truth: `DESIGN.md` (OKLCH tokens, typography, spacing, component specs)
 
 **Key rules:**
+
 - **Terracotta palette** (hue ~46–78), never pure black/white — tint warm
 - **Two registers**: Landing uses Cormorant + Lora (serif editorial); dashboard/inbox use system-ui (`font-ui`)
 - **Signal green** (`oklch(0.55 0.12 145)`) for live/success webhook states only
@@ -134,12 +136,12 @@ Source of truth: `DESIGN.md` (OKLCH tokens, typography, spacing, component specs
 
 ## Deployment
 
-| Service | Platform | What |
-|---------|----------|------|
-| Web | Vercel | `apps/web` — Next.js |
-| API | VPS + PM2 | `apps/api` — AdonisJS long-running |
-| DB | Neon | PostgreSQL 16 |
-| Media | Cloudflare R2 | Via `@adonisjs/drive` |
+| Service | Platform      | What                               |
+| ------- | ------------- | ---------------------------------- |
+| Web     | Vercel        | `apps/web` — Next.js               |
+| API     | VPS + PM2     | `apps/api` — AdonisJS long-running |
+| DB      | Neon          | PostgreSQL 16                      |
+| Media   | Cloudflare R2 | Via `@adonisjs/drive`              |
 
 ## Key docs (read before architecture work)
 

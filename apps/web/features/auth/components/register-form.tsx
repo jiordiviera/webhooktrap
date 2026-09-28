@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Controller, useForm } from 'react-hook-form'
-import { Button } from '@workspace/ui/components/button'
+import * as React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import { Button } from "@workspace/ui/components/button";
 import {
   Field,
   FieldDescription,
@@ -13,36 +13,36 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from '@workspace/ui/components/field'
-import { Input } from '@workspace/ui/components/input'
-import { useAuth } from '@/contexts/auth-context'
-import { ApiError, apiFetch } from '@/lib/api'
-import { type AuthData } from '@/lib/auth'
-import { type RegisterValues, registerSchema } from '@/lib/schemas/auth'
-import { OAuthButtons } from './oauth-buttons'
+} from "@workspace/ui/components/field";
+import { Input } from "@workspace/ui/components/input";
+import { useAuth } from "@/contexts/auth-context";
+import { ApiError, apiFetch } from "@/lib/api";
+import { type AuthData } from "@/lib/auth";
+import { type RegisterValues, registerSchema } from "@/lib/schemas/auth";
+import { OAuthButtons } from "./oauth-buttons";
 
 export function RegisterForm() {
-  const router = useRouter()
-  const { signIn, isAuthenticated } = useAuth()
+  const router = useRouter();
+  const { signIn, isAuthenticated } = useAuth();
 
   React.useEffect(() => {
-    if (isAuthenticated) router.replace('/dashboard')
-  }, [isAuthenticated, router])
+    if (isAuthenticated) router.replace("/dashboard");
+  }, [isAuthenticated, router]);
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      fullName: '',
-      email: '',
-      password: '',
-      passwordConfirmation: '',
+      fullName: "",
+      email: "",
+      password: "",
+      passwordConfirmation: "",
     },
-  })
+  });
 
   async function onSubmit(values: RegisterValues) {
     try {
-      const body = await apiFetch<{ data: AuthData }>('/auth/signup', {
-        method: 'POST',
+      const body = await apiFetch<{ data: AuthData }>("/auth/signup", {
+        method: "POST",
         skipAuth: true,
         body: JSON.stringify({
           fullName: values.fullName?.trim() || null,
@@ -50,34 +50,39 @@ export function RegisterForm() {
           password: values.password,
           passwordConfirmation: values.passwordConfirmation,
         }),
-      })
+      });
 
-      signIn(body.data)
-      router.push('/verify-email')
-      router.refresh()
+      signIn(body.data);
+      router.push("/verify-email");
+      router.refresh();
     } catch (err) {
       if (err instanceof ApiError) {
-        const fieldError = err.body.errors?.[0]
+        const fieldError = err.body.errors?.[0];
         const registerFields = [
-          'fullName',
-          'email',
-          'password',
-          'passwordConfirmation',
-        ] as const
+          "fullName",
+          "email",
+          "password",
+          "passwordConfirmation",
+        ] as const;
         if (
           fieldError?.field &&
-          registerFields.includes(fieldError.field as (typeof registerFields)[number])
+          registerFields.includes(
+            fieldError.field as (typeof registerFields)[number],
+          )
         ) {
-          form.setError(fieldError.field as keyof RegisterValues, { message: fieldError.message })
-          return
+          form.setError(fieldError.field as keyof RegisterValues, {
+            message: fieldError.message,
+          });
+          return;
         }
-        form.setError('root', {
+        form.setError("root", {
           message: fieldError?.message ?? err.message,
-        })
+        });
       } else {
-        form.setError('root', {
-          message: 'Could not reach the API. Is the server running on port 3333?',
-        })
+        form.setError("root", {
+          message:
+            "Could not reach the API. Is the server running on port 3333?",
+        });
       }
     }
   }
@@ -88,7 +93,11 @@ export function RegisterForm() {
 
       <FieldSeparator>or with email</FieldSeparator>
 
-      <form id="register-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+      <form
+        id="register-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        noValidate
+      >
         <FieldGroup>
           <Controller
             name="fullName"
@@ -103,7 +112,9 @@ export function RegisterForm() {
                   placeholder="Optional"
                   {...field}
                 />
-                <FieldDescription>Shown on shared event links.</FieldDescription>
+                <FieldDescription>
+                  Shown on shared event links.
+                </FieldDescription>
               </Field>
             )}
           />
@@ -154,7 +165,9 @@ export function RegisterForm() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="passwordConfirmation">Confirm password</FieldLabel>
+                <FieldLabel htmlFor="passwordConfirmation">
+                  Confirm password
+                </FieldLabel>
                 <Input
                   id="passwordConfirmation"
                   type="password"
@@ -179,17 +192,22 @@ export function RegisterForm() {
             className="h-10 w-full"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? 'Creating account…' : 'Create account'}
+            {form.formState.isSubmitting
+              ? "Creating account…"
+              : "Create account"}
           </Button>
         </FieldGroup>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
-        <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="text-primary underline-offset-4 hover:underline"
+        >
           Sign in
         </Link>
       </p>
     </div>
-  )
+  );
 }

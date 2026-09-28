@@ -174,7 +174,12 @@ function LoaderTips({
   }, [tips]);
 
   return (
-    <div className={cn("flex w-full max-w-xl flex-col items-center gap-6", className)}>
+    <div
+      className={cn(
+        "flex w-full max-w-xl flex-col items-center gap-6",
+        className,
+      )}
+    >
       <QuoteMark />
 
       <div className="relative min-h-28 w-full">
@@ -239,7 +244,10 @@ function LoaderIndicator({
       <LoadingDots
         size={resolvedSize}
         tone={tone}
-        className={cn(loaderVariants({ variant, size, tone }), indicatorClassName)}
+        className={cn(
+          loaderVariants({ variant, size, tone }),
+          indicatorClassName,
+        )}
       />
     );
   }
@@ -370,11 +378,7 @@ function Loader({
         tone={tone}
         indicatorClassName={indicatorClassName}
       />
-      <span
-        className={
-          showLabel ? "text-sm text-muted-foreground" : "sr-only"
-        }
-      >
+      <span className={showLabel ? "text-sm text-muted-foreground" : "sr-only"}>
         {label}
       </span>
     </div>

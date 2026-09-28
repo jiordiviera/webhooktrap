@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { IconArrowUpRight, IconBook2 } from '@tabler/icons-react'
-import { SidebarFooter } from '@workspace/ui/components/sidebar'
-import { DeveloperCredit } from '@/app/components/developer-credit'
-import { docsUrl } from '@/lib/config'
+import { IconArrowUpRight, IconBook2 } from "@tabler/icons-react";
+import { SidebarFooter } from "@workspace/ui/components/sidebar";
+import { DeveloperCredit } from "@/app/components/developer-credit";
+import { docsUrl } from "@/lib/config";
 
 export function DashboardSidebarFooter() {
   return (
@@ -20,5 +20,5 @@ export function DashboardSidebarFooter() {
       </a>
       <DeveloperCredit variant="sidebar" className="px-1" />
     </SidebarFooter>
-  )
+  );
 }

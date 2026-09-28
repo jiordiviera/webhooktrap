@@ -1,12 +1,16 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@workspace/ui/components/button'
-import { CreateInboxChoiceDialog } from '@/app/components/create-inbox-choice-dialog'
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@workspace/ui/components/button";
+import { CreateInboxChoiceDialog } from "@/app/components/create-inbox-choice-dialog";
 
-export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink?: boolean }) {
-  const [dialogOpen, setDialogOpen] = useState(false)
+export function CreateInboxCta({
+  showSecondaryLink = true,
+}: {
+  showSecondaryLink?: boolean;
+}) {
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-5">
@@ -26,7 +30,10 @@ export function CreateInboxCta({ showSecondaryLink = true }: { showSecondaryLink
         )}
       </div>
 
-      <CreateInboxChoiceDialog open={dialogOpen} onOpenChangeAction={setDialogOpen} />
+      <CreateInboxChoiceDialog
+        open={dialogOpen}
+        onOpenChangeAction={setDialogOpen}
+      />
     </div>
-  )
+  );
 }

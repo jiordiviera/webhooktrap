@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   IconArrowLeft,
   IconCheck,
@@ -12,31 +12,37 @@ import {
   IconRefresh,
   IconTrash,
   IconX,
-} from '@tabler/icons-react'
-import { Button } from '@workspace/ui/components/button'
-import { Input } from '@workspace/ui/components/input'
-import { Loader } from '@workspace/ui/components/loader'
+} from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
+import { Loader } from "@workspace/ui/components/loader";
 
-import { Skeleton } from '@workspace/ui/components/skeleton'
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
-import { DataTable } from '@/features/data-table/components/data-table'
-import { inboxQueryKey, useInboxQuery } from '@/features/inbox/hooks/use-inbox-query'
-import { EventDetailSheet } from '@/features/inbox/components/event-detail-sheet'
-import { ApiError } from '@/lib/api'
-import { useAuth } from '@/contexts/auth-context'
-import { useConfirm } from '@/contexts/confirm-context'
-import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
-import { docsUrl } from '@/lib/config'
-import { deleteInbox, updateInbox } from '@/lib/inboxes'
+import { DataTable } from "@/features/data-table/components/data-table";
+import {
+  inboxQueryKey,
+  useInboxQuery,
+} from "@/features/inbox/hooks/use-inbox-query";
+import { EventDetailSheet } from "@/features/inbox/components/event-detail-sheet";
+import { ApiError } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
+import { useConfirm } from "@/contexts/confirm-context";
+import { useInboxPageTitle } from "@/features/inbox/context/inbox-page-context";
+import { docsUrl } from "@/lib/config";
+import { deleteInbox, updateInbox } from "@/lib/inboxes";
 
-const POLL_INTERVAL_MS = 3000
+const POLL_INTERVAL_MS = 3000;
 
 function formatExpiry(iso: string) {
-  const hours = Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 3_600_000))
-  if (hours < 1) return 'less than an hour'
-  if (hours === 1) return '1 hour'
-  if (hours < 48) return `${hours} hours`
-  return `${Math.round(hours / 24)} days`
+  const hours = Math.max(
+    0,
+    Math.round((new Date(iso).getTime() - Date.now()) / 3_600_000),
+  );
+  if (hours < 1) return "less than an hour";
+  if (hours === 1) return "1 hour";
+  if (hours < 48) return `${hours} hours`;
+  return `${Math.round(hours / 24)} days`;
 }
 
 function InboxHeaderSkeleton() {
@@ -46,151 +52,154 @@ function InboxHeaderSkeleton() {
       <Skeleton className="h-8 w-48 max-w-full rounded-lg" />
       <Skeleton className="h-4 w-32 rounded-md" />
     </div>
-  )
+  );
 }
 
 export function InboxDetailPage({ inboxId }: { inboxId: string }) {
-  const router = useRouter()
-  const queryClient = useQueryClient()
-  const confirm = useConfirm()
-  const inboxPage = useInboxPageTitle()
-  const { user, isAuthenticated } = useAuth()
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const confirm = useConfirm();
+  const inboxPage = useInboxPageTitle();
+  const { user, isAuthenticated } = useAuth();
 
-  const inboxQuery = useInboxQuery(inboxId)
-  const inbox = inboxQuery.data ?? null
-  const canManage = !!inbox && inbox.userId !== null && inbox.userId === user?.id
-  const isAnonymousInbox = !!inbox && inbox.userId === null
+  const inboxQuery = useInboxQuery(inboxId);
+  const inbox = inboxQuery.data ?? null;
+  const canManage =
+    !!inbox && inbox.userId !== null && inbox.userId === user?.id;
+  const isAnonymousInbox = !!inbox && inbox.userId === null;
 
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
-  const [eventsTotal, setEventsTotal] = useState(0)
-  const [actionError, setActionError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [editingName, setEditingName] = useState(false)
-  const [nameDraft, setNameDraft] = useState('')
-  const [savingName, setSavingName] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [eventsTotal, setEventsTotal] = useState(0);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const ingestUrl = inbox?.ingestUrl ?? ''
-  const eventCount = inbox?.eventsCount || eventsTotal
-  const inboxLoading = inboxQuery.isLoading
+  const ingestUrl = inbox?.ingestUrl ?? "";
+  const eventCount = inbox?.eventsCount || eventsTotal;
+  const inboxLoading = inboxQuery.isLoading;
   const loadError =
     actionError ??
     (inboxQuery.isError
       ? inboxQuery.error instanceof ApiError
         ? inboxQuery.error.message
-        : 'Could not load inbox. Try again.'
-      : null)
+        : "Could not load inbox. Try again."
+      : null);
 
   useEffect(() => {
-    if (!inboxPage || !inbox) return
+    if (!inboxPage || !inbox) return;
 
-    inboxPage.setTitle(inbox.name)
+    inboxPage.setTitle(inbox.name);
 
     return () => {
-      inboxPage.setTitle(null)
-    }
-  }, [inbox, inboxPage])
+      inboxPage.setTitle(null);
+    };
+  }, [inbox, inboxPage]);
 
   const refresh = useCallback(() => {
-    setActionError(null)
-    void inboxQuery.refetch()
+    setActionError(null);
+    void inboxQuery.refetch();
     void queryClient.invalidateQueries({
-      queryKey: ['data-table', 'inbox-events', { inboxId }],
-    })
-  }, [inboxId, inboxQuery, queryClient])
+      queryKey: ["data-table", "inbox-events", { inboxId }],
+    });
+  }, [inboxId, inboxQuery, queryClient]);
 
   async function handleCopyUrl() {
-    if (!ingestUrl) return
-    await navigator.clipboard.writeText(ingestUrl)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 2000)
+    if (!ingestUrl) return;
+    await navigator.clipboard.writeText(ingestUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
   }
 
   function startEditingName() {
-    if (!inbox) return
-    setNameDraft(inbox.name)
-    setEditingName(true)
+    if (!inbox) return;
+    setNameDraft(inbox.name);
+    setEditingName(true);
   }
 
   function cancelEditingName() {
-    setEditingName(false)
-    setNameDraft('')
+    setEditingName(false);
+    setNameDraft("");
   }
 
   async function handleSaveName() {
-    if (!inbox) return
+    if (!inbox) return;
 
-    const trimmed = nameDraft.trim()
+    const trimmed = nameDraft.trim();
     if (!trimmed) {
-      setActionError('Inbox name cannot be empty.')
-      return
+      setActionError("Inbox name cannot be empty.");
+      return;
     }
 
     if (trimmed === inbox.name) {
-      cancelEditingName()
-      return
+      cancelEditingName();
+      return;
     }
 
-    setSavingName(true)
-    setActionError(null)
+    setSavingName(true);
+    setActionError(null);
 
     try {
-      const updated = await updateInbox(inbox.id, { name: trimmed })
-      queryClient.setQueryData(inboxQueryKey(inbox.id), updated)
-      inboxPage?.setTitle(updated.name)
-      cancelEditingName()
+      const updated = await updateInbox(inbox.id, { name: trimmed });
+      queryClient.setQueryData(inboxQueryKey(inbox.id), updated);
+      inboxPage?.setTitle(updated.name);
+      cancelEditingName();
     } catch (error) {
       setActionError(
-        error instanceof ApiError ? error.message : 'Could not rename inbox.'
-      )
+        error instanceof ApiError ? error.message : "Could not rename inbox.",
+      );
     } finally {
-      setSavingName(false)
+      setSavingName(false);
     }
   }
 
   async function handleDeleteInbox() {
-    if (!inbox) return
+    if (!inbox) return;
 
     const confirmed = await confirm({
-      title: 'Delete inbox',
+      title: "Delete inbox",
       description: (
         <>
-          This permanently deletes <strong>{inbox.name}</strong> and all captured events. This
-          action cannot be undone.
+          This permanently deletes <strong>{inbox.name}</strong> and all
+          captured events. This action cannot be undone.
         </>
       ),
-      confirmLabel: 'Delete inbox',
+      confirmLabel: "Delete inbox",
       destructive: true,
-    })
+    });
 
-    if (!confirmed) return
+    if (!confirmed) return;
 
-    setDeleting(true)
-    setActionError(null)
+    setDeleting(true);
+    setActionError(null);
 
     try {
-      await deleteInbox(inbox.id)
-      router.push('/inboxes')
+      await deleteInbox(inbox.id);
+      router.push("/inboxes");
     } catch (error) {
       setActionError(
-        error instanceof ApiError ? error.message : 'Could not delete inbox.'
-      )
+        error instanceof ApiError ? error.message : "Could not delete inbox.",
+      );
     } finally {
-      setDeleting(false)
+      setDeleting(false);
     }
   }
 
   if (!inboxLoading && !inbox) {
     return (
       <div className="mx-auto max-w-lg py-16 text-center">
-        <p className="text-sm text-muted-foreground">{loadError ?? 'Inbox not found.'}</p>
+        <p className="text-sm text-muted-foreground">
+          {loadError ?? "Inbox not found."}
+        </p>
         <Button variant="outline" className="mt-4" asChild>
-          <Link href={isAuthenticated ? '/inboxes' : '/'}>
-            {isAuthenticated ? 'Back to inboxes' : 'Back to home'}
+          <Link href={isAuthenticated ? "/inboxes" : "/"}>
+            {isAuthenticated ? "Back to inboxes" : "Back to home"}
           </Link>
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -201,7 +210,12 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
         ) : (
           <div className="min-w-0 space-y-2">
             {isAuthenticated && (
-              <Button variant="ghost" size="sm" className="-ml-2 h-8 px-2" asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="-ml-2 h-8 px-2"
+                asChild
+              >
                 <Link href="/inboxes">
                   <IconArrowLeft className="size-4" aria-hidden />
                   Inboxes
@@ -217,8 +231,8 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                     className="h-9 max-w-sm text-lg font-semibold"
                     autoFocus
                     onKeyDown={(event) => {
-                      if (event.key === 'Enter') void handleSaveName()
-                      if (event.key === 'Escape') cancelEditingName()
+                      if (event.key === "Enter") void handleSaveName();
+                      if (event.key === "Escape") cancelEditingName();
                     }}
                   />
                   <Button
@@ -263,7 +277,9 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                   )}
                 </div>
               )}
-              <p className="mt-1 font-mono text-sm text-muted-foreground">/i/{inbox.id}</p>
+              <p className="mt-1 font-mono text-sm text-muted-foreground">
+                /i/{inbox.id}
+              </p>
             </div>
           </div>
         )}
@@ -287,7 +303,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
               ) : (
                 <IconTrash className="size-3.5" aria-hidden />
               )}
-              {deleting ? 'Deleting…' : 'Delete'}
+              {deleting ? "Deleting…" : "Delete"}
             </Button>
           )}
         </div>
@@ -298,7 +314,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
           <p className="text-sm text-foreground">
             {inbox?.expiresAt
               ? `This inbox expires in ${formatExpiry(inbox.expiresAt)}.`
-              : 'This inbox is temporary.'}{' '}
+              : "This inbox is temporary."}{" "}
             <span className="text-muted-foreground">
               Anonymous inboxes aren&apos;t saved to an account.
             </span>
@@ -336,10 +352,10 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                 size="sm"
                 className="shrink-0"
                 onClick={() => void handleCopyUrl()}
-                aria-label={copied ? 'URL copied' : 'Copy ingest URL'}
+                aria-label={copied ? "URL copied" : "Copy ingest URL"}
               >
                 <IconCopy className="size-3.5" aria-hidden />
-                {copied ? 'Copied' : 'Copy URL'}
+                {copied ? "Copied" : "Copy URL"}
               </Button>
             </>
           )}
@@ -354,7 +370,10 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
 
       <section aria-labelledby="events-heading">
         <div className="mb-3 px-1">
-          <h2 id="events-heading" className="text-sm font-semibold text-foreground">
+          <h2
+            id="events-heading"
+            className="text-sm font-semibold text-foreground"
+          >
             Events
             <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">
               ({eventCount})
@@ -370,7 +389,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
             onRowClickAction={(event) => setSelectedEventId(event.id)}
             showPagination
             onDataChangeAction={({ total }) => {
-              setEventsTotal(total)
+              setEventsTotal(total);
             }}
             emptyState={
               <div className="space-y-3">
@@ -378,7 +397,8 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                   Waiting for your first webhook
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Point a provider at your ingest URL, or try it from the terminal:
+                  Point a provider at your ingest URL, or try it from the
+                  terminal:
                 </p>
                 {ingestUrl ? (
                   <pre className="mx-auto max-w-full overflow-x-auto rounded-lg border border-border bg-card p-3 text-left font-mono text-xs text-muted-foreground">
@@ -386,7 +406,7 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
                   </pre>
                 ) : null}
                 <p className="text-sm text-muted-foreground">
-                  New events appear here automatically.{' '}
+                  New events appear here automatically.{" "}
                   <a
                     href={`${docsUrl}/docs/getting-started/inboxes`}
                     target="_blank"
@@ -408,5 +428,5 @@ export function InboxDetailPage({ inboxId }: { inboxId: string }) {
         onClose={() => setSelectedEventId(null)}
       />
     </div>
-  )
+  );
 }

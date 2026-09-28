@@ -7,16 +7,14 @@ Centralized font configuration for all Webhook Trap apps.
 ### In `app/layout.tsx` (Next.js)
 
 ```tsx
-import { fontClasses } from '@workspace/ui/lib/fonts'
+import { fontClasses } from "@workspace/ui/lib/fonts";
 
 export default function RootLayout({ children }) {
   return (
     <html suppressHydrationWarning className={fontClasses}>
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
-  )
+  );
 }
 ```
 
@@ -34,7 +32,8 @@ body {
 }
 
 /* Code blocks & terminals */
-code, pre {
+code,
+pre {
   font-family: var(--font-mono);
 }
 ```

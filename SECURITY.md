@@ -7,16 +7,19 @@ Webhook Trap stores webhook payloads and allows replaying them to test integrati
 ## Security Features
 
 ### Payload Isolation
+
 - **Per-inbox isolation**: Each inbox has a unique URL. Users can only view/replay events from inboxes they own.
 - **Authentication**: Authenticated users own inboxes. Share tokens provide read-only access without auth.
 - **Expiration**: Inboxes can be set to expire, auto-deleting old events after X days.
 
 ### Header Sanitization
+
 - **Sensitive headers redacted**: Authorization, Cookie, Set-Cookie, X-API-Key are stored as `[REDACTED]` immediately upon ingest.
 - **Why**: Prevents accidental exposure of tokens, API keys, or session cookies stored in the database.
 - **Verified**: See `apps/api/app/support/sanitize_headers.ts`
 
 ### Replay Security
+
 - **SSRF Protection**: Replay targets are validated to prevent internal network access:
   - Blocks localhost, 127.x, ::1
   - Blocks private ranges (10.x, 192.168.x, 172.16-31.x)
@@ -28,6 +31,7 @@ Webhook Trap stores webhook payloads and allows replaying them to test integrati
 - **Verified**: See `apps/api/app/support/ssrf_guard.ts`
 
 ### Input Validation
+
 - **Body size**: Max 1MB per webhook payload
 - **Content**: JSON or raw text, safely parsed
 - **URLs**: Must be http/https only
@@ -39,6 +43,7 @@ Webhook Trap stores webhook payloads and allows replaying them to test integrati
 **Do NOT open a public issue for security vulnerabilities.**
 
 Email `security@jiordiviera.me` with:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
@@ -50,7 +55,7 @@ We aim to respond within 48 hours and will work with you to fix the issue before
 
 ## Known Limitations (Not Vulnerabilities)
 
-1. **Anonymous Inboxes**: Users can create inboxes without authentication (by design — quick start). 
+1. **Anonymous Inboxes**: Users can create inboxes without authentication (by design — quick start).
    - Mitigation: Inboxes expire after N days; use email verification on production deployments.
 
 2. **Replay Rate Limiting**: Not rate-limited per user/event (current MVP scope).
@@ -72,6 +77,7 @@ We aim to respond within 48 hours and will work with you to fix the issue before
 ## For Self-Hosted Deployments
 
 If self-hosting Webhook Trap, ensure:
+
 - **Database**: Backed up regularly; use managed Postgres if possible (Neon, AWS RDS)
 - **Secrets**: Never commit `.env` with real credentials
 - **TLS**: Use valid certificate (Caddy auto-renews via Let's Encrypt)

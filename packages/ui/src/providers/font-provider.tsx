@@ -1,7 +1,7 @@
-import { ReactNode } from 'react'
+import { ReactNode } from "react";
 
 interface FontProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 /**
@@ -24,7 +24,7 @@ interface FontProviderProps {
  * ```
  */
 export function FontProvider({ children }: FontProviderProps) {
-  return <>{children}</>
+  return <>{children}</>;
 }
 
-export { fontClasses } from '@workspace/ui/lib/fonts'
+export { fontClasses } from "@workspace/ui/lib/fonts";

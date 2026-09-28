@@ -37,8 +37,8 @@ export default function PrivacyPage() {
                 cookie
               </code>{" "}
               headers are redacted before storage. Anonymous inboxes (no
-              account) expire automatically after 48 hours. Inboxes attached
-              to an account are kept until you delete them.
+              account) expire automatically after 48 hours. Inboxes attached to
+              an account are kept until you delete them.
             </p>
           </section>
 
@@ -59,9 +59,9 @@ export default function PrivacyPage() {
               Analytics
             </h2>
             <p>
-              We use Vercel Analytics to understand aggregate traffic
-              (page views, referrers). It doesn&apos;t use cookies or persist
-              a per-visitor identifier, and it only runs after you accept the
+              We use Vercel Analytics to understand aggregate traffic (page
+              views, referrers). It doesn&apos;t use cookies or persist a
+              per-visitor identifier, and it only runs after you accept the
               cookie banner. Declining, or not answering, keeps it off.
             </p>
           </section>
@@ -72,8 +72,8 @@ export default function PrivacyPage() {
             </h2>
             <p>
               When you replay an event, the stored payload is sent from our
-              server to the destination URL you provide. We don&apos;t send
-              it anywhere else.
+              server to the destination URL you provide. We don&apos;t send it
+              anywhere else.
             </p>
           </section>
 

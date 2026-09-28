@@ -1,44 +1,48 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { productName } from '@/lib/config'
+import { useEffect, useRef, useState } from "react";
+import { productName } from "@/lib/config";
 
 const integrations = [
-  { name: 'Stripe', category: 'Payments' },
-  { name: 'GitHub', category: 'Version control' },
-  { name: 'Shopify', category: 'Commerce' },
-  { name: 'Twilio', category: 'Messaging' },
-  { name: 'Linear', category: 'Issues' },
-  { name: 'Vercel', category: 'Deploy hooks' },
-  { name: 'Clerk', category: 'Auth events' },
-  { name: 'Resend', category: 'Email events' },
-  { name: 'Google', category: 'Cloud pub/sub' },
-  { name: 'Spotify', category: 'Webhooks' },
-  { name: 'curl', category: 'Any HTTP client' },
-  { name: 'Your API', category: 'Custom provider' },
-]
+  { name: "Stripe", category: "Payments" },
+  { name: "GitHub", category: "Version control" },
+  { name: "Shopify", category: "Commerce" },
+  { name: "Twilio", category: "Messaging" },
+  { name: "Linear", category: "Issues" },
+  { name: "Vercel", category: "Deploy hooks" },
+  { name: "Clerk", category: "Auth events" },
+  { name: "Resend", category: "Email events" },
+  { name: "Google", category: "Cloud pub/sub" },
+  { name: "Spotify", category: "Webhooks" },
+  { name: "curl", category: "Any HTTP client" },
+  { name: "Your API", category: "Custom provider" },
+];
 
 export function IntegrationsSection() {
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef<HTMLElement>(null)
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) setIsVisible(true)
+        if (entry?.isIntersecting) setIsVisible(true);
       },
-      { threshold: 0.1 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
+      { threshold: 0.1 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section id="integrations" ref={sectionRef} className="relative scroll-mt-24 overflow-hidden py-24 lg:py-32">
+    <section
+      id="integrations"
+      ref={sectionRef}
+      className="relative scroll-mt-24 overflow-hidden py-24 lg:py-32"
+    >
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div
           className={`mx-auto mb-16 max-w-3xl text-center transition-all duration-700 lg:mb-24 ${
-            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           }`}
         >
           <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
@@ -52,7 +56,8 @@ export function IntegrationsSection() {
             Every provider you already use.
           </h2>
           <p className="text-xl text-muted-foreground">
-            Point any webhook sender at {productName}. No vendor-specific SDK required.
+            Point any webhook sender at {productName}. No vendor-specific SDK
+            required.
           </p>
         </div>
       </div>
@@ -67,7 +72,9 @@ export function IntegrationsSection() {
                   className="shrink-0 border border-border px-8 py-6 transition-all duration-300 hover:border-primary/30 hover:bg-accent/40"
                 >
                   <div className="text-lg font-medium">{integration.name}</div>
-                  <div className="text-sm text-muted-foreground">{integration.category}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {integration.category}
+                  </div>
                 </div>
               ))}
             </div>
@@ -85,7 +92,9 @@ export function IntegrationsSection() {
                   className="shrink-0 border border-border px-8 py-6 transition-all duration-300 hover:border-primary/30 hover:bg-accent/40"
                 >
                   <div className="text-lg font-medium">{integration.name}</div>
-                  <div className="text-sm text-muted-foreground">{integration.category}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {integration.category}
+                  </div>
                 </div>
               ))}
             </div>
@@ -93,5 +102,5 @@ export function IntegrationsSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

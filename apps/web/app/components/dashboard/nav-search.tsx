@@ -1,63 +1,71 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { IconSearch } from '@tabler/icons-react'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { IconSearch } from "@tabler/icons-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@workspace/ui/components/dialog'
-import { Input } from '@workspace/ui/components/input'
-import { Kbd, KbdGroup } from '@workspace/ui/components/kbd'
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@workspace/ui/components/sidebar'
-import { useDashboardNav } from '@/features/dashboard/context/dashboard-nav-context'
+} from "@workspace/ui/components/dialog";
+import { Input } from "@workspace/ui/components/input";
+import { Kbd, KbdGroup } from "@workspace/ui/components/kbd";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@workspace/ui/components/sidebar";
+import { useDashboardNav } from "@/features/dashboard/context/dashboard-nav-context";
 
 export function NavSearch() {
-  const router = useRouter()
-  const navItems = useDashboardNav()
+  const router = useRouter();
+  const navItems = useDashboardNav();
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [open, setOpen] = useState(false)
-  const [modifierKey, setModifierKey] = useState('Ctrl')
+  const [searchQuery, setSearchQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [modifierKey, setModifierKey] = useState("Ctrl");
 
   const allPages = navItems.map((item) => ({
     label: item.label,
     href: item.href,
     icon: item.icon,
-  }))
+  }));
 
   const filteredPages = searchQuery.trim()
-    ? allPages.filter((page) => page.label.toLowerCase().includes(searchQuery.toLowerCase()))
-    : allPages
+    ? allPages.filter((page) =>
+        page.label.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : allPages;
 
   const handleSelect = (href: string) => {
-    setOpen(false)
-    setSearchQuery('')
-    router.push(href)
-  }
+    setOpen(false);
+    setSearchQuery("");
+    router.push(href);
+  };
 
   const handleOpenChange = (value: boolean) => {
-    setOpen(value)
-    if (!value) setSearchQuery('')
-  }
+    setOpen(value);
+    if (!value) setSearchQuery("");
+  };
 
   useEffect(() => {
-    setModifierKey(/Mac|iPhone|iPod|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl')
-  }, [])
+    setModifierKey(
+      /Mac|iPhone|iPod|iPad/.test(navigator.platform) ? "⌘" : "Ctrl",
+    );
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault()
-        setOpen(true)
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setOpen(true);
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <>
@@ -101,10 +109,12 @@ export function NavSearch() {
 
           <div className="max-h-72 overflow-y-auto py-1" role="listbox">
             {filteredPages.length === 0 ? (
-              <p className="text-muted-foreground px-4 py-8 text-center text-sm">No pages found.</p>
+              <p className="text-muted-foreground px-4 py-8 text-center text-sm">
+                No pages found.
+              </p>
             ) : (
               filteredPages.map((page) => {
-                const Icon = page.icon
+                const Icon = page.icon;
 
                 return (
                   <button
@@ -115,15 +125,19 @@ export function NavSearch() {
                     className="hover:bg-accent flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors"
                     onClick={() => handleSelect(page.href)}
                   >
-                    <Icon className="text-muted-foreground size-4 shrink-0" stroke={1.8} aria-hidden />
+                    <Icon
+                      className="text-muted-foreground size-4 shrink-0"
+                      stroke={1.8}
+                      aria-hidden
+                    />
                     {page.label}
                   </button>
-                )
+                );
               })
             )}
           </div>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

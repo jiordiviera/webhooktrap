@@ -1,6 +1,6 @@
-import { Skeleton } from '@workspace/ui/components/skeleton'
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
-const NAV_ITEM_WIDTHS = ['72%', '58%', '64%', '52%'] as const
+const NAV_ITEM_WIDTHS = ["72%", "58%", "64%", "52%"] as const;
 
 function SidebarSkeleton() {
   return (
@@ -21,7 +21,10 @@ function SidebarSkeleton() {
 
           <div className="flex-1 space-y-1 px-3 py-3">
             {NAV_ITEM_WIDTHS.map((width, index) => (
-              <div key={index} className="flex h-9 items-center gap-2 rounded-md px-2">
+              <div
+                key={index}
+                className="flex h-9 items-center gap-2 rounded-md px-2"
+              >
                 <Skeleton className="size-4 shrink-0 rounded-md" />
                 <Skeleton className="h-3.5 rounded-md" style={{ width }} />
               </div>
@@ -34,7 +37,7 @@ function SidebarSkeleton() {
         </div>
       </aside>
     </>
-  )
+  );
 }
 
 function HeaderSkeleton() {
@@ -50,7 +53,7 @@ function HeaderSkeleton() {
         <Skeleton className="h-4 w-36 rounded-md" />
       </div>
     </>
-  )
+  );
 }
 
 function MainContentSkeleton() {
@@ -84,7 +87,7 @@ function MainContentSkeleton() {
         </section>
       </div>
     </main>
-  )
+  );
 }
 
 export function WorkspaceSkeleton() {
@@ -101,5 +104,5 @@ export function WorkspaceSkeleton() {
         <MainContentSkeleton />
       </div>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
+import Link from "next/link";
 import {
   IconArrowLeft,
   IconCheck,
@@ -8,12 +8,12 @@ import {
   IconRefresh,
   IconTrash,
   IconX,
-} from '@tabler/icons-react'
-import { Button } from '@workspace/ui/components/button'
-import { Input } from '@workspace/ui/components/input'
-import { Loader } from '@workspace/ui/components/loader'
-import { Skeleton } from '@workspace/ui/components/skeleton'
-import { InboxDTO } from '@workspace/types'
+} from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
+import { Loader } from "@workspace/ui/components/loader";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { InboxDTO } from "@workspace/types";
 
 function InboxHeaderSkeleton() {
   return (
@@ -22,22 +22,22 @@ function InboxHeaderSkeleton() {
       <Skeleton className="h-8 w-48 max-w-full rounded-lg" />
       <Skeleton className="h-4 w-32 rounded-md" />
     </div>
-  )
+  );
 }
 
 interface InboxHeaderProps {
-  inbox: InboxDTO | null
-  inboxLoading: boolean
-  editingName: boolean
-  nameDraft: string
-  savingName: boolean
-  deleting: boolean
-  onNameDraftChange: (value: string) => void
-  onSaveName: () => void
-  onCancelEdit: () => void
-  onStartEdit: () => void
-  onDelete: () => void
-  onRefresh: () => void
+  inbox: InboxDTO | null;
+  inboxLoading: boolean;
+  editingName: boolean;
+  nameDraft: string;
+  savingName: boolean;
+  deleting: boolean;
+  onNameDraftChange: (value: string) => void;
+  onSaveName: () => void;
+  onCancelEdit: () => void;
+  onStartEdit: () => void;
+  onDelete: () => void;
+  onRefresh: () => void;
 }
 
 export function InboxHeader({
@@ -55,7 +55,7 @@ export function InboxHeader({
   onRefresh,
 }: InboxHeaderProps) {
   if (inboxLoading || !inbox) {
-    return <InboxHeaderSkeleton />
+    return <InboxHeaderSkeleton />;
   }
 
   return (
@@ -76,11 +76,16 @@ export function InboxHeader({
                 className="h-9 max-w-sm text-lg font-semibold"
                 autoFocus
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter') onSaveName()
-                  if (event.key === 'Escape') onCancelEdit()
+                  if (event.key === "Enter") onSaveName();
+                  if (event.key === "Escape") onCancelEdit();
                 }}
               />
-              <Button type="button" size="sm" disabled={savingName} onClick={onSaveName}>
+              <Button
+                type="button"
+                size="sm"
+                disabled={savingName}
+                onClick={onSaveName}
+              >
                 {savingName ? (
                   <Loader size="sm" tone="inherit" />
                 ) : (
@@ -115,7 +120,9 @@ export function InboxHeader({
               </Button>
             </div>
           )}
-          <p className="mt-1 font-mono text-sm text-muted-foreground">/i/{inbox.id}</p>
+          <p className="mt-1 font-mono text-sm text-muted-foreground">
+            /i/{inbox.id}
+          </p>
         </div>
       </div>
 
@@ -137,9 +144,9 @@ export function InboxHeader({
           ) : (
             <IconTrash className="size-3.5" aria-hidden />
           )}
-          {deleting ? 'Deleting…' : 'Delete'}
+          {deleting ? "Deleting…" : "Delete"}
         </Button>
       </div>
     </>
-  )
+  );
 }

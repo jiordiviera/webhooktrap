@@ -31,5 +31,5 @@ export function SignalField() {
       <div className="landing-signal-orb-delayed absolute top-[42%] right-[28%] size-48 rounded-full bg-signal/10 blur-3xl" />
       <div className="landing-signal-orb absolute bottom-[20%] left-[8%] size-40 rounded-full bg-accent blur-3xl" />
     </div>
-  )
+  );
 }

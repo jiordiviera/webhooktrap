@@ -1,48 +1,62 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { IconEye, IconFileCheck, IconLock, IconShield } from '@tabler/icons-react'
-import { productName } from '@/lib/config'
+import { useEffect, useRef, useState } from "react";
+import {
+  IconEye,
+  IconFileCheck,
+  IconLock,
+  IconShield,
+} from "@tabler/icons-react";
+import { productName } from "@/lib/config";
 
 const securityFeatures = [
   {
     icon: IconShield,
-    title: 'Signature visibility',
-    description: 'Inspect provider signatures alongside the raw payload before you replay to your handler.',
+    title: "Signature visibility",
+    description:
+      "Inspect provider signatures alongside the raw payload before you replay to your handler.",
   },
   {
     icon: IconLock,
-    title: 'TLS in transit',
-    description: 'Ingest URLs are served over HTTPS. Payloads stay encrypted between provider and inbox.',
+    title: "TLS in transit",
+    description:
+      "Ingest URLs are served over HTTPS. Payloads stay encrypted between provider and inbox.",
   },
   {
     icon: IconEye,
-    title: 'Read-only shares',
-    description: 'Send a link to a teammate without granting write access or account creation.',
+    title: "Read-only shares",
+    description:
+      "Send a link to a teammate without granting write access or account creation.",
   },
   {
     icon: IconFileCheck,
-    title: 'Account persistence',
-    description: 'Sign in to keep inboxes past the 48-hour anonymous window. Delete when you are done.',
+    title: "Account persistence",
+    description:
+      "Sign in to keep inboxes past the 48-hour anonymous window. Delete when you are done.",
   },
-]
+];
 
-const tags = ['HTTPS ingest', 'Auth-gated dashboard', 'Read-only links', '48h anonymous TTL']
+const tags = [
+  "HTTPS ingest",
+  "Auth-gated dashboard",
+  "Read-only links",
+  "48h anonymous TTL",
+];
 
 export function SecuritySection() {
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef<HTMLElement>(null)
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) setIsVisible(true)
+        if (entry?.isIntersecting) setIsVisible(true);
       },
-      { threshold: 0.1 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
+      { threshold: 0.1 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
@@ -54,7 +68,9 @@ export function SecuritySection() {
         <div className="grid gap-16 lg:grid-cols-2 lg:gap-24">
           <div
             className={`transition-all duration-700 ${
-              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+              isVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-8 opacity-0"
             }`}
           >
             <span className="mb-6 inline-flex items-center gap-3 text-sm text-muted-foreground">
@@ -67,15 +83,18 @@ export function SecuritySection() {
               Share deliberately.
             </h2>
             <p className="mb-12 text-xl leading-relaxed text-muted-foreground">
-              {productName} is a debugger, not production webhook infrastructure. Design around
-              inspection, replay, and controlled sharing.
+              {productName} is a debugger, not production webhook
+              infrastructure. Design around inspection, replay, and controlled
+              sharing.
             </p>
             <div className="flex flex-wrap gap-3">
               {tags.map((tag, index) => (
                 <span
                   key={tag}
                   className={`border border-border px-4 py-2 text-sm transition-all duration-500 ${
-                    isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                    isVisible
+                      ? "translate-y-0 opacity-100"
+                      : "translate-y-4 opacity-0"
                   }`}
                   style={{ transitionDelay: `${index * 50 + 200}ms` }}
                 >
@@ -87,24 +106,30 @@ export function SecuritySection() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             {securityFeatures.map((feature, index) => {
-              const Icon = feature.icon
+              const Icon = feature.icon;
               return (
                 <div
                   key={feature.title}
                   className={`border border-border bg-card p-6 transition-all duration-700 ${
-                    isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                    isVisible
+                      ? "translate-y-0 opacity-100"
+                      : "translate-y-8 opacity-0"
                   }`}
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   <Icon className="mb-4 size-5 text-primary" />
-                  <h3 className="mb-2 font-medium text-foreground">{feature.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
+                  <h3 className="mb-2 font-medium text-foreground">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {feature.description}
+                  </p>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

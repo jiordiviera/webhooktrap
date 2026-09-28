@@ -20,7 +20,6 @@ export function DeveloperCredit({
       : "text-foreground/80 hover:text-primary",
   );
 
-
   return (
     <p
       className={cn(

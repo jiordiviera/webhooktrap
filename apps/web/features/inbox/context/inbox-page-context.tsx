@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   createContext,
@@ -7,27 +7,31 @@ import {
   useMemo,
   useState,
   type ReactNode,
-} from 'react'
+} from "react";
 
 type InboxPageContextValue = {
-  title: string | null
-  setTitle: (title: string | null) => void
-}
+  title: string | null;
+  setTitle: (title: string | null) => void;
+};
 
-const InboxPageContext = createContext<InboxPageContextValue | null>(null)
+const InboxPageContext = createContext<InboxPageContextValue | null>(null);
 
 export function InboxPageProvider({ children }: { children: ReactNode }) {
-  const [title, setTitleState] = useState<string | null>(null)
+  const [title, setTitleState] = useState<string | null>(null);
 
   const setTitle = useCallback((next: string | null) => {
-    setTitleState(next)
-  }, [])
+    setTitleState(next);
+  }, []);
 
-  const value = useMemo(() => ({ title, setTitle }), [title, setTitle])
+  const value = useMemo(() => ({ title, setTitle }), [title, setTitle]);
 
-  return <InboxPageContext.Provider value={value}>{children}</InboxPageContext.Provider>
+  return (
+    <InboxPageContext.Provider value={value}>
+      {children}
+    </InboxPageContext.Provider>
+  );
 }
 
 export function useInboxPageTitle() {
-  return useContext(InboxPageContext)
+  return useContext(InboxPageContext);
 }

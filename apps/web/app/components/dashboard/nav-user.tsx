@@ -1,15 +1,19 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   IconCreditCard,
   IconDotsVertical,
   IconLogout,
   IconNotification,
   IconUserCircle,
-} from '@tabler/icons-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/avatar'
+} from "@tabler/icons-react";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,25 +22,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@workspace/ui/components/dropdown-menu'
+} from "@workspace/ui/components/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@workspace/ui/components/sidebar'
-import { useAuth } from '@/contexts/auth-context'
-import { resolveAvatarSrc } from '@/lib/avatar'
+} from "@workspace/ui/components/sidebar";
+import { useAuth } from "@/contexts/auth-context";
+import { resolveAvatarSrc } from "@/lib/avatar";
 
 export function NavUser() {
-  const router = useRouter()
-  const { user, signOut } = useAuth()
-  const { isMobile } = useSidebar()
+  const router = useRouter();
+  const { user, signOut } = useAuth();
+  const { isMobile } = useSidebar();
 
-  if (!user) return null
+  if (!user) return null;
 
-  const displayName = user.fullName ?? user.email
-  const avatarSrc = resolveAvatarSrc(user.avatar)
+  const displayName = user.fullName ?? user.email;
+  const avatarSrc = resolveAvatarSrc(user.avatar);
 
   return (
     <SidebarMenu>
@@ -49,7 +53,9 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={avatarSrc} alt={displayName} />
-                <AvatarFallback className="rounded-lg">{user.initials}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {user.initials}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{displayName}</span>
@@ -62,7 +68,7 @@ export function NavUser() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
+            side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
@@ -70,7 +76,9 @@ export function NavUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={avatarSrc} alt={displayName} />
-                  <AvatarFallback className="rounded-lg">{user.initials}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {user.initials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{displayName}</span>
@@ -104,8 +112,8 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={async () => {
-                await signOut()
-                router.push('/login')
+                await signOut();
+                router.push("/login");
               }}
             >
               <IconLogout />
@@ -115,5 +123,5 @@ export function NavUser() {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

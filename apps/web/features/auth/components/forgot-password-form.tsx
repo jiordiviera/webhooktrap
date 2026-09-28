@@ -1,55 +1,55 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useState } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
-import { Button } from '@workspace/ui/components/button'
+import * as React from "react";
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { Button } from "@workspace/ui/components/button";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@workspace/ui/components/field'
-import { Input } from '@workspace/ui/components/input'
-import { ApiError } from '@/lib/api'
+} from "@workspace/ui/components/field";
+import { Input } from "@workspace/ui/components/input";
+import { ApiError } from "@/lib/api";
 import {
   type ForgotPasswordValues,
   forgotPasswordSchema,
-} from '@/lib/schemas/auth'
-import { requestOtp } from '@/lib/api/otp'
-import { useCountdown } from '@/hooks/use-countdown'
+} from "@/lib/schemas/auth";
+import { requestOtp } from "@/lib/api/otp";
+import { useCountdown } from "@/hooks/use-countdown";
 
 type ForgotPasswordFormProps = {
-  onSent: (email: string) => void
-}
+  onSent: (email: string) => void;
+};
 
 export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
-  const [sent, setSent] = useState(false)
-  const countdown = useCountdown()
+  const [sent, setSent] = useState(false);
+  const countdown = useCountdown();
 
   const form = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: { email: '' },
-  })
+    defaultValues: { email: "" },
+  });
 
   async function onSubmit(values: ForgotPasswordValues) {
     try {
-      await requestOtp(values.email, 'password_reset')
-      setSent(true)
-      countdown.start(60)
-      onSent(values.email)
+      await requestOtp(values.email, "password_reset");
+      setSent(true);
+      countdown.start(60);
+      onSent(values.email);
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 429) {
-          countdown.start(err.body.retryAfter ?? 60)
-          setSent(true)
-          onSent(values.email)
+          countdown.start(err.body.retryAfter ?? 60);
+          setSent(true);
+          onSent(values.email);
         } else {
-          form.setError('email', { message: err.message })
+          form.setError("email", { message: err.message });
         }
       } else {
-        form.setError('root', { message: 'Something went wrong. Try again.' })
+        form.setError("root", { message: "Something went wrong. Try again." });
       }
     }
   }
@@ -58,7 +58,8 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          If an account with that email exists, we&apos;ve sent a reset code. Check your inbox.
+          If an account with that email exists, we&apos;ve sent a reset code.
+          Check your inbox.
         </p>
         {countdown.isRunning && (
           <p className="text-center text-xs text-muted-foreground">
@@ -66,11 +67,15 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
           </p>
         )}
       </div>
-    )
+    );
   }
 
   return (
-    <form id="forgot-password-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+    <form
+      id="forgot-password-form"
+      onSubmit={form.handleSubmit(onSubmit)}
+      noValidate
+    >
       <FieldGroup>
         <Controller
           name="email"
@@ -85,9 +90,7 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
                 aria-invalid={fieldState.invalid}
                 {...field}
               />
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -102,9 +105,9 @@ export function ForgotPasswordForm({ onSent }: ForgotPasswordFormProps) {
           className="h-10 w-full"
           disabled={form.formState.isSubmitting}
         >
-          {form.formState.isSubmitting ? 'Sending…' : 'Send reset code'}
+          {form.formState.isSubmitting ? "Sending…" : "Send reset code"}
         </Button>
       </FieldGroup>
     </form>
-  )
+  );
 }

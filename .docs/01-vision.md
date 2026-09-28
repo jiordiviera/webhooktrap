@@ -35,22 +35,22 @@ Provider → Webhook Trap inbox → Inspect → Replay → Voir la response
 
 ## Cible
 
-| Persona | Besoin |
-|---------|--------|
-| **Dev backend solo** | Intègre Stripe ce soir, teste vite |
-| **Petite équipe** | Partager un webhook reçu à 23h |
-| **Dev en debug** | Rejouer un event exact sans re-simuler |
+| Persona              | Besoin                                 |
+| -------------------- | -------------------------------------- |
+| **Dev backend solo** | Intègre Stripe ce soir, teste vite     |
+| **Petite équipe**    | Partager un webhook reçu à 23h         |
+| **Dev en debug**     | Rejouer un event exact sans re-simuler |
 
 **Hors cible** : équipes ops cherchant infra webhook prod (retries, SLA) → Hookdeck / Svix.
 
 ## Ce que Webhook Trap est / n'est pas
 
-| Est | N'est pas |
-|-----|-----------|
-| Debugger webhook dev-first | Plateforme email (PulseSend) |
-| Inbox + replay + vue response | Infra production complète |
-| CLI + dashboard | Outil no-code / workflows |
-| SaaS dev tool | Marketing automation |
+| Est                           | N'est pas                    |
+| ----------------------------- | ---------------------------- |
+| Debugger webhook dev-first    | Plateforme email (PulseSend) |
+| Inbox + replay + vue response | Infra production complète    |
+| CLI + dashboard               | Outil no-code / workflows    |
+| SaaS dev tool                 | Marketing automation         |
 
 ## Critère de succès MVP
 
@@ -58,8 +58,8 @@ Un dev externe complète le flow Stripe webhook **sans aide en < 15 minutes**.
 
 ## Métriques long terme
 
-| Horizon | KPI |
-|---------|-----|
-| MVP | Quickstart < 15 min |
-| V1 | 10 tenants actifs, usage récurrent |
-| V2 | Rétention équipe, fixtures CI |
+| Horizon | KPI                                |
+| ------- | ---------------------------------- |
+| MVP     | Quickstart < 15 min                |
+| V1      | 10 tenants actifs, usage récurrent |
+| V2      | Rétention équipe, fixtures CI      |

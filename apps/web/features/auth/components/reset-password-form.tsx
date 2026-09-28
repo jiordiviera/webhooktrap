@@ -1,57 +1,68 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
-import { Button } from '@workspace/ui/components/button'
+import * as React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { Button } from "@workspace/ui/components/button";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@workspace/ui/components/field'
-import { Input } from '@workspace/ui/components/input'
-import { ApiError } from '@/lib/api'
+} from "@workspace/ui/components/field";
+import { Input } from "@workspace/ui/components/input";
+import { ApiError } from "@/lib/api";
 import {
   type ResetPasswordValues,
   resetPasswordSchema,
-} from '@/lib/schemas/auth'
-import { resetPassword } from '@/lib/api/otp'
+} from "@/lib/schemas/auth";
+import { resetPassword } from "@/lib/api/otp";
 
 type ResetPasswordFormProps = {
-  resetToken: string
-  onSuccess: () => void
-}
+  resetToken: string;
+  onSuccess: () => void;
+};
 
-export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormProps) {
+export function ResetPasswordForm({
+  resetToken,
+  onSuccess,
+}: ResetPasswordFormProps) {
   const form = useForm<ResetPasswordValues>({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { password: '', passwordConfirmation: '' },
-  })
+    defaultValues: { password: "", passwordConfirmation: "" },
+  });
 
   async function onSubmit(values: ResetPasswordValues) {
     try {
-      await resetPassword(resetToken, values.password, values.passwordConfirmation)
-      onSuccess()
+      await resetPassword(
+        resetToken,
+        values.password,
+        values.passwordConfirmation,
+      );
+      onSuccess();
     } catch (err) {
       if (err instanceof ApiError) {
-        const fieldError = err.body.errors?.[0]
+        const fieldError = err.body.errors?.[0];
         if (fieldError?.field) {
           form.setError(fieldError.field as keyof ResetPasswordValues, {
             message: fieldError.message,
-          })
-          return
+          });
+          return;
         }
-        form.setError('root', { message: fieldError?.message ?? err.message })
+        form.setError("root", { message: fieldError?.message ?? err.message });
       } else {
-        form.setError('root', { message: 'Something went wrong. Try again.' })
+        form.setError("root", { message: "Something went wrong. Try again." });
       }
     }
   }
 
   return (
-    <form id="reset-password-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+    <form
+      id="reset-password-form"
+      onSubmit={form.handleSubmit(onSubmit)}
+      noValidate
+    >
       <FieldGroup>
         <Controller
           name="password"
@@ -67,9 +78,7 @@ export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormPr
                 {...field}
               />
               <FieldDescription>8 to 32 characters.</FieldDescription>
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -79,7 +88,9 @@ export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormPr
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="passwordConfirmation">Confirm new password</FieldLabel>
+              <FieldLabel htmlFor="passwordConfirmation">
+                Confirm new password
+              </FieldLabel>
               <Input
                 id="passwordConfirmation"
                 type="password"
@@ -87,9 +98,7 @@ export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormPr
                 aria-invalid={fieldState.invalid}
                 {...field}
               />
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -104,9 +113,9 @@ export function ResetPasswordForm({ resetToken, onSuccess }: ResetPasswordFormPr
           className="h-10 w-full"
           disabled={form.formState.isSubmitting}
         >
-          {form.formState.isSubmitting ? 'Resetting…' : 'Reset password'}
+          {form.formState.isSubmitting ? "Resetting…" : "Reset password"}
         </Button>
       </FieldGroup>
     </form>
-  )
+  );
 }

@@ -2,22 +2,22 @@
 
 ## Carte du marché
 
-| Produit | Capture | Replay | Tunnel localhost | Équipe | Prix entrée |
-|---------|---------|--------|------------------|--------|-------------|
-| [webhook.site](https://webhook.site) | ✓✓ | ✓ payant | ✓ CLI `whcli` | ✓ | ~$7.5/mois |
-| [Hookdeck](https://hookdeck.com) | ✓✓ | ✓✓ | ✓ | ✓ | $0 / $39 |
-| [Catchhook](https://catchhook.app) | ✓✓ | ✓ | ✓ `@catchhook/tunnel` | ✓ | $10/mois |
-| [HookReplay](https://devhunt.org/tool/hookreplay) | ✓ | ✓ | ✓ CLI | — | — |
-| Svix Play | ✓ | limité | — | — | gratuit |
-| ngrok | inspect | basique | ✓✓ | — | freemium |
-| Stripe CLI | — | ✓ | ✓ | — | gratuit (Stripe only) |
+| Produit                                           | Capture | Replay   | Tunnel localhost      | Équipe | Prix entrée           |
+| ------------------------------------------------- | ------- | -------- | --------------------- | ------ | --------------------- |
+| [webhook.site](https://webhook.site)              | ✓✓      | ✓ payant | ✓ CLI `whcli`         | ✓      | ~$7.5/mois            |
+| [Hookdeck](https://hookdeck.com)                  | ✓✓      | ✓✓       | ✓                     | ✓      | $0 / $39              |
+| [Catchhook](https://catchhook.app)                | ✓✓      | ✓        | ✓ `@catchhook/tunnel` | ✓      | $10/mois              |
+| [HookReplay](https://devhunt.org/tool/hookreplay) | ✓       | ✓        | ✓ CLI                 | —      | —                     |
+| Svix Play                                         | ✓       | limité   | —                     | —      | gratuit               |
+| ngrok                                             | inspect | basique  | ✓✓                    | —      | freemium              |
+| Stripe CLI                                        | —       | ✓        | ✓                     | —      | gratuit (Stripe only) |
 
 ## Concurrents directs à surveiller
 
 ### HookReplay
 
 - Domaines : `hookreplay.com`, `hookreplay.dev`
-- Tagline : *Capture once. Replay forever.*
+- Tagline : _Capture once. Replay forever._
 - npm + CLI + guides Stripe
 - **Risque** : nom quasi identique à « Replayhook »
 
@@ -49,12 +49,12 @@
 
 ### Wedge vs concurrence
 
-| Concurrent | Leur force | Angle Webhook Trap |
-|------------|------------|-----------------|
+| Concurrent   | Leur force            | Angle Webhook Trap                        |
+| ------------ | --------------------- | ----------------------------------------- |
 | webhook.site | Feature-rich, no-code | Un seul job : replay loop + response view |
-| Catchhook | Tunnel + AI | CLI-first, minimal, dev pur |
-| HookReplay | Même idée, déjà lancé | UX replay/response supérieure |
-| Hookdeck | Prod infra | Ne pas concurrencer — rester debug |
+| Catchhook    | Tunnel + AI           | CLI-first, minimal, dev pur               |
+| HookReplay   | Même idée, déjà lancé | UX replay/response supérieure             |
+| Hookdeck     | Prod infra            | Ne pas concurrencer — rester debug        |
 
 ## Ce qui ne suffit pas pour gagner
 

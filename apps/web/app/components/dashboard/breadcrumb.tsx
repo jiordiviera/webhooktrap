@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,45 +9,45 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@workspace/ui/components/breadcrumb'
+} from "@workspace/ui/components/breadcrumb";
 import {
   type DashboardNavItem,
   useDashboardNav,
-} from '@/features/dashboard/context/dashboard-nav-context'
-import { useInboxPageTitle } from '@/features/inbox/context/inbox-page-context'
-import { productName } from '@/lib/config'
+} from "@/features/dashboard/context/dashboard-nav-context";
+import { useInboxPageTitle } from "@/features/inbox/context/inbox-page-context";
+import { productName } from "@/lib/config";
 
 type BreadcrumbCrumb = {
-  label: string
-  href?: string
-}
+  label: string;
+  href?: string;
+};
 
 function getBreadcrumbs(
   pathname: string,
   navItems: DashboardNavItem[],
-  inboxTitle: string | null | undefined
+  inboxTitle: string | null | undefined,
 ): BreadcrumbCrumb[] {
-  if (pathname.startsWith('/i/')) {
-    const inboxId = pathname.slice(3).split('/')[0]
+  if (pathname.startsWith("/i/")) {
+    const inboxId = pathname.slice(3).split("/")[0];
     return [
-      { label: 'Inboxes', href: '/inboxes' },
-      { label: inboxTitle ?? inboxId ?? 'Inbox' },
-    ]
+      { label: "Inboxes", href: "/inboxes" },
+      { label: inboxTitle ?? inboxId ?? "Inbox" },
+    ];
   }
 
-  const activeItem = navItems.find((item) => item.isActive(pathname))
+  const activeItem = navItems.find((item) => item.isActive(pathname));
   if (activeItem) {
-    return [{ label: activeItem.label }]
+    return [{ label: activeItem.label }];
   }
 
-  return [{ label: productName }]
+  return [{ label: productName }];
 }
 
 export function DashboardBreadcrumb() {
-  const pathname = usePathname()
-  const navItems = useDashboardNav()
-  const inboxPage = useInboxPageTitle()
-  const crumbs = getBreadcrumbs(pathname, navItems, inboxPage?.title)
+  const pathname = usePathname();
+  const navItems = useDashboardNav();
+  const inboxPage = useInboxPageTitle();
+  const crumbs = getBreadcrumbs(pathname, navItems, inboxPage?.title);
 
   return (
     <Breadcrumb className="w-full max-w-none">
@@ -59,7 +59,7 @@ export function DashboardBreadcrumb() {
         </BreadcrumbItem>
 
         {crumbs.map((crumb, index) => {
-          const isLast = index === crumbs.length - 1
+          const isLast = index === crumbs.length - 1;
 
           return (
             <span key={`${crumb.label}-${index}`} className="contents">
@@ -74,9 +74,9 @@ export function DashboardBreadcrumb() {
                 )}
               </BreadcrumbItem>
             </span>
-          )
+          );
         })}
       </BreadcrumbList>
     </Breadcrumb>
-  )
+  );
 }
