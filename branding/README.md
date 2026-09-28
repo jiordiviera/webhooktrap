@@ -2,11 +2,11 @@
 
 ## Fichiers
 
-| Fichier     | Source             | Usage                                                                     |
-| ----------- | ------------------ | ------------------------------------------------------------------------- |
-| `logo.png`  | Grok Imagine       | Wordmark complet (texte + pictogramme). Header, landing, README, OG image |
-| `icon.jpg`  | Grok Imagine       | Pictogramme seul. Favicon source, app icon, avatars sociaux               |
-| `brand.css` | Maintenu à la main | Tokens couleur + classes `.logo-wordmark` (Cormorant Garamond)            |
+| Fichier | Source | Usage |
+|---------|--------|--------|
+| `logo.png` | Identité géométrique | Wordmark complet (texte + pictogramme). Header, landing, README, OG image |
+| `icon.png` | Identité géométrique | Pictogramme transparent, favicon source et app icon. `icon.jpg` est conservé pour compatibilité |
+| `brand.css` | Maintenu à la main | Tokens couleur + classes `.logo-wordmark` (Cormorant Garamond) |
 
 ## Typographie
 
@@ -20,7 +20,7 @@ Les PNG/JPG **n’embarquent pas de police** (texte rasterisé). Pour le code et
 ```html
 <link rel="stylesheet" href="/branding/brand.css" />
 
-<!-- Image logo (fidèle au rendu Imagine) -->
+<!-- Wordmark rasterisé -->
 <img src="/branding/logo.png" alt="Webhook Trap" width="180" height="48" />
 
 <!-- Ou texte seul (SEO, accessibilité, dark mode) -->
@@ -31,5 +31,10 @@ Combiner **image** (rendu premium du PNG) + **texte stylé** (accessibilité, `p
 
 ## Historique
 
+<<<<<<< HEAD
 - Premiers SVG (cyan / fond sombre) — remplacés par la direction **terracotta / crème** et assets Imagine.
 - Direction typographique initialement explorée via le nom de travail **DreamBell**, puis **Webhook Trap**.
+=======
+- Symbole initial en cloche remplacé par le symbole cuivré fourni par Jiordi. Les formats favicon et app icon dérivent du même symbole.
+- Direction typographique initialement explorée via le nom de travail **DreamBell**, puis **Webhook Trap**.
+>>>>>>> 9905a1233f396eb15b9f36470bad40bac67e3419
