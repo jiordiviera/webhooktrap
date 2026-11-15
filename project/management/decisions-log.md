@@ -692,3 +692,7 @@ Locally, `main` is renamed to `v1`. Workflows and docs refer to `v2`.
 - **Support link:** "Buy me a coffee" (`https://buymeacoffee.com/jiordiviera`) goes on the landing and on a few pages, with an svgl TSX icon.
 
 **2026-11-15 follow-up:** the repo is **public**. `v2` (726d3dc, then f97ef5b and c33d55f) is the default branch, CI and the signed container are green on 726d3dc, and the earlier v2 workflow runs are deleted. Residual: the commits from before the squash are unreferenced on GitHub, but their objects can stay reachable by SHA until GitHub garbage-collects them.
+
+## 69. No accepted residuals on the shared host; deploy now (2026-11-15)
+
+The PO accepts no risks in writing. G-2: the monitoring agent's host user is removed from the `docker` group. Its system metrics keep working; container metrics from it stop until a read-only socket proxy is proposed. The PO asks for the 2.0 deploy now. The database is created by the deploy itself: the Postgres container plus migrations.
