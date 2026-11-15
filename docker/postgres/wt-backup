@@ -1,5 +1,5 @@
 #!/bin/sh
-# Backup tooling of the Postgres image (compose-profile.md §2 notes and §7; contabo plan §5.1).
+# Backup tooling of the Postgres image (compose-profile.md §2 notes and §7; the private hosted deployment plan §5.1).
 # One script, called by the name it is linked as:
 #   pgbackrest-queue PATH NAME  `postgres` archive_command (pgBackRest requires its name in the command): queue the WAL segment on the shared spool
 #                          volume (no network, no secret in the postgres container)
@@ -318,7 +318,7 @@ case "$NAME" in
         : > "$STATUS_DIR/restore.pending"   # DL-3c: the app refuses to start until restore-finish
         # Recovery fetches WAL with this command, so the recovering server must run where the
         # repository is reachable: the runbook starts it once in a `backup` container
-        # (contabo-deployment-plan.md §5.1), then postgres starts normally.
+        # (the private hosted deployment plan §5.1), then postgres starts normally.
         set -- --recovery-option='restore_command=wt-pgbackrest archive-get %f "%p"'
         if [ -n "$target" ]; then
             pgbr restore "$@" --type=time --target="$target" --target-action=promote

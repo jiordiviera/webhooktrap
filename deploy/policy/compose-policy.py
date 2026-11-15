@@ -7,7 +7,7 @@ C3 and never read from the image. Standard library only.
 
 Usage:
     compose-policy.py --config resolved.json --app-ref REPO@sha256:... --pg-ref REPO@sha256:...
-                      --app-dir /opt/apps/webhooktrap --app-port 18480 [--cgroupfs]
+                      --app-dir APP_DIR --app-port APP_PORT [--cgroupfs]
 
 Exit 0 when every rule holds, 1 otherwise. P-11: on failure it prints only "rule service" pairs,
 never a value from the configuration (the JSON inlines .env.production).
@@ -72,7 +72,7 @@ CAP_ADD = {
 FORBIDDEN_KEYS = ("privileged", "devices", "device_cgroup_rules", "pid", "ipc", "uts",
                   "userns_mode", "cgroup", "runtime", "gpus", "volumes_from", "sysctls", "build")
 FORBIDDEN_BIND = ("/", "/proc", "/sys", "/dev", "/etc", "/var/lib/docker", "/var/run/docker.sock",
-                  "/run/docker.sock", "/opt/apps")
+                  "/run/docker.sock")  # anything outside APP_DIR is refused anyway (P-5)
 READ_ONLY = {"app", "ingest", "haproxy", "haproxy-config", "reverb", "horizon", "scheduler", "engine"}
 HAPROXY_ENV = {"WT_CAPTURE_MAX_CONN", "WT_CAPTURE_MAX_RATE", "WT_CAPTURE_MAX_STREAM",
                "WT_CAPTURE_STREAM_SLOTS"}

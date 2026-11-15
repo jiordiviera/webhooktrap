@@ -1,6 +1,6 @@
 # Hosting options · Webhook Trap 2.0
 
-> **HD-1 superseded by decision 39 (2026-11-14).** The PO chose the existing Contabo VPS instead of a new Hetzner VPS; the runner stays on its own small VM (HD-5). Decision 40 then retired 1.x entirely, so 2.0 gets the whole VPS (HR-14 and the "current VPS extended" rejection in §2.4 no longer apply). See `contabo-deployment-plan.md` and `1x-decommission-runbook.md`. The rest of this document (requirements, H-2..H-9, HD-2..HD-10) still applies.
+> **HD-1 superseded by decision 39 (2026-11-14).** The PO chose the existing Contabo VPS instead of a new Hetzner VPS; the runner stays on its own small VM (HD-5). Decision 40 then retired 1.x entirely, so 2.0 gets the whole VPS (HR-14 and the "current VPS extended" rejection in §2.4 no longer apply). See the private hosted deployment plan and `1x-decommission-runbook.md`. The rest of this document (requirements, H-2..H-9, HD-2..HD-10) still applies.
 
 **Status:** DRAFT for a PO decision · **Author:** A10 (DevOps) · **Date:** 2026-11-14
 **Scope:** decision 32 §6 (hosting deferred to Phase 4), decision 37 (A10 hosting options on A05's package), `open-questions.md` §3 (H-1 to H-9).

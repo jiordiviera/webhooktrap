@@ -131,7 +131,7 @@ jobs:
           APP_DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
           PG_IMAGE: ghcr.io/${{ github.repository }}-postgres
           PG_DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
-          APP_PORT: '18480'
+          APP_PORT: '18999' # test value
           WEBHOOKTRAP_VERSION: v0.0.0-ci
         run: |
           mkdir -p secrets
@@ -161,7 +161,7 @@ jobs:
             VALKEY_MAXMEMORY=192mb > "$d/.env.production"
           printf '%s\n' "APP_IMAGE=ghcr.io/$GITHUB_REPOSITORY" "APP_DIGEST=sha256:$(printf 'a%.0s' $(seq 64))" \
             "PG_IMAGE=ghcr.io/$GITHUB_REPOSITORY-postgres" "PG_DIGEST=sha256:$(printf 'b%.0s' $(seq 64))" \
-            APP_PORT=18480 > "$d/.env.deploy"
+            APP_PORT=18999 > "$d/.env.deploy"
           docker compose --project-directory "$d" --env-file "$d/.env.deploy" -f "$d/compose.production.yaml" \
             config --format json > "$d/resolved.json"
           python3 -I -B deploy/policy/test_compose_policy.py "$d/resolved.json" "$d"

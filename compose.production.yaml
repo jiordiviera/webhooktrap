@@ -3,7 +3,7 @@
 # deploy.sh extracts it from the signed image and checks it against the on-box policy
 # (deploy/policy/compose-policy.py, ci-cd.md §4.2) before `up`.
 # Values in ${...} come from .env.deploy (image, digest, port) or .env.production (names only here).
-# Limits: the 23 GiB box (VPS audit, decision 65): compose-profile §3, slice MemoryMax 6 GiB, CPUQuota 300%.
+# Limits: compose-profile §3 (hosted column); the slice is set in the private hosted deployment plan.
 
 name: webhooktrap # pinned: --remove-orphans can never touch another project
 
@@ -16,7 +16,7 @@ x-hardening: &hardening
   init: true
   security_opt: ["no-new-privileges:true"]
   cap_drop: [ALL]
-  cgroup_parent: webhooktrap.slice # aggregate ceiling (contabo plan §6.1); policy variant if Docker uses cgroupfs
+  cgroup_parent: webhooktrap.slice # aggregate ceiling (private hosted deployment plan §6.1); policy variant if Docker uses cgroupfs
   logging: *logging
 
 x-app: &app
@@ -40,13 +40,13 @@ services:
   app:
     <<: *app
     networks: [edge, internal, egress] # egress: mail, OAuth
-    ports: ["127.0.0.1:${APP_PORT:?Set APP_PORT}:8080"] # hosted: 18480; loopback only (P-6)
+    ports: ["127.0.0.1:${APP_PORT:?Set APP_PORT}:8080"] # loopback only (P-6); the port is in the private plan
     environment:
       PROXY_TRUST_MODE: secret
       WT_ROLE: app # the entrypoint checks the edge secret in app and ingest only (A09 S3-22)
       INGEST_MODE: proxy # capture path (in. host, /c/…) handed on, re-signed with the edge secret
       INGEST_UPSTREAM: haproxy:8080 # decision 61: per-address limits before ingest
-      APP_NUM_THREADS: ${APP_NUM_THREADS:-12} # FrankenPHP pool of the front (23 GiB box: 12, compose-profile §3)
+      APP_NUM_THREADS: ${APP_NUM_THREADS:-12} # FrankenPHP pool of the front (compose-profile §3)
       LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-12} # always the same value: long-poll slots leave 2 workers free
     secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
     mem_limit: 1200m
@@ -279,7 +279,7 @@ services:
       retries: 1
 
 # No top-level `configs:` and no `driver`/`driver_opts` on any volume (policy P-5, CI-2).
-secrets: # files under /opt/apps/webhooktrap/secrets, root:<runtime gid> 0440
+secrets: # files under $APP_DIR/secrets; owners in compose-profile §5
   valkey_password: { file: ./secrets/valkey_password }
   postgres_password: { file: ./secrets/postgres_password }
   backup_cipher_pass: { file: ./secrets/backup_cipher_pass }
@@ -298,7 +298,7 @@ secrets: # files under /opt/apps/webhooktrap/secrets, root:<runtime gid> 0440
   agent_pairing_hmac_key: { file: ./secrets/agent_pairing_hmac_key } # 32+ random bytes, never APP_KEY; root:33 0440
 
 networks:
-  # Subnets are placeholders until F-5 (contabo plan §1.2) is answered; no IP-based trust anyway (SV-2).
+  # Subnets chosen not to clash with the host's existing Docker networks (private plan); no IP-based trust anyway (SV-2).
   edge: { ipam: { config: [{ subnet: "172.31.248.0/24" }] } }
   internal: { internal: true, ipam: { config: [{ subnet: "172.31.249.0/24" }] } }
   egress: {}

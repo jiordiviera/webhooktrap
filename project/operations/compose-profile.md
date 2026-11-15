@@ -2,14 +2,14 @@
 
 **Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-15 (rev. 14)
 **Scope:** decision 32 §4 (one self-host profile, Redis-compatible store required, no minimal profile), decision 43 (template `jiordiviera/laravel-inertia-vps-template`), HD-4, HD-5, HD-8, HD-10, ADR-008.
-**Derived from:** the template's `compose.production.yaml` (read with `gh api` on 2026-11-14) plus Reverb, Valkey, Postgres + pgBackRest (`contabo-deployment-plan.md` §5, option A), healthchecks and limits.
-**Rev. 3:** A09 re-check §12.5: SV-2 (proof header and in-image trust, `APP_PORT` 18480), RD-1 (no share tokens in logs), CI-2 (policy the file must satisfy, §2.2), ENG-1 (`engine` sandbox service). Change table at the end.
+**Derived from:** the template's `compose.production.yaml` (read with `gh api` on 2026-11-14) plus Reverb, Valkey, Postgres + pgBackRest (the private hosted deployment plan §5, option A), healthchecks and limits.
+**Rev. 3:** A09 re-check §12.5: SV-2 (proof header and in-image trust, `APP_PORT`, set in the private plan), RD-1 (no share tokens in logs), CI-2 (policy the file must satisfy, §2.2), ENG-1 (`engine` sandbox service). Change table at the end.
 **Rev. 4:** applies A09's verification (`security/threat-model.md` §12.9): SV-2 (Caddyfile order and fail-closed rewritten, §2.1), CI-2 (limits now in the YAML, §2, and the new volume/config/secret rules, §2.2), RD-1 (log filter also redacts capture keys and `X-Wt-Edge`, §2.1), ENG-2 (engine statelessness, §2). Change table at the end.
 **Rev. 5:** applies A09's verification (`security/threat-model.md` §12.10): SV-2a (every underscore spelling of the forwarded headers stripped on every request, not only unverified ones, §2.1), RN-1a (image Caddyfile refuses `.php/` path info as a second guard for the runner API path, §2.1). Change table at the end.
-**Rev. 6:** applies A09's verification (`security/threat-model.md` §12.11): DL-3 (ledger volume, off-server copy by `backup`, `restore.pending` guard in the entrypoint, restore order; §2 notes, §7; runbook in `contabo-deployment-plan.md` §5.1), the argon2id memory budget (§3.1), the failed-sign-in alert fields (§6), `/set-password/{token}` in the log-scrubbing note (§2.1). Change table at the end.
+**Rev. 6:** applies A09's verification (`security/threat-model.md` §12.11): DL-3 (ledger volume, off-server copy by `backup`, `restore.pending` guard in the entrypoint, restore order; §2 notes, §7; runbook in the private hosted deployment plan §5.1), the argon2id memory budget (§3.1), the failed-sign-in alert fields (§6), `/set-password/{token}` in the log-scrubbing note (§2.1). Change table at the end.
 **Rev. 7:** applies decision 50 and A08's live-props spike (`spikes/live-props/SPIKE-REPORT.md` §6, C-7, C-8): Reverb image with `ext-uv` or `ext-event` and a boot check, `nofile` set and checked, connection limits, long-poll caps and PHP worker sizing, client events `none` (new §3.2, §5, §6). Change table at the end.
-**Rev. 8 (2026-11-15):** applies A09's slice 3 review (`security/slice3-review.md` S3-3, S3-4, decision 2 and decision 4, S3-5 follow-up): a separate `ingest` service runs the capture path on its own FrankenPHP process with `enable_post_data_reading=Off`, its own thread pool and a 15 s body timeout, reached only through `app`'s Caddy over a hop re-signed with the edge secret (new §2.3); `PROXY_TRUST_MODE` set explicitly in both profiles; the fail-open store alert wired to A06's `wt.store_failure` line (§6). The per-address connection cap and the backstop rate limit need a module or another proxy and are proposals for the PO (§2.3, `contabo-deployment-plan.md` §4.2, O5). Change table at the end.
-**Rev. 14 (2026-11-15, step C2):** the VPS has 23 GiB and 8 vCPU (audit, decision 65), so the hosted file carries the 23 GiB column (§3); real backup tooling with a local WAL queue, so `postgres` needs no network and no backup secret (§7); Postgres 18 volume path fixed; `db_password` separate from `postgres_password`; secret file owners (§5). Change table at the end.
+**Rev. 8 (2026-11-15):** applies A09's slice 3 review (`security/slice3-review.md` S3-3, S3-4, decision 2 and decision 4, S3-5 follow-up): a separate `ingest` service runs the capture path on its own FrankenPHP process with `enable_post_data_reading=Off`, its own thread pool and a 15 s body timeout, reached only through `app`'s Caddy over a hop re-signed with the edge secret (new §2.3); `PROXY_TRUST_MODE` set explicitly in both profiles; the fail-open store alert wired to A06's `wt.store_failure` line (§6). The per-address connection cap and the backstop rate limit need a module or another proxy and are proposals for the PO (§2.3, the private hosted deployment plan §4.2, O5). Change table at the end.
+**Rev. 14 (2026-11-15, step C2):** the hosted box is larger than the 8 GB reference, so the hosted file carries the larger column (§3); real backup tooling with a local WAL queue, so `postgres` needs no network and no backup secret (§7); Postgres 18 volume path fixed; `db_password` separate from `postgres_password`; secret file owners (§5). Change table at the end.
 **Rev. 13 (2026-11-15):** every app secret reaches containers as a file (CLAUDE.md): Compose secrets mounted only on the services that read them, loaded by the entrypoint from `/run/secrets`; `.env.production` holds no secret any more (§5). Change table at the end.
 **Rev. 12 (2026-11-15):** agent follow-ups (A06 `13f7443`, `0a088b4`): `AGENT_PAIRING_HMAC_KEY` as a file secret on `app`, the front's FrankenPHP `num_threads` pinned (`APP_NUM_THREADS`, 8) and passed to the app as `LONGPOLL_HTTP_WORKERS`, `AGENT_ALLOW_DEV_BUILDS` refused outside local/testing, and the database must stay session-pooled for the long-poll advisory locks (§3.2). Change table at the end.
 **Rev. 11 (2026-11-15):** Horizon serves every queue the app uses (`default`, `broadcasts`, `maintenance`); before, only `default` had a worker, so live updates and maintenance jobs never ran. New §3.4, `horizon` at 448m, `retry_after` 330 s. Change table at the end.
@@ -53,7 +53,7 @@ x-hardening: &hardening
   init: true
   security_opt: ["no-new-privileges:true"]
   cap_drop: [ALL]
-  cgroup_parent: webhooktrap.slice    # aggregate ceiling (plan §6.1); drop if Docker uses cgroupfs
+  cgroup_parent: webhooktrap.slice    # aggregate ceiling (hosted deployment plan §6.1); drop if Docker uses cgroupfs
   logging: *logging
 
 x-app: &app
@@ -78,7 +78,7 @@ services:
   app:
     <<: *app
     networks: [edge, internal, egress]  # egress: mail, OAuth
-    ports: ["127.0.0.1:${APP_PORT:?Set APP_PORT}:8080"]   # hosted: 18480 (18080/18081 are taken); loopback only, policy P-6
+    ports: ["127.0.0.1:${APP_PORT:?Set APP_PORT}:8080"]   # hosted port from the private plan; loopback only, policy P-6
     environment:
       PROXY_TRUST_MODE: secret
       WT_ROLE: app                      # rev. 10: the entrypoint checks the edge secret in app and ingest only
@@ -311,13 +311,13 @@ services:
       retries: 1
 
 # No top-level `configs:` block and no `driver`/`driver_opts` on any volume (policy P-5, CI-2).
-secrets:                                # files under /opt/apps/webhooktrap/secrets, root 0600
+secrets:                                # files under $APP_DIR/secrets; owners in §5
   valkey_password:    { file: ./secrets/valkey_password }
   postgres_password:  { file: ./secrets/postgres_password }
   backup_cipher_pass: { file: ./secrets/backup_cipher_pass }
   backup_s3_key:      { file: ./secrets/backup_s3_key }
   backup_s3_secret:   { file: ./secrets/backup_s3_secret }
-  edge_proxy_secret:  { file: ./secrets/edge_proxy_secret }    # shared with the host proxy vhost (plan §3.4)
+  edge_proxy_secret:  { file: ./secrets/edge_proxy_secret }    # shared with the host proxy vhost (hosted deployment plan §3.4)
   agent_pairing_hmac_key: { file: ./secrets/agent_pairing_hmac_key }   # rev. 12: 32+ random bytes, never APP_KEY; root:33 0440
 
 networks:
@@ -340,8 +340,8 @@ volumes:                                # plain named volumes only: no `driver`,
 
 Notes:
 - **Rev. 10: FrankenPHP's file capability is removed in the image** (`setcap -r`, checked with `getcap` in the build). The base image gives the binary `cap_net_bind_service=ep`; under `cap_drop: [ALL]` with `no-new-privileges` the kernel refuses to exec such a binary (`exec: frankenphp: Operation not permitted`, seen in the rev. 10 run), so `app` and `ingest` could not have started in either profile. The image listens on 8080/8443 only. Hosted `/data` tmpfs is owned by uid/gid 33 so Caddy can write its locks.
-- `app`, `reverb`, `horizon`, `scheduler` share one image (template pattern). Reverb is the only addition that listens; it is reached by FrankenPHP over `edge`, never published (plan §3.2).
-- **Deletion ledger and restore guard (rev. 6, DL-3, runbook in `contabo-deployment-plan.md` §5.1).** `ledger` is a plain named volume (no `driver`, policy P-5): `horizon` mounts it writable, `backup` read-only. `backup-loop` ships it every `LEDGER_SHIP_INTERVAL_SECONDS` to the backup repository's bucket under `LEDGER_S3_PREFIX` (default `ledger/`) with `age -r $LEDGER_AGE_RECIPIENT` (the image gains the `age` and `rclone` packages; the recipient is public, so there is no new secret, and the S3 key and secret are the existing ones). Self-host with a `posix` repository copies to `<repo>/ledger/` instead, with the same loud note as the repository. The `backup` image gains the subcommands `restore` (writes `/status/restore.pending`), `ledger-fetch`, `restore-finish`; the other services mount `backup_status` read-only. The first line of the app image entrypoint (all of `app`, `reverb`, `horizon`, `scheduler`) exits non-zero while `/status/restore.pending` exists. The apply step is `docker compose run --rm --no-deps --entrypoint php app artisan accounts:apply-ledger`, which adds no service.
+- `app`, `reverb`, `horizon`, `scheduler` share one image (template pattern). Reverb is the only addition that listens; it is reached by FrankenPHP over `edge`, never published (hosted deployment plan §3.2).
+- **Deletion ledger and restore guard (rev. 6, DL-3, runbook in the private hosted deployment plan §5.1).** `ledger` is a plain named volume (no `driver`, policy P-5): `horizon` mounts it writable, `backup` read-only. `backup-loop` ships it every `LEDGER_SHIP_INTERVAL_SECONDS` to the backup repository's bucket under `LEDGER_S3_PREFIX` (default `ledger/`) with `age -r $LEDGER_AGE_RECIPIENT` (the image gains the `age` and `rclone` packages; the recipient is public, so there is no new secret, and the S3 key and secret are the existing ones). Self-host with a `posix` repository copies to `<repo>/ledger/` instead, with the same loud note as the repository. The `backup` image gains the subcommands `restore` (writes `/status/restore.pending`), `ledger-fetch`, `restore-finish`; the other services mount `backup_status` read-only. The first line of the app image entrypoint (all of `app`, `reverb`, `horizon`, `scheduler`) exits non-zero while `/status/restore.pending` exists. The apply step is `docker compose run --rm --no-deps --entrypoint php app artisan accounts:apply-ledger`, which adds no service.
 - The template's `env_file: .env.production` is kept for non-secret settings; secrets move to files (`*_FILE` names, §5) so they do not appear in `docker inspect`.
 - `read_only: true` on the app family is a hardening step beyond the template; A05 confirms which paths Laravel writes (views cache, logs → stderr).
 - `engine` (ENG-1) is the concrete sandbox for `plan`/`verify` that A09 asked for (TM-149): the hardened app container cannot build a network-free sandbox inside itself (`cap_drop: ALL`, `no-new-privileges`) and holds `/run/secrets/*`. The engine runs in its own container with `network_mode: none`, no secrets, no database variables and no storage, and is called over a Unix socket in a shared volume. Inputs, and for instance-secret `verify` the one secret needed for that call, travel over the socket per request and live in the engine's memory only (A05/A08 define the protocol; the call never gives the engine a way out). Policy P-3 allows `network_mode: none` on this service only. Fallback if A08's spike rejects the socket design: Landlock network rules inside the engine (needs a kernel with Landlock ABI 4 or later; unverified on this VPS). **ENG-1 is settled before instance-secret `verify` ships on self-host** (and before it is enabled on hosted).
@@ -487,7 +487,7 @@ fi
 
 The container then exits, `/up` never answers, and `deploy.sh` steps 8-9 roll back (nothing serves with a broken proof). Readability: Compose file secrets keep the host file's owner and mode, so a root `0600` file is unreadable by the non-root runtime user. At C3 the file is `root:<app runtime gid>` mode `0440` (A05 states the gid); the entrypoint check above is what notices a mistake. The `header_regexp` line in `@edge` is the second guard for a placeholder that expands to nothing at request time. The log lines of this check never print the value.
 
-`trust-site-none` is the same without the `@edge` block and the `request_header @edge` line (always strip: self-host with FrankenPHP terminating TLS itself, nothing in front); `trust-site-ip` is empty and `trust-global-ip` sets `trusted_proxies static {$TRUSTED_PROXIES}` (self-host behind an operator's proxy that cannot send the header; documented as weaker, since any process or container that can reach the port can forge). The entrypoint check applies only to mode `secret`. A05: Laravel trusts forwarded headers only when `X-WT-Verified` is present (mode `secret`). Spellings (`{file.…}` trims the trailing newline, `header_regexp` with a field name, `log_skip @share`, the `filter` fields, `import` with an env placeholder) are checked by `caddy validate` in CI and proved by TM-T141 and TM-T145; they are the first thing to adjust if validation disagrees. **Rev. 6 (RD-2, A05 rev. 6):** the invite link `/set-password/{token}` needs no extra line here: the image has no access log and the error-log filter above already rewrites every URI to `/REDACTED`; the path is only added to the TM-T145 canary list (`contabo-deployment-plan.md` §4.5 items 5-6), which also runs against the image alone.
+`trust-site-none` is the same without the `@edge` block and the `request_header @edge` line (always strip: self-host with FrankenPHP terminating TLS itself, nothing in front); `trust-site-ip` is empty and `trust-global-ip` sets `trusted_proxies static {$TRUSTED_PROXIES}` (self-host behind an operator's proxy that cannot send the header; documented as weaker, since any process or container that can reach the port can forge). The entrypoint check applies only to mode `secret`. A05: Laravel trusts forwarded headers only when `X-WT-Verified` is present (mode `secret`). Spellings (`{file.…}` trims the trailing newline, `header_regexp` with a field name, `log_skip @share`, the `filter` fields, `import` with an env placeholder) are checked by `caddy validate` in CI and proved by TM-T141 and TM-T145; they are the first thing to adjust if validation disagrees. **Rev. 6 (RD-2, A05 rev. 6):** the invite link `/set-password/{token}` needs no extra line here: the image has no access log and the error-log filter above already rewrites every URI to `/REDACTED`; the path is only added to the TM-T145 canary list (the private hosted deployment plan §4.5 items 5-6), which also runs against the image alone.
 
 **How TM-T141 proves the order (CI `conformance` job and C8 on the real chain).** (a) Static: `caddy adapt --config docker/Caddyfile --pretty` and a script asserts that, in the server's route list, the handler that sets or deletes `X-WT-Verified` appears **before** every `reverse_proxy` and `php_server` handler (in rev. 3's layout it appeared after, which is the failure this test would have caught). (b) Behavioural, against the real image behind a CI proxy container that sends the right secret: requests that carry forged `X-WT-Verified: 1`, `X_WT_Verified: 1`, `X-WT_Verified: 1`, `X_WT-Verified: 1`, forged `X-Forwarded-For`/`X_Forwarded_For` and an `X-WT-Edge` of empty, wrong and right value, each sent **directly** to the app port, must show at a CI-only echo route of the app (enabled by `APP_ENV=ci`, returns the PHP-visible `$_SERVER` keys that start `HTTP_X_`): no `HTTP_X_WT_VERIFIED`, no forwarded value, and no `HTTP_X_WT_EDGE`; the same requests sent through the proxy container (right secret) show `HTTP_X_WT_VERIFIED=1` and the proxy's forwarded address, not the forged one. **Rev. 5 (SV-2a):** the through-the-proxy case also sends every underscore spelling of `X-Forwarded-*` and `X-Real-IP`, and `Forwarded`, with the right secret, **through the real Caddy proxy** (the CI nginx container would drop underscore names and hide the fault): the echo route must show exactly one `HTTP_X_FORWARDED_FOR` value (the proxy's) and no `HTTP_X_REAL_IP`, `HTTP_FORWARDED` or `HTTP_X_FORWARDED_PORT`. (c) Fail closed: start the image with the secret file missing, then empty, then 63 hex characters, then mode `0600` root-owned: each must exit non-zero before listening. Any of the checks failing in the `route`-less layout and passing in the `route` layout is the proof of order.
 
@@ -512,7 +512,7 @@ client ─▶ (host proxy, hosted only) ─▶ app: Caddy, trust snippet (SV-2) 
 
 - `docker/Caddyfile` (front): with `INGEST_MODE=proxy` the capture host and every `/c`, `/c/…` path go to `{$INGEST_UPSTREAM:ingest:8080}`; everything else stays in the front's own PHP. With `INGEST_MODE=local` (default, the image run alone) the front serves capture itself, as before. The hop is placed **after** the trust snippet, so the TM-T141 order assertion is unchanged (checked with `caddy adapt`: the `X-WT-Verified` handler precedes every `reverse_proxy` and `php` handler).
 - **The hop is re-signed.** The front sets `X-WT-Edge` from `/run/secrets/edge_proxy_secret` on every request to ingest, whatever its own `PROXY_TRUST_MODE`, and sends exactly one `X-Forwarded-For` and one `X-Forwarded-Proto`: the host proxy's values on a verified request in mode `secret`; the TCP peer and the front's scheme otherwise (mode `none`, or unverified); Caddy's `{client_ip}` under `trusted_proxies_strict` (right-most untrusted, the same entry the app reads) and the trusted proxy's scheme in mode `ip`. Ingest always runs `trust-site-secret`, so a container on `internal` that calls ingest without the secret is an ordinary untrusted client. The entrypoint refuses `WT_ROLE=ingest` in any mode but `secret`, and refuses `INGEST_MODE=proxy` without a 64-hex secret file.
-- **Fidelity through the hop.** Host and request target pass unchanged. The front removes Caddy's own `X-Forwarded-Host` and `X-WT-Verified` from the hop, and restores the client's own `Via` (Caddy appends `1.1 Caddy` to it): a capture shows the client's `Via` exactly, or none. The `Via` Caddy adds to responses is removed, so the answer stays the ADR-005 one. Go re-serialises the target on the hop as it already does at the host proxy and in FrankenPHP (`contabo-deployment-plan.md` §4.3): the H-6 corpus runs through the hop too.
+- **Fidelity through the hop.** Host and request target pass unchanged. The front removes Caddy's own `X-Forwarded-Host` and `X-WT-Verified` from the hop, and restores the client's own `Via` (Caddy appends `1.1 Caddy` to it): a capture shows the client's `Via` exactly, or none. The `Via` Caddy adds to responses is removed, so the answer stays the ADR-005 one. Go re-serialises the target on the hop as it already does at the host proxy and in FrankenPHP (the private hosted deployment plan §4.3): the H-6 corpus runs through the hop too.
 - **Restarts.** `lb_try_duration 10s` on the front covers a restart of the next hop. Rev. 10 (S3-18): with HAProxy in the path, HAProxy itself holds a capture while ingest restarts or is recreated (§2.4); a longer outage answers HAProxy's fixed JSON `503` with `Retry-After`.
 - **Ingest's own limits** (`docker/Caddyfile.ingest`): `php_ini enable_post_data_reading Off` (S3-3: no form or multipart parsing, no upload temp files, `php://input` carries every byte); `num_threads {$INGEST_NUM_THREADS:8}` (S3-4, its own pool; rev. 10: 8, A09 S3-17); `read_body {$INGEST_READ_BODY_TIMEOUT:15s}`, `read_header 10s` (S3-4: one slow sender holds an ingest thread at most 15 s; the app front keeps 30 s for its own routes); `max_header_size 64KiB` (S3-7; the image already refused header blocks over about 32 KiB in the local run, so this is a stated bound rather than a change); `request_body max_size 25MiB` and a `413` with the same JSON body and headers as PHP's (S3-15; rev. 10: `Cache-Control: no-store, private`, as Symfony sends it).
 
@@ -522,11 +522,11 @@ client ─▶ (host proxy, hosted only) ─▶ app: Caddy, trust snippet (SV-2) 
 
 ### 2.4 HAProxy capture gate (rev. 9, decision 61; A09 S3-4 and decision 2)
 
-**Where it sits.** Between `app`'s Caddy and `ingest`, in both profiles: `app` sends the capture path to `{$INGEST_UPSTREAM}` = `haproxy:8080`, which forwards to `ingest:8080`. Decision 61 says "in front of the stack"; it is placed at the hop instead, for three reasons: (1) that is the only place where the client address is already resolved the same way in every profile and trust mode (§2.3), so HAProxy needs no trust logic of its own beyond checking the hop's signature; (2) in self-host with built-in TLS, putting HAProxy in front of everything would mean HAProxy terminating TLS and taking certificate management away from Caddy; (3) only capture needs these limits, and app and websocket traffic stay as they are. **Hosted: nothing changes on the shared host Caddy** (same vhosts, same upstream `127.0.0.1:18480`, no new port, no module). The limits are keyed on the address the host Caddy puts in `X-Forwarded-For`, after `app` has verified the host proxy's `X-WT-Edge` (SV-2). A request that reaches the app port without the proof is keyed on its TCP peer, as before.
+**Where it sits.** Between `app`'s Caddy and `ingest`, in both profiles: `app` sends the capture path to `{$INGEST_UPSTREAM}` = `haproxy:8080`, which forwards to `ingest:8080`. Decision 61 says "in front of the stack"; it is placed at the hop instead, for three reasons: (1) that is the only place where the client address is already resolved the same way in every profile and trust mode (§2.3), so HAProxy needs no trust logic of its own beyond checking the hop's signature; (2) in self-host with built-in TLS, putting HAProxy in front of everything would mean HAProxy terminating TLS and taking certificate management away from Caddy; (3) only capture needs these limits, and app and websocket traffic stay as they are. **Hosted: nothing changes on the shared host Caddy** (same vhosts, same upstream `127.0.0.1:${APP_PORT}`, no new port, no module). The limits are keyed on the address the host Caddy puts in `X-Forwarded-For`, after `app` has verified the host proxy's `X-WT-Edge` (SV-2). A request that reaches the app port without the proof is keyed on its TCP peer, as before.
 
 **Which address it keys on.** `app` signs every hop with `X-WT-Edge` and sends exactly one `X-Forwarded-For` (§2.3). HAProxy reads the secret from `/run/secrets/edge_proxy_secret` as a pattern file. On a signed hop the key is the last `X-Forwarded-For` value; on anything else (a container on `internal` calling `haproxy:8080` directly, an unsigned request) it is the TCP source address. Keys are masked like the app's limiter: IPv4 /32, IPv6 /64. Without a readable secret file HAProxy refuses to start.
 
-**Limits (`docker/haproxy.cfg`, values from `contabo-deployment-plan.md` §4.2).**
+**Limits (`docker/haproxy.cfg`, values from the private hosted deployment plan §4.2).**
 
 | Limit | Value | Env (unset = default) | Answer |
 | ----- | ----- | --------------------- | ------ |
@@ -585,7 +585,7 @@ None of them depends on the capture key. The front removes `Server` and `Via` fr
 
 ## 3. Resource limits for the shared VPS
 
-**Rev. 14: the real box is 23 GiB / 8 vCPU (audit).** `compose.production.yaml` now carries the right-hand column below, with the rev. 8-11 additions:
+**Rev. 14: the hosted box is larger than the 8 GB reference (sizes in the private plan).** `compose.production.yaml` now carries the right-hand column below, with the rev. 8-11 additions:
 
 | Service | Limit · CPUs |
 | ------- | ------------ |
@@ -601,14 +601,14 @@ None of them depends on the capture key. The front removes `Server` and `Via` fr
 | postgres | 2048m · 1.5 (`shared_buffers` 1 GB, `effective_cache_size` 3 GB) |
 | backup | 384m · 0.5 |
 
-- **Sum:** about 5.8 GiB. The slice proposal is `MemoryMax=6G`, `CPUQuota=300%` (contabo plan §6.1), so the ceilings fit under it with no overcommit.
+- **Sum:** about 5.8 GiB. The slice proposal is `MemoryMax=6G`, `CPUQuota=300%` (the private hosted deployment plan §6.1), so the ceilings fit under it with no overcommit.
 - **Settings in `.env.production`:** `PASSWORD_HASH_MAX_CONCURRENT=3`, `LONGPOLL_AGENT_SLOTS=6`, `VALKEY_MAXMEMORY=288mb`.
 - **§3.1 rule at 1200m:** 3 × 70 MiB ≤ 300 MiB (25 %), and a 560 MB baseline ≤ 600 MB (50 %).
 
 The 8 GB column below stays as the self-host reference and the history.
 
 
-Ceilings, not reservations. The slice caps the sum; per-service limits cap each part. Final numbers after F-2/F-6 (`contabo-deployment-plan.md` §1.2).
+Ceilings, not reservations. The slice caps the sum; per-service limits cap each part. Final numbers after F-2/F-6 (the private hosted deployment plan §1.2).
 
 | Service | 8 GB box (slice `MemoryMax` 3.2 GB, `CPUQuota` 200 %) | 16 GB box (slice 5 GB, 300 %) | Other |
 | ------- | --------------------- | ---------------------- | ----- |
@@ -627,7 +627,7 @@ Ceilings, not reservations. The slice caps the sum; per-service limits cap each 
 
 **Rev. 9 proposal (PO to choose).** The per-service limits are ceilings: they now add up to about 0.75 GB more than the slice on the 8 GB box (rev. 11) (rev. 7: about 0.18 GB). Steady state is expected near 2.0 GB: the earlier 1.8 GB estimate plus `ingest` (measured 86 MiB idle) and `haproxy` (22 MiB idle). Two ways forward:
 - **(a) Recommended: keep the slice at 3.2 GB and the limits above.** The slice protects the neighbours and is what binds. If 2.0 as a whole reaches it, the kernel kills inside the slice by `oom_score_adj`: app-family containers first, never Postgres or a neighbour. Revisit with the PERF-1..4 numbers.
-- **(b) Raise the slice to 3.6 GB (45 % of RAM).** This needs a PO GO for the slice unit on the host (`contabo-deployment-plan.md` §6.1).
+- **(b) Raise the slice to 3.6 GB (45 % of RAM).** This needs a PO GO for the slice unit on the host (the private hosted deployment plan §6.1).
 
 Not proposed: trimming `app`. The rule in §3.1 (FrankenPHP baseline at most 50 % of the limit) keeps it at 768m until A08 measures the baseline without capture traffic. CPU: the `cpus` values add up to 4.75 against `CPUQuota=200%`; the quota binds, as before.
 
@@ -651,9 +651,9 @@ The 8 GB column gives 2.0 at most 40 % of RAM and 2 vCPUs; steady state is expec
 | Headroom left | about 250 MB | about 450 MB |
 | Hashes per second at the cap (about 300 ms each, one core each) | about 3 (the CPU limit binds before the cap) | about 5 |
 
-**Rule (the cost is not free to raise).** `PASSWORD_HASH_MAX_CONCURRENT × (ARGON_MEMORY / 1024 × 1.1)` must stay at or below **25 %** of the `app` `mem_limit`, and the baseline at or below 50 %. A06 adds a boot check beside the `PASSWORD_ARGON2ID` one: read the container limit from `/sys/fs/cgroup/memory.max` and refuse to boot when the rule fails (self-host operators who raise `ARGON_MEMORY` get the refusal instead of an OOM loop). Doubling memory to 128 MiB halves the cap at the same limit or needs `mem_limit` raised by the same amount; the slice ceiling (`contabo-deployment-plan.md` §6.1) binds first on the 8 GB box, so a cost increase is a budget decision for the PO.
+**Rule (the cost is not free to raise).** `PASSWORD_HASH_MAX_CONCURRENT × (ARGON_MEMORY / 1024 × 1.1)` must stay at or below **25 %** of the `app` `mem_limit`, and the baseline at or below 50 %. A06 adds a boot check beside the `PASSWORD_ARGON2ID` one: read the container limit from `/sys/fs/cgroup/memory.max` and refuse to boot when the rule fails (self-host operators who raise `ARGON_MEMORY` get the refusal instead of an OOM loop). Doubling memory to 128 MiB halves the cap at the same limit or needs `mem_limit` raised by the same amount; the slice ceiling (the private hosted deployment plan §6.1) binds first on the 8 GB box, so a cost increase is a budget decision for the PO.
 
-**Failure mode.** Past the budget, the kernel OOM-kills `app` (it restarts; `oom_score_adj: 500`), not a neighbour. Sign-in capacity is about 3 hashes per second on the 8 GB box, far above real use; an attack above that is answered with the throttled answer and raises the failed-sign-in alert (`contabo-deployment-plan.md` §6.6). Passkey, OAuth and reset sign-ins do not hash and stay available.
+**Failure mode.** Past the budget, the kernel OOM-kills `app` (it restarts; `oom_score_adj: 500`), not a neighbour. Sign-in capacity is about 3 hashes per second on the 8 GB box, far above real use; an attack above that is answered with the throttled answer and raises the failed-sign-in alert (the private hosted deployment plan §6.6). Passkey, OAuth and reset sign-ins do not hash and stay available.
 
 
 ### 3.2 Reverb capacity (rev. 7, decision 50, A08 spike §6, C-7, C-8)
@@ -663,7 +663,7 @@ The 8 GB column gives 2.0 at most 40 % of RAM and 2 vCPUs; steady state is expec
 1. **Extension in the image.** The runtime image installs **`ext-uv`** (preferred; `libuv` from the distribution) or **`ext-event`** (`libevent`), in the one image shared by `app`, `reverb`, `horizon`, `scheduler` (one image, template pattern). Which of the two builds on the FrankenPHP base is untested (the spike could download nothing): A10 builds both on paper, picks the one that installs and loads, and records it in the Dockerfile comment. Nothing else changes in the image.
 2. **Boot check (`/usr/local/bin/reverb-boot`, Reverb service only).** In order, and it exits non-zero with one log line naming the failed check: (a) `extension_loaded('uv') || extension_loaded('event')`; (b) the soft `nofile` limit (`ulimit -Sn`) is at least `REVERB_MIN_NOFILE` (4096); (c) `REVERB_ACCEPT_CLIENT_EVENTS_FROM` resolves to `none` in the loaded config; then `exec php artisan reverb:start …`. A failed check makes the container restart-loop and `app` never becomes healthy, which is the intended loud failure. The check never prints env values.
 3. **`nofile`.** `ulimits: { nofile: { soft: 10000, hard: 10000 } }` on `reverb` (§2 YAML, already present, now verified by check (b)). Sockets are capped well below it: `REVERB_APP_MAX_CONNECTIONS` 1500 on the 8 GB box, 3000 on the 16 GB box (proposals, to be set from the Phase 5 measurement, §3.3). The margin covers Valkey, DB and log descriptors.
-4. **Connection limits, two layers.** *Reverb:* `REVERB_APP_MAX_CONNECTIONS` (subscribed sockets) plus the per-principal cap and maximum lifetime, which are A05's own code in the Reverb process because Reverb has neither (decision 50). *Host proxy for `ws.<domain>`:* cap on concurrent connections and on new connections per second, per client address, plus an overall cap; rules in `contabo-deployment-plan.md` §4.4. The proxy limit exists because raw sockets that never subscribe use descriptors that Reverb's own limit does not count.
+4. **Connection limits, two layers.** *Reverb:* `REVERB_APP_MAX_CONNECTIONS` (subscribed sockets) plus the per-principal cap and maximum lifetime, which are A05's own code in the Reverb process because Reverb has neither (decision 50). *Host proxy for `ws.<domain>`:* cap on concurrent connections and on new connections per second, per client address, plus an overall cap; rules in the private hosted deployment plan §4.4. The proxy limit exists because raw sockets that never subscribe use descriptors that Reverb's own limit does not count.
 5. **Client events.** `config/reverb.php` sets `accept_client_events_from` to `none` explicitly (not left at the package default), no env override ships, and a Pest config test asserts it (CI `php` job, `ci-cd.md` §2).
 
 **Long-poll and PHP workers (TM-40, A08 C-8).** One long-poll holds one PHP worker. Measured with 4 workers: 12 concurrent `jobs/next?wait=5` requests ran serially in batches of 4 and a plain request waited 4.3 s. So long-polls are capped and the caps are sized from the worker count (FrankenPHP `num_threads`: 8 on the 8 GB box, 12 on the 16 GB box, §3.1 table):
@@ -684,7 +684,7 @@ Rules: the slot gate is shared by all long-poll endpoints (agent and runner coun
 
 ### 3.3 Still to measure on the VPS (Phase 5, decision 50)
 
-Nothing here is a number yet; all are open until measured on the real box with the real image. Each result goes into this file and `contabo-deployment-plan.md` §6.7.
+Nothing here is a number yet; all are open until measured on the real box with the real image. Each result goes into this file and the private hosted deployment plan §6.7.
 
 | # | Measurement | Why | Feeds |
 | - | ----------- | --- | ----- |
@@ -692,7 +692,7 @@ Nothing here is a number yet; all are open until measured on the real box with t
 | M-2 | Fan-out latency p50/p95/p99 at the PERF-4 profile (50 deliveries per run, 10 viewers, 50 concurrent runs) and on one channel with many subscribers | linear growth with subscribers on one channel | per-channel design, A05 |
 | M-3 | argon2id hash time p50/p95 at 64 MiB, t=4 and t=3, on the shared VPS with neighbours busy (laptop: p50 189 ms, p95 202 ms at t=4) | target ≤ 300 ms; the VPS is shared | `ARGON_TIME`, `PASSWORD_HASH_MAX_CONCURRENT` (§3.1) |
 | M-4 | Capped long-poll under FrankenPHP (503 + `Retry-After` rate, plain-request latency with all slots busy) | `artisan serve` run was inconclusive | slot values above |
-| M-5 | Host-proxy `ws.` limits through the real chain (TLS, limit rules refuse as written) | not testable on the laptop | `contabo-deployment-plan.md` §4.4 |
+| M-5 | Host-proxy `ws.` limits through the real chain (TLS, limit rules refuse as written) | not testable on the laptop | the private hosted deployment plan §4.4 |
 | M-6 | Real browser client over the real proxy; agent heartbeat cost | not covered by the spike | A11, A05 |
 
 ### 3.4 Queues and Horizon workers (rev. 11)
@@ -794,14 +794,14 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | app | `GET /up` on loopback (template) | Compose, deploy script |
 | ingest (rev. 8) | `GET /up` on loopback, through its own Caddy and PHP | Compose (`haproxy` depends on it) |
 | haproxy (rev. 9) | `wget` on its loopback-only health frontend (`127.0.0.1:8405`) | Compose (`app` depends on it) |
-| fail-open stores (rev. 8, A09 decision 2, S3-11) | A06's `wt.store_failure` warning (`kind` = `rate_limit` or `cache`, `suppressed`), at most once a minute per kind, in the `app` and `ingest` logs | alert (`contabo-deployment-plan.md` §6.8) |
+| fail-open stores (rev. 8, A09 decision 2, S3-11) | A06's `wt.store_failure` warning (`kind` = `rate_limit` or `cache`, `suppressed`), at most once a minute per kind, in the `app` and `ingest` logs | alert (the private hosted deployment plan §6.8) |
 | reverb | TCP connect on 8080; `reverb-boot` has already refused to start without `ext-uv`/`ext-event` or with `nofile` < 4096 (rev. 7, §3.2) | Compose (`app` depends on it) |
 | horizon | `horizon:status` | Compose |
 | scheduler | heartbeat age < 120 s | Compose, `/health` |
 | valkey | `ping` with auth from env file, not argv | Compose |
 | postgres | `pg_isready` | Compose |
 | backup | last full < 26 h, archive lag < 15 min; ledger last ship < 15 min, weekly ledger verify (rev. 6, DL-3) | Compose, `/health`, alert |
-| sign-in failures (rev. 6) | `signin_failures_5m` and `signin_alert_level` in `/health`; counts only | `/health`, alert (`contabo-deployment-plan.md` §6.6) |
+| sign-in failures (rev. 6) | `signin_failures_5m` and `signin_alert_level` in `/health`; counts only | `/health`, alert (the private hosted deployment plan §6.6) |
 | engine | socket ping (`sandbox-ping`) | Compose (`app` depends on it) |
 | runner (self-host) | last poll age, reported to `/health` | `/health` |
 
@@ -821,7 +821,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
   - **Proved locally on the built image (2026-11-15):** full and incremental backups, WAL through the queue (nothing left queued), the ledger shipped age-encrypted and decrypted with the identity, `backup-status` ok, and a restore into a fresh volume recovered from the repository with every row.
   - `BACKUP_RETENTION_ARCHIVE_DAYS` is dropped: WAL follows the full retention.
 - Backups: Postgres only; Valkey and `caddy_data` are re-creatable. Restore: `docker compose run --rm backup restore [--target-time=…]` into a stopped stack with an empty `pgdata`. Disclosure of backup contents and the 14 + 1 day window in the privacy notice (HR-9, TM-81).
-- **Deletion ledger (rev. 6, DL-3).** Shipped off-server with the backups, kept at least 21 days, and **re-applied after every restore before the app, workers and queues start**: `restore` writes `restore.pending`, the app image refuses to start until `accounts:apply-ledger` and `restore-finish` have run (steps in `contabo-deployment-plan.md` §5.1; self-host runs the same steps against `compose.yaml`).
+- **Deletion ledger (rev. 6, DL-3).** Shipped off-server with the backups, kept at least 21 days, and **re-applied after every restore before the app, workers and queues start**: `restore` writes `restore.pending`, the app image refuses to start until `accounts:apply-ledger` and `restore-finish` have run (steps in the private hosted deployment plan §5.1; self-host runs the same steps against `compose.yaml`).
 
 ---
 
@@ -848,7 +848,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | ID | Area | Rev. 2 | Rev. 3 | Where |
 | -- | ---- | ------ | ------ | ----- |
 | SV-2, TM-141 | Forwarded headers | `trusted_proxies static {$TRUSTED_PROXIES}`, edge gateway as trusted | `PROXY_TRUST_MODE` (`secret` hosted); `X-WT-Edge` secret checked and stripped, `X-WT-Verified` set only on match, forwarded headers stripped otherwise; `edge_proxy_secret` secret | §2, §2.1, §5 |
-| SV-2 (facts) | App port | `${APP_PORT:-18080}` | `${APP_PORT:?}`, hosted value 18480 (18080/18081 taken) | §2 |
+| SV-2 (facts) | App port | `${APP_PORT:-<template default>}` | `${APP_PORT:?}`, hosted value in the private plan | §2 |
 | RD-1, TM-145 | Logs | `log_skip` on the capture host only | redacting filter on the default logger, `log_skip @share`, no Referer in logs | §2.1 |
 | CI-2, TM-146 | Compose file | no stated policy | §2.2 and `deploy/policy/compose-policy.py` (installed on the box, not in the image) | §1, §2.2 |
 | ENG-1, TM-149 | `plan`/`verify` sandbox | undecided | `engine` service: `network_mode: none`, no secrets, socket volume; Landlock as fallback; limits row added | §2, §3, §4, §6 |
@@ -869,7 +869,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | ID | Area | Rev. 4 | Rev. 5 | Where |
 | -- | ---- | ------ | ------ | ----- |
 | SV-2a, TM-T141 | Underscore spellings | removed only for unverified requests; verified requests reached PHP with `X_Forwarded_For` next to the proxy's value | all underscore spellings of `X-Forwarded-*` and `X-Real-IP`, plus `Forwarded` and `X-Forwarded-Port` (every spelling), removed on **every** request; hyphen `X-Forwarded-For/-Proto/-Host` still removed only when unverified; TM-T141 adds the verified case through the real Caddy proxy | §2.1 |
-| RN-1a, TM-T148 | `.php/` path info | not handled in the image | `@phpinfo path_regexp (?i)\.php/` answered `404` inside the outer `route`, second guard behind the host proxy's own matcher (`contabo-deployment-plan.md` §4.5); TM-T148 covers `/index.php/runner/v1/x` and `/index.php%2Frunner/v1/x` | §2.1 |
+| RN-1a, TM-T148 | `.php/` path info | not handled in the image | `@phpinfo path_regexp (?i)\.php/` answered `404` inside the outer `route`, second guard behind the host proxy's own matcher (the private hosted deployment plan §4.5); TM-T148 covers `/index.php/runner/v1/x` and `/index.php%2Frunner/v1/x` | §2.1 |
 
 ## Change table (rev. 5 → rev. 6, A09 verification §12.11)
 
@@ -887,7 +887,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | -- | ---- | ------ | ------ | ----- |
 | Decision 50, A08 C-7 | Reverb image | no event-loop extension; Reverb exited at about 1,014 sockets | `ext-uv` or `ext-event` in the shared image; `reverb-boot` refuses to start without it | §2 YAML, §3.2 |
 | Decision 50 | `nofile` | `nofile` 10 000 in YAML, unchecked | same value, checked at boot (at least 4096); socket caps set far below it | §3, §3.2 |
-| Decision 50 | Connection limits | none stated | `REVERB_APP_MAX_CONNECTIONS` plus per-principal cap and lifetime (A05 code) at Reverb; per-address and overall limits at the host proxy for `ws.` | §3.2, §5; plan §4.4 |
+| Decision 50 | Connection limits | none stated | `REVERB_APP_MAX_CONNECTIONS` plus per-principal cap and lifetime (A05 code) at Reverb; per-address and overall limits at the host proxy for `ws.` | §3.2, §5; hosted deployment plan §4.4 |
 | Decision 50, A08 C-8 | Long-poll | not covered | 503 + `Retry-After` when no slot; agent slots at most 50 % of `num_threads`, runner 2, at least 2 workers always free; boot check on the values | §3.2, §5 |
 | Decision 50 | Client events | package default | `none` set explicitly, no env override, boot check and Pest config test | §3.2; `ci-cd.md` §2 |
 | Decision 50 | VPS measurements | none | M-1..M-6 listed for Phase 5 (Reverb sockets, p99, argon2id time, capped long-poll, proxy limits, real browser) | §3.3 |
@@ -901,7 +901,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | S3-5 follow-up | Trust mode | image default only | `PROXY_TRUST_MODE` explicit in both profiles; ingest always `secret`; hop re-signed with the edge secret | §2, §2.3, §4 |
 | (found here) | Secret in every process | only `app` mounted `edge_proxy_secret`, but the entrypoint checks it in every process in mode `secret` | mounted on the app family (`reverb`, `horizon`, `scheduler`, self-host `migrate`) so they start | §2, §4 |
 | S3-7, S3-15 | Header block, 413 shape | none on the capture path; text 413 | `max_header_size 64KiB` and a JSON 413 on ingest | §2.3 |
-| Decision 2, S3-11 | Fail-open alert | none | wired to `wt.store_failure` | §6; plan §6.8 |
+| Decision 2, S3-11 | Fail-open alert | none | wired to `wt.store_failure` | §6; hosted deployment plan §6.8 |
 
 ## Change table (rev. 8 → rev. 9, decision 61)
 
@@ -955,7 +955,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 
 | ID | Area | Rev. 13 | Rev. 14 | Where |
 | -- | ---- | ------- | ------- | ----- |
-| Audit | Hosted limits | 8 GB column | 23 GiB column in the file, sum about 5.8 GiB | §3 |
+| Host size | Hosted limits | 8 GB column | the hosted column in the file, sum about 5.8 GiB | §3 |
 | C2 | Backups | stubs | pgBackRest with a WAL queue, ledger shipping, status, restore; proven locally | §7 |
 | (found here) | Postgres 18 volume | `/var/lib/postgresql/data`, refused by the image | `/var/lib/postgresql` | §7 |
 | (found here) | DB password file | one file for postgres and the app | `postgres_password` (uid 999) and `db_password` (uid 33), same value | §5 |

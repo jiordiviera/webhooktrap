@@ -1,7 +1,8 @@
 #!/bin/sh
-# Webhook Trap 2.0 deploy on the shared VPS (ci-cd.md §4, steps 1-10; CI-1, CI-1a, CI-2, DL-3c).
-# Installed root-owned (0755) at /opt/apps/webhooktrap/bin/deploy.sh at C3, run only through
-# deploy-gate and its sudoers line. It runs as root, so it trusts nothing it is told: it verifies
+# Webhook Trap 2.0 deploy on the hosted box (ci-cd.md §4, steps 1-10; CI-1, CI-1a, CI-2, DL-3c).
+# Installed root-owned (0755) as <APP_DIR>/bin/deploy.sh, run only through deploy-gate and its
+# sudoers line. Host-specific values (APP_DIR, APP_PORT) come from /etc/webhooktrap/deploy.conf,
+# root-owned 0644, written at install (the private hosted deployment plan); never from the caller. It runs as root, so it trusts nothing it is told: it verifies
 # the images, checks the Compose file against the on-box policy, and changes nothing until the
 # backup and the migration have passed.
 #
@@ -10,7 +11,11 @@
 set -eu
 
 # --- Constants (changed only by a PO-approved reinstall) -------------------------------------
-APP_DIR=/opt/apps/webhooktrap
+CONF=/etc/webhooktrap/deploy.conf
+[ -f "$CONF" ] && [ "$(stat -c '%u %a' "$CONF")" = "0 644" ] || { echo "deploy: $CONF missing or not root 0644" >&2; exit 78; }
+APP_DIR=$(sed -n 's/^APP_DIR=\(\/[A-Za-z0-9._\/-]*\)$/\1/p' "$CONF")
+APP_PORT=$(sed -n 's/^APP_PORT=\([0-9]\{2,5\}\)$/\1/p' "$CONF")
+[ -n "$APP_DIR" ] && [ -n "$APP_PORT" ] || { echo "deploy: $CONF must set APP_DIR and APP_PORT" >&2; exit 78; }
 OWNER_REPO=jiordiviera/webhooktrap
 APP_REPO=ghcr.io/$OWNER_REPO
 PG_REPO=ghcr.io/$OWNER_REPO-postgres
@@ -19,7 +24,6 @@ OIDC_ISSUER=https://token.actions.githubusercontent.com
 COSIGN=$APP_DIR/bin/cosign                    # pinned release, checksum checked at install (C3)
 TRUSTED_ROOT=$APP_DIR/bin/trusted_root.json   # Sigstore trusted root, pinned at install
 POLICY=$APP_DIR/bin/compose-policy.py         # installed from deploy/policy at C3, never from the image
-APP_PORT=18480
 PROJECT=webhooktrap
 # Reads the restore guard without running any 2.0 code (the pinned Valkey image has `test`).
 PROBE_IMAGE=valkey/valkey:8-alpine@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a

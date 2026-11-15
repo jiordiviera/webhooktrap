@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Postgres image for the `postgres` and `backup` services (compose-profile.md §1, contabo plan §5 option A):
+# Postgres image for the `postgres` and `backup` services (compose-profile.md §1; the private hosted deployment plan §5, option A):
 # official postgres:18 + pgBackRest, plus age and rclone for the deletion-ledger copies (DL-3b).
 # Published as ghcr.io/<owner>/webhooktrap-postgres.
 FROM postgres:18-bookworm@sha256:ece55f7868da684e400f82f1030a050718adbdd65c23aa500c486f6e2950dc0f
