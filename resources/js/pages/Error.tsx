@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
+import { SupportLink } from '@/components/brand/support-link';
 import { BareShell, PageHeading } from '@/components/identity/bare-shell';
 import { Button, buttonClass } from '@/components/identity/form';
 import { copy } from '@/lib/identity/copy';
@@ -105,6 +106,9 @@ export default function ErrorPage({ status }: { status: Status }) {
                     <Link href={login()}>Sign in</Link>
                 )}
             </div>
+            <p className="tt-support">
+                <SupportLink />
+            </p>
         </BareShell>
     );
 }

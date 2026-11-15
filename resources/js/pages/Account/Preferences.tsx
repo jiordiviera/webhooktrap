@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SupportLink } from '@/components/brand/support-link';
 import { AccountShell } from '@/components/identity/account-shell';
 import { PageHeading } from '@/components/identity/bare-shell';
 import type { Appearance } from '@/hooks/use-appearance';
@@ -205,6 +206,9 @@ export default function Preferences() {
                     }}
                 />
             </section>
+            <p className="tt-support">
+                Webhook Trap is open source. <SupportLink />
+            </p>
             <p className="tt-sr" role="status">
                 {saved}
             </p>

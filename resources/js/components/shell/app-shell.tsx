@@ -18,6 +18,7 @@ import { index as showProject } from '@/actions/App/Modules/Capture/Http/Control
 import AgentPage from '@/actions/App/Modules/Agent/Http/Controllers/AgentPageController';
 import RunPage from '@/actions/App/Modules/Proving/Http/Controllers/RunPageController';
 import ProjectSettings from '@/actions/App/Modules/Workspace/Http/Controllers/ProjectSettingsController';
+import { SupportLink } from '@/components/brand/support-link';
 import { PairPanel } from '@/components/agent/pair-panel';
 import { SecurityDialog } from '@/components/identity/dialog';
 import AppLogoIcon from '@/components/app-logo-icon';
@@ -441,6 +442,10 @@ function MoreMenu({ className = '' }: { className?: string }) {
                         <a className="tt-menu-item" href="#" data-todo="docs">
                             Docs
                         </a>
+                    </Menu.Item>
+                    <hr />
+                    <Menu.Item asChild>
+                        <SupportLink className="tt-menu-item" />
                     </Menu.Item>
                 </Menu.Content>
             </Menu.Portal>

@@ -7,6 +7,7 @@ import {
     type HTMLAttributes,
     type ReactNode,
 } from 'react';
+import { SupportLink } from '@/components/brand/support-link';
 import { cn } from '@/lib/utils';
 import { findings, type DiffLine, type Finding } from './findings';
 import { CopyCommand, GetUrlButton } from './landing-button';
@@ -545,6 +546,10 @@ export function Secrets() {
                         </li>
                     ))}
                 </ul>
+                <p className="border-t border-lp-rule-soft pt-3 pl-8 text-[13px] text-lp-muted">
+                    Free to run yourself. If it saves you a night,{' '}
+                    <SupportLink className="text-lp-muted underline-offset-4 hover:text-lp-ink hover:underline" />
+                </p>
             </div>
             {/*
              * ILLUSTRATIVE: `secrets list` output shape is a CLI proposal (A04);
@@ -708,6 +713,7 @@ export function LandingFooter() {
                         {label}
                     </a>
                 ))}
+                <SupportLink className="text-lp-muted no-underline hover:text-lp-ink sm:ml-auto" />
             </nav>
         </footer>
     );
