@@ -184,4 +184,4 @@ so no run needs to be redone.
 | 2026-11-15 | A09 | Re-review of agent connection fixes to lift BLOCK | C4 | Opus 5.5 (explicit) | Gate | done (5bd2e4e; BLOCK lifted, SHIP WITH FIXES; Windows CI run gates a Windows release) |
 | 2026-11-15 | A06 | Real-run backend gaps: agentPill, /agents pages, per-delivery result, planned count, project key, a 500 during run | C2 | Opus 5.5 (explicit) | Follow-ups | done (d5c6578; 550 tests) |
 | 2026-11-15 | A07 | Wire agentPill, Agent pages, per-delivery result, D8 of 17, project links | C2 | Opus 5.5 (explicit) | UI wiring | done (3fc70b3; real e2e Run #4 with pass rows, D8 of 17, pill states) |
-| 2026-11-15 | A10 | Deploy prep C2: CI and signed images on GitHub v2, real deploy tooling, plan updated with audit facts | C3 | Opus 5.5 (explicit) | Supply chain and deploy | in progress |
+| 2026-11-15 | A10 | Deploy prep C2: CI and signed images on GitHub v2, real deploy tooling, plan updated with audit facts | C3 | Opus 5.5 (explicit) | Supply chain and deploy | done (CI + signed images green on GitHub; deploy.sh, policy, backups real; C3 open list to PO) |
