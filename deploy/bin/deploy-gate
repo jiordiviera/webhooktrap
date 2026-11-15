@@ -1,0 +1,24 @@
+#!/bin/sh
+# Forced command of the `webhooktrap-deploy` SSH key (contabo-deployment-plan.md §3.3, ci-cd.md §4).
+# Installed root-owned at /opt/apps/webhooktrap/bin/deploy-gate; authorized_keys line:
+#   command="/opt/apps/webhooktrap/bin/deploy-gate",restrict ssh-ed25519 AAAA... deploy@github
+# It accepts exactly two forms and passes them, as arguments, to deploy.sh through sudo:
+#   deploy <40-hex sha> <sha256:64-hex app digest> <sha256:64-hex pg digest>
+#   rollback
+set -eu
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+cmd="${SSH_ORIGINAL_COMMAND:-}"
+hex40='[0-9a-f]\{40\}'
+digest='sha256:[0-9a-f]\{64\}'
+# One line only: grep -x matches per line, so a second line must not ride along.
+[ "$(printf '%s' "$cmd" | wc -l)" -eq 0 ] || { echo "deploy-gate: refused" >&2; exit 64; }
+if [ "$cmd" = rollback ]; then
+    exec sudo -n /opt/apps/webhooktrap/bin/deploy.sh rollback
+fi
+if printf '%s\n' "$cmd" | grep -qx "deploy $hex40 $digest $digest"; then
+    # shellcheck disable=SC2086 # the grammar above allows only safe tokens
+    set -- $cmd
+    exec sudo -n /opt/apps/webhooktrap/bin/deploy.sh "$1" "$2" "$3" "$4"
+fi
+echo "deploy-gate: refused" >&2
+exit 64

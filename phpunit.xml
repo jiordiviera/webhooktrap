@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Architecture">
+            <directory>tests/Architecture</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <!-- The arch tests parse every class; the default 128M is too small for the whole app. -->
+        <ini name="memory_limit" value="1G"/>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <!-- argon2id stays the driver; tests use a cheap cost so the suite stays fast. -->
+        <env name="ARGON_MEMORY" value="1024"/>
+        <env name="ARGON_TIME" value="1"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <!-- Fixture keys for tests only (32+ bytes). -->
+        <env name="IDENTITY_EMAIL_HMAC_KEY" value="test-email-hmac-key-0123456789abcdef"/>
+        <env name="AGENT_PAIRING_HMAC_KEY" value="test-agent-pairing-hmac-key-0123456789abcdef"/>
+        <env name="AGENT_SERVER_ORIGIN" value="https://webhooktrap.test"/>
+        <env name="IDENTITY_RECOVERY_CODE_KEY" value="test-recovery-code-key-0123456789abcdef"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="CACHE_FAILURE_REPORT_STORE" value="array"/>
+        <!-- PostgreSQL, like production. Host, port and credentials come from .env or CI. -->
+        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_DATABASE" value="webhooktrap_testing" force="true"/>
+        <env name="DB_URL" value=""/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+    </php>
+</phpunit>

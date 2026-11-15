@@ -1,0 +1,85 @@
+---
+title: "Integrate Webhooktrap with Any HTTP Webhook Provider"
+sidebarTitle: "Overview"
+description: "Point any webhook provider at your Webhooktrap ingest URL. No provider-specific SDK needed — one URL works with Stripe, GitHub, Shopify, and more."
+---
+
+One ingest URL is all you need. Webhooktrap gives you a single endpoint that captures every incoming HTTP request exactly as sent — headers, body, query string, and all. Drop that URL into any provider's webhook settings and you're capturing live events within seconds, no SDK or provider-specific setup required.
+
+## Connect any provider in two steps
+
+<Steps>
+  <Step title="Create an inbox and copy your ingest URL">
+    Create an inbox from the Webhooktrap dashboard or via the REST API. Your ingest URL is ready immediately.
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+    ```
+
+    The response contains your unique ingest URL:
+
+    ```json
+    {
+      "data": {
+        "inbox": {
+          "id": "xK9m2pQ7nR4a",
+          "ingestUrl": "/i/xK9m2pQ7nR4a"
+        }
+      }
+    }
+    ```
+
+    Your full ingest URL is `https://webhooktrap.dev/i/xK9m2pQ7nR4a`. Copy it — you'll paste it into your provider next.
+  </Step>
+  <Step title="Paste the ingest URL into your provider's webhook settings">
+    Open your provider's dashboard and navigate to its webhook or notification settings. Paste your Webhooktrap ingest URL as the destination endpoint. Save, trigger an event, and watch it appear in your Webhooktrap inbox in real time.
+  </Step>
+</Steps>
+
+## Supported providers
+
+<CardGroup cols={3}>
+  <Card title="Stripe" icon="stripe" href="/integrations/stripe">
+    Capture payment events and inspect `Stripe-Signature` headers for signature verification testing.
+  </Card>
+  <Card title="GitHub" icon="github" href="/integrations/github">
+    Debug push, pull request, and issue payloads before forwarding to your app server.
+  </Card>
+  <Card title="Shopify" icon="shopify" href="/integrations/shopify">
+    Inspect order, product, and fulfillment events during development.
+  </Card>
+  <Card title="Twilio" icon="phone" href="/integrations/other-providers#twilio">
+    Route voice and messaging webhook callbacks to your inbox.
+  </Card>
+  <Card title="Linear" icon="circle-dot" href="/integrations/other-providers#linear">
+    Subscribe to issue and project events from Linear's API settings.
+  </Card>
+  <Card title="Vercel" icon="triangle" href="/integrations/other-providers#vercel">
+    Receive deploy hook payloads and inspect them before wiring up your handler.
+  </Card>
+  <Card title="Clerk" icon="user-check" href="/integrations/other-providers#clerk">
+    Capture user lifecycle events like sign-ups and session creation.
+  </Card>
+  <Card title="Resend" icon="envelope" href="/integrations/other-providers#resend">
+    Debug email delivery, open, and bounce events from Resend.
+  </Card>
+  <Card title="Other Providers" icon="plug" href="/integrations/other-providers">
+    Any service that sends HTTP requests works with Webhooktrap out of the box.
+  </Card>
+</CardGroup>
+
+## The ingest URL is provider-agnostic
+
+Webhooktrap's ingest URL accepts any HTTP method — `POST`, `GET`, `PUT`, and `PATCH` — with any content type. If a service can send an HTTP request to a URL, it works with Webhooktrap. You never need to install a vendor SDK, configure a local tunnel, or write provider-specific boilerplate just to see what a webhook looks like.
+
+<Tip>
+  Before configuring a real provider, use cURL to send a test request to your inbox and confirm everything is working:
+
+  ```bash
+  curl -X POST https://webhooktrap.dev/i/YOUR_INBOX_ID \
+    -H "Content-Type: application/json" \
+    -d '{"event": "test", "message": "Hello from cURL"}'
+  ```
+
+  Open your Webhooktrap dashboard and you'll see the request appear immediately with full headers and body.
+</Tip>

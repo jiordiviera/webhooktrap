@@ -1,0 +1,27 @@
+{
+    "$schema": "./_schema/manifest.schema.json",
+    "format": 1,
+    "version": "1.0.0",
+    "packs": [
+        {
+            "id": "stripe",
+            "version": "1.0.0"
+        },
+        {
+            "id": "github",
+            "version": "1.0.0"
+        },
+        {
+            "id": "shopify",
+            "version": "1.0.0"
+        },
+        {
+            "id": "standard_webhooks",
+            "version": "1.0.0"
+        }
+    ],
+    "coming": ["twilio", "slack"],
+    "unknown": {
+        "group_fallback": "data_id"
+    }
+}

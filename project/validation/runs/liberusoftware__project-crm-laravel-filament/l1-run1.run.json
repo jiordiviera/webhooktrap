@@ -1,0 +1,39 @@
+{
+  "run_id": "run_20261114T153527Z-5a64",
+  "started_at": "2026-11-14T15:35:27.646607237Z",
+  "duration_ms": 630,
+  "aborted": false,
+  "exit_code": 2,
+  "provider": "stripe",
+  "levels": "L1",
+  "events": 3,
+  "first_run_in_folder": true,
+  "minutes_to_first_run": 0.06251650135,
+  "time_to_first_finding_ms": null,
+  "budget_ms": 10000,
+  "budget_source": "Webhook Trap default",
+  "environment": {
+    "os": "linux",
+    "arch": "amd64",
+    "binary_version": "0.1.0-spike",
+    "install_method": "binary"
+  },
+  "scenarios": [
+    {
+      "name": "Once",
+      "status": "setup"
+    }
+  ],
+  "deliveries": [
+    {
+      "n": 1,
+      "scenario": "Once",
+      "event": "invoice.payment_succeeded",
+      "offset_ms": 0,
+      "status": 419,
+      "latency_ms": 630,
+      "result": "Setup, baseline rejected"
+    }
+  ],
+  "findings": null
+}

@@ -1,0 +1,1564 @@
+{
+    "run": {
+        "id": "example",
+        "number": 3,
+        "status": "findings",
+        "reason": null,
+        "exitCode": 1,
+        "provenance": {
+            "executor": "agent",
+            "source": "web",
+            "agentName": "maya-mbp"
+        },
+        "agent": {
+            "name": "maya-mbp",
+            "version": "0.9.2"
+        },
+        "provider": "stripe",
+        "pack": {
+            "id": "stripe",
+            "version": "1"
+        },
+        "budget": {
+            "ms": 10000,
+            "source": "default",
+            "label": "10 s budget · Webhook Trap default"
+        },
+        "target": {
+            "scheme": "http",
+            "host": "localhost",
+            "port": 3000,
+            "path": "/webhooks/stripe"
+        },
+        "levels": [1, 2],
+        "probeEntries": [
+            {
+                "name": "orders.count",
+                "displayMode": "count"
+            }
+        ],
+        "counts": {
+            "critical": 1,
+            "high": 1,
+            "medium": 1,
+            "info": 1,
+            "findings": 3
+        },
+        "from": {
+            "groupKey": "sub_1QH…4drI",
+            "seqs": [1, 3, 4]
+        },
+        "startedAt": "2026-11-11T14:09:02.118Z",
+        "finishedAt": "2026-11-11T14:09:45.312Z",
+        "durationMs": 43194,
+        "notChecked": [],
+        "orderDependent": false,
+        "visibility": "private",
+        "title": "Prove invoice.paid · renewal",
+        "project": "Brindle Coffee",
+        "framework": "Express (detected from X-Powered-By)",
+        "failOn": "high",
+        "burstSpreadMs": 3
+    },
+    "scenarios": [
+        {
+            "key": "once",
+            "name": "Once",
+            "result": "pass",
+            "deliveries": [1, 2, 3],
+            "findings": [],
+            "counted": 0,
+            "reading": "0 → 1",
+            "line": "200 × 3 · orders.count 0 → 1"
+        },
+        {
+            "key": "twice",
+            "name": "Twice",
+            "result": "finding",
+            "deliveries": [4, 5],
+            "findings": [
+                {
+                    "n": 2,
+                    "severity": "high"
+                }
+            ],
+            "counted": 1,
+            "reading": "expected 1 · got 2",
+            "line": "200, 200 · orders.count 1 → 2 on D5, expected 1"
+        },
+        {
+            "key": "shuffled",
+            "name": "Shuffled",
+            "result": "pass",
+            "deliveries": [6, 7, 8],
+            "findings": [
+                {
+                    "n": 4,
+                    "severity": "info"
+                }
+            ],
+            "counted": 0,
+            "reading": "○ F4 Info · 0 → 1",
+            "line": "reversed · orders.count 0 → 1 · status not probed"
+        },
+        {
+            "key": "late",
+            "name": "Late",
+            "result": "pass",
+            "deliveries": [9],
+            "findings": [],
+            "counted": 0,
+            "reading": "400 · 41 ms",
+            "line": "400 in 41 ms · rejected as expected"
+        },
+        {
+            "key": "retry",
+            "name": "Retry after error",
+            "result": "finding",
+            "deliveries": [10, 11],
+            "findings": [
+                {
+                    "n": 2,
+                    "severity": "high"
+                },
+                {
+                    "n": 3,
+                    "severity": "medium"
+                }
+            ],
+            "counted": 2,
+            "reading": "△ F3 · 11 840 ms",
+            "line": "D10 11 840 ms → retry D11 → orders.count 1 → 2"
+        },
+        {
+            "key": "tampered",
+            "name": "Tampered",
+            "result": "finding",
+            "deliveries": [12],
+            "findings": [
+                {
+                    "n": 1,
+                    "severity": "critical"
+                }
+            ],
+            "counted": 1,
+            "reading": "expected 4xx · got 200",
+            "line": "200 in 167 ms · accepted a changed body"
+        },
+        {
+            "key": "burst",
+            "name": "Burst",
+            "result": "pass",
+            "deliveries": [13, 14, 15],
+            "findings": [
+                {
+                    "n": 4,
+                    "severity": "info"
+                }
+            ],
+            "counted": 0,
+            "reading": "○ F4 Info · 0 → 1 (final)",
+            "line": "200 × 3 · 312–601 ms · orders.count 0 → 1 (final)"
+        },
+        {
+            "key": "slow",
+            "name": "Slow budget",
+            "result": "finding",
+            "deliveries": [16],
+            "findings": [
+                {
+                    "n": 3,
+                    "severity": "medium"
+                }
+            ],
+            "counted": 1,
+            "reading": "10 420 ms · +420",
+            "line": "10 420 ms · 420 ms over budget"
+        }
+    ],
+    "timeline": {
+        "lastSeq": 16,
+        "status": "findings",
+        "deliveries": [
+            {
+                "d": 1,
+                "scenario": "once",
+                "sourceSeq": 1,
+                "mode": "normal",
+                "offsetMs": 1320,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 184,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "1",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "invoice.paid",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "orders.count 0 → 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:03.438Z",
+                    "completedMs": 1534,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406143,v1=34e9aedefffddf04c3cf3f9e055ba714e9ebe21b828e6170eeb7b610123d9f7d"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D1"],
+                            ["Webhooktrap-Scenario", "once"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 2,
+                "scenario": "once",
+                "sourceSeq": 3,
+                "mode": "normal",
+                "offsetMs": 1684,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 121,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": false,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "1",
+                                "after": "1",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "payment_intent.succeeded",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "orders.count 1 → 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:03.802Z",
+                    "completedMs": 1835,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406143,v1=b5761296cb55333e5741ae405b52a28261371d58008c13a21d2951668992adc9"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D2"],
+                            ["Webhooktrap-Scenario", "once"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #03",
+                        "sizeBytes": 915
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 3,
+                "scenario": "once",
+                "sourceSeq": 4,
+                "mode": "normal",
+                "offsetMs": 1985,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 143,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": false,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "1",
+                                "after": "1",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "customer.subscription.updated",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "orders.count 1 → 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:04.103Z",
+                    "completedMs": 2158,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406144,v1=df77df4c3289b689eb6194aec96d5d7cb0f0f4c5e128d745156ff396b34d6e1e"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D3"],
+                            ["Webhooktrap-Scenario", "once"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #04",
+                        "sizeBytes": 1496
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 4,
+                "scenario": "twice",
+                "sourceSeq": 1,
+                "mode": "normal",
+                "offsetMs": 3978,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 212,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "1",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "invoice.paid",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "orders.count 0 → 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:06.096Z",
+                    "completedMs": 4220,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406146,v1=ab3bb5f68a9b427f38a43d888f01482fbf864747fc4eec042a6745db7dedd7f1"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D4"],
+                            ["Webhooktrap-Scenario", "twice"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 5,
+                "scenario": "twice",
+                "sourceSeq": 1,
+                "mode": "duplicate",
+                "offsetMs": 4720,
+                "signing": {
+                    "kind": "re-signed (same event id)"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 196,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": false,
+                            "flagged": true,
+                            "display": {
+                                "before": "1",
+                                "after": "2",
+                                "expected": "1"
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "finding",
+                "eventType": "invoice.paid",
+                "finding": 2,
+                "budgetJudged": true,
+                "digest": "orders.count 1 → 2 · expected 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:06.838Z",
+                    "completedMs": 4946,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406146,v1=0f7c26f800b86fc4616704b2933bde91d136153f5006d9299305d59883bb5c73"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D5"],
+                            ["Webhooktrap-Scenario", "twice"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 6,
+                "scenario": "shuffled",
+                "sourceSeq": 4,
+                "mode": "normal",
+                "offsetMs": 6766,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 138,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": false,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "0",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "customer.subscription.updated",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "orders.count 0 → 0",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:08.884Z",
+                    "completedMs": 6934,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406148,v1=5140c8f36715f76b80d3b985900ba8ec9cf086081e0135c397e9ea6c7cd6403e"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D6"],
+                            ["Webhooktrap-Scenario", "shuffled"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #04",
+                        "sizeBytes": 1496
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 7,
+                "scenario": "shuffled",
+                "sourceSeq": 3,
+                "mode": "normal",
+                "offsetMs": 7084,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 117,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": false,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "0",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "payment_intent.succeeded",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "orders.count 0 → 0",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:09.202Z",
+                    "completedMs": 7231,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406149,v1=20d40f25e9592e3bb85af130218248ce745bb890da76da30aa696961a651b8eb"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D7"],
+                            ["Webhooktrap-Scenario", "shuffled"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #03",
+                        "sizeBytes": 915
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 8,
+                "scenario": "shuffled",
+                "sourceSeq": 1,
+                "mode": "normal",
+                "offsetMs": 7381,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 199,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": true,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "1",
+                                "expected": "1"
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "invoice.paid",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "orders.count 0 → 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:09.499Z",
+                    "completedMs": 7610,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406149,v1=3d1840db7a9a158edee2dffec772ddc40f467faf5459d4c5cd3b506deee60988"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D8"],
+                            ["Webhooktrap-Scenario", "shuffled"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 9,
+                "scenario": "late",
+                "sourceSeq": 1,
+                "mode": "late",
+                "offsetMs": 9430,
+                "signing": {
+                    "kind": "re-signed, t − 360 s"
+                },
+                "tamper": null,
+                "status": 400,
+                "transport": null,
+                "latencyMs": 41,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 48,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": false,
+                            "matchesExpected": true,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "0",
+                                "expected": "0"
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "invoice.paid",
+                "finding": null,
+                "budgetJudged": false,
+                "digest": "orders.count 0 → 0",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:11.548Z",
+                    "completedMs": 9501,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794405791,v1=e7510784ecbdb3f86517232ec0bd374c4d83f8fff60f2bfe43d1378c4cca641f"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D9"],
+                            ["Webhooktrap-Scenario", "late"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "48"]
+                        ],
+                        "body": "{\"error\":\"Timestamp outside the tolerance zone\"}"
+                    }
+                }
+            },
+            {
+                "d": 10,
+                "scenario": "retry",
+                "sourceSeq": 1,
+                "mode": "normal",
+                "offsetMs": 11321,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 11840,
+                "overBudget": true,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "1",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "finding",
+                "eventType": "invoice.paid",
+                "finding": 3,
+                "budgetJudged": true,
+                "digest": "orders.count 0 → 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:13.439Z",
+                    "completedMs": 23191,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406153,v1=4b8947cbd361a5c4ed832d07e23b2317d4652df74c979d8bd489576c0ffd2530"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D10"],
+                            ["Webhooktrap-Scenario", "retry"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 11,
+                "scenario": "retry",
+                "sourceSeq": 1,
+                "mode": "retry",
+                "offsetMs": 25191,
+                "signing": {
+                    "kind": "re-signed (retry, same event id)"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 205,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": false,
+                            "flagged": true,
+                            "display": {
+                                "before": "1",
+                                "after": "2",
+                                "expected": "1"
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "finding",
+                "eventType": "invoice.paid",
+                "finding": 2,
+                "budgetJudged": true,
+                "digest": "orders.count 1 → 2 · expected 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:27.309Z",
+                    "completedMs": 25426,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406167,v1=548ec02bc9205892a5cd5952f77b2bc218bffb6cc6ba93fa441c5322447beec3"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D11"],
+                            ["Webhooktrap-Scenario", "retry"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 12,
+                "scenario": "tampered",
+                "sourceSeq": 1,
+                "mode": "tampered",
+                "offsetMs": 27246,
+                "signing": {
+                    "kind": "signed for the original body, fresh timestamp"
+                },
+                "tamper": {
+                    "path": "data.object.amount_paid",
+                    "from": "2400",
+                    "to": "0"
+                },
+                "status": 200,
+                "transport": null,
+                "latencyMs": 167,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": false,
+                            "flagged": true,
+                            "display": {
+                                "before": "0",
+                                "after": "1",
+                                "expected": "0"
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "finding",
+                "eventType": "invoice.paid",
+                "finding": 1,
+                "budgetJudged": false,
+                "digest": "orders.count 0 → 1 · expected 0",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:29.364Z",
+                    "completedMs": 27443,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406169,v1=5f9109630166c28184fb90d5dcdd7131ba40e37f4c2515ab0a3f482954d0caa2"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D12"],
+                            ["Webhooktrap-Scenario", "tampered"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "amount_paid edited in place 2400 → 0 (no re-serialisation, Content-Length recomputed); Stripe-Signature computed for the original body at a fresh timestamp",
+                        "sizeBytes": 2291
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 13,
+                "scenario": "burst",
+                "sourceSeq": 1,
+                "mode": "normal",
+                "offsetMs": 29263,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 601,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "invoice.paid",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "— (read once after the burst: 0 → 1 final)",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:31.381Z",
+                    "completedMs": 29864,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406171,v1=b3a88b41c318cae765c4d3322f9e2878d6d35180800bd182962f802c0c4aca25"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D13"],
+                            ["Webhooktrap-Scenario", "burst"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 14,
+                "scenario": "burst",
+                "sourceSeq": 3,
+                "mode": "normal",
+                "offsetMs": 29265,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 312,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "payment_intent.succeeded",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "— (read once after the burst: 0 → 1 final)",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:31.383Z",
+                    "completedMs": 29577,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406171,v1=380aee9c37f7efa0b55532aa55539a6a97df8f428297253670a1a9197086c444"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D14"],
+                            ["Webhooktrap-Scenario", "burst"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #03",
+                        "sizeBytes": 915
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 15,
+                "scenario": "burst",
+                "sourceSeq": 4,
+                "mode": "normal",
+                "offsetMs": 29266,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 448,
+                "overBudget": false,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "pass",
+                "eventType": "customer.subscription.updated",
+                "finding": null,
+                "budgetJudged": true,
+                "digest": "— (read once after the burst: 0 → 1 final)",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:31.384Z",
+                    "completedMs": 29714,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406171,v1=30ba05f78f72d30336fdb26c58b32a7f82edf9ab4fc99c21592d05dc82e58781"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D15"],
+                            ["Webhooktrap-Scenario", "burst"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #04",
+                        "sizeBytes": 1496
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            },
+            {
+                "d": 16,
+                "scenario": "slow",
+                "sourceSeq": 1,
+                "mode": "normal",
+                "offsetMs": 31714,
+                "signing": {
+                    "kind": "re-signed"
+                },
+                "tamper": null,
+                "status": 200,
+                "transport": null,
+                "latencyMs": 10420,
+                "overBudget": true,
+                "response": {
+                    "contentType": "application/json; charset=utf-8",
+                    "bytes": 17,
+                    "sha256": ""
+                },
+                "state": {
+                    "readings": [
+                        {
+                            "name": "orders.count",
+                            "changed": true,
+                            "matchesExpected": null,
+                            "flagged": false,
+                            "display": {
+                                "before": "0",
+                                "after": "1",
+                                "expected": null
+                            }
+                        }
+                    ],
+                    "failed": false,
+                    "unsettled": false
+                },
+                "result": "finding",
+                "eventType": "invoice.paid",
+                "finding": 3,
+                "budgetJudged": true,
+                "digest": "orders.count 0 → 1",
+                "inspector": {
+                    "sentAt": "2026-11-11T14:09:33.832Z",
+                    "completedMs": 42164,
+                    "request": {
+                        "method": "POST",
+                        "url": "http://localhost:3000/webhooks/stripe",
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            [
+                                "User-Agent",
+                                "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+                            ],
+                            [
+                                "Stripe-Signature",
+                                "t=1794406173,v1=f3c9767e50d56b9813e5d9740eccc902cec2a507d30f69f1c173617632dea177"
+                            ],
+                            [
+                                "Webhooktrap-Run",
+                                "run_01M75F1M56RSH0CVKCTFX4FQWC"
+                            ],
+                            ["Webhooktrap-Delivery", "D16"],
+                            ["Webhooktrap-Scenario", "slow"],
+                            ["Webhooktrap-Dry-Run", "1"]
+                        ],
+                        "bodyNote": "Exact bytes of capture #01",
+                        "sizeBytes": 2294
+                    },
+                    "response": {
+                        "headers": [
+                            ["Content-Type", "application/json; charset=utf-8"],
+                            ["X-Powered-By", "Express"],
+                            ["Content-Length", "17"]
+                        ],
+                        "body": "{\"received\":true}"
+                    }
+                }
+            }
+        ]
+    },
+    "findings": [
+        {
+            "n": 1,
+            "type": "accepts_tampered",
+            "severity": "critical",
+            "level": 1,
+            "title": "Accepts tampered payload",
+            "eventType": "invoice.paid",
+            "scenarios": ["Tampered"],
+            "evidence": [
+                {
+                    "d": 12,
+                    "role": "offending"
+                }
+            ],
+            "what": "D12 changed amount_paid from 2400 to 0 and was signed for the original body. Your handler returned 200 in 167 ms and created an order: orders.count 0 → 1, expected a 4xx and no change.",
+            "why": "Stripe signs the exact bytes it sends. If a failed check doesn't stop the request, anyone who can reach this URL can create paid orders.",
+            "citation": {
+                "label": "Stripe docs › Webhooks › Verify signatures",
+                "url": "https://docs.stripe.com/webhooks"
+            },
+            "fix": {
+                "text": "Return 400 as soon as constructEvent throws, before any write. After the fix, D12 should get 400 and leave orders.count at 0.",
+                "framework": "Express (detected from X-Powered-By)",
+                "snippet": "app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), (req, res) => {\n  let event;\n  try {\n    event = stripe.webhooks.constructEvent(req.body, req.get('stripe-signature'), endpointSecret);\n  } catch (err) {\n    return res.status(400).send('Invalid signature'); // stop here, don't log and continue\n  }\n  // ...handle event\n});"
+            },
+            "likelyCause": {
+                "rule": "LC-1",
+                "text": "Late (D9) was rejected, so the timestamp check runs; the signature check probably fails into a log line instead of stopping the request."
+            },
+            "fingerprint": "example-f1",
+            "seenBefore": false,
+            "levelLabel": "Level 1 · transport",
+            "caption": null,
+            "measured": "HTTP 200 in 167 ms · orders.count 0 → 1 · expected: a 4xx and no change"
+        },
+        {
+            "n": 2,
+            "type": "duplicate_changed_state",
+            "severity": "high",
+            "level": 2,
+            "title": "Duplicate delivery created a second order",
+            "eventType": "invoice.paid",
+            "scenarios": ["Twice", "Retry after error"],
+            "evidence": [
+                {
+                    "d": 4,
+                    "role": "reference"
+                },
+                {
+                    "d": 5,
+                    "role": "offending"
+                },
+                {
+                    "d": 10,
+                    "role": "reference"
+                },
+                {
+                    "d": 11,
+                    "role": "offending"
+                }
+            ],
+            "what": "D5 delivered the same invoice.paid event as D4. Both got 200 {\"received\":true}, but orders.count went 1 → 2, expected 1. The retry D11 did the same after D10. Only the probe could see this.",
+            "why": "Stripe may deliver the same event more than once, and retries failed or timed-out deliveries with backoff for up to 3 days in live mode. Each duplicate creates another order.",
+            "citation": {
+                "label": "Stripe docs › Webhooks › Handle duplicate events · Retry behavior",
+                "url": "https://docs.stripe.com/webhooks"
+            },
+            "fix": {
+                "text": "Record event.id before creating the order and return 200 early when it is already recorded. After the fix, D5 and D11 should leave orders.count at 1.",
+                "framework": "Express (detected from X-Powered-By)",
+                "snippet": "// before creating the order\nconst { rowCount } = await db.query(\n  'INSERT INTO processed_events (id) VALUES ($1) ON CONFLICT DO NOTHING',\n  [event.id]\n);\nif (rowCount === 0) return res.sendStatus(200); // already handled"
+            },
+            "likelyCause": {
+                "rule": "LC-8",
+                "text": "The handler doesn't record the event id before it writes."
+            },
+            "fingerprint": "example-f2",
+            "seenBefore": false,
+            "levelLabel": "Level 2 · judged on maya-mbp",
+            "caption": "Same request, same response, a different state.",
+            "measured": "D5: HTTP 200 in 196 ms · orders.count 1 → 2, expected 1 · D11 (retry): HTTP 200 in 205 ms · orders.count 1 → 2, expected 1"
+        },
+        {
+            "n": 3,
+            "type": "over_budget",
+            "severity": "medium",
+            "level": 1,
+            "title": "Over the 10 s budget for Stripe",
+            "eventType": "invoice.paid",
+            "scenarios": ["Retry after error", "Slow budget"],
+            "evidence": [
+                {
+                    "d": 10,
+                    "role": "offending"
+                },
+                {
+                    "d": 16,
+                    "role": "offending"
+                }
+            ],
+            "what": "2 of 8 valid invoice.paid deliveries took longer than the 10 s budget (Webhook Trap default): D10 (11 840 ms) and D16 (10 420 ms). Stripe doesn't publish its timeout, so these are over our default budget, not proven failures at Stripe.",
+            "why": "If Stripe times out waiting, the delivery counts as failed and is retried. Stripe doesn't publish the timeout. In this run, D10 went over our default budget, and the retry D11 created the duplicate order in F2.",
+            "citation": {
+                "label": "Stripe docs › Webhooks › Quickly return a 2xx response",
+                "url": "https://docs.stripe.com/webhooks"
+            },
+            "fix": {
+                "text": "Acknowledge with 200 first, then queue the slow work. After the fix, D10 and D16 should respond within the budget.",
+                "framework": "Express (detected from X-Powered-By)",
+                "snippet": "res.sendStatus(200);            // acknowledge first\nawait queue.add('create-label', { invoiceId: event.data.object.id });"
+            },
+            "likelyCause": {
+                "rule": "LC-4",
+                "text": "Only some deliveries of invoice.paid were slow, so the slow step is intermittent: usually an external call or a lock wait before the response."
+            },
+            "fingerprint": "example-f3",
+            "seenBefore": false,
+            "levelLabel": "Level 1 · transport",
+            "caption": null,
+            "measured": "D10 11 840 ms (+1 840 over) · D16 10 420 ms (+420 over) · median of the other 6 valid invoice.paid deliveries 202 ms"
+        },
+        {
+            "n": 4,
+            "type": "probe_gap",
+            "severity": "info",
+            "level": 2,
+            "title": "Probe doesn't see subscription state",
+            "eventType": null,
+            "scenarios": ["Shuffled", "Burst"],
+            "evidence": [
+                {
+                    "d": 6,
+                    "role": "offending"
+                },
+                {
+                    "d": 15,
+                    "role": "offending"
+                }
+            ],
+            "what": "Shuffled and Burst passed on orders.count. But customer.subscription.updated was delivered first in Shuffled (D6) and inside the burst (D15), and no probe reads subscription state.",
+            "why": "Out-of-order delivery usually breaks status fields, not counts.",
+            "citation": {
+                "label": "Stripe docs › Webhooks › Event ordering",
+                "url": "https://docs.stripe.com/webhooks"
+            },
+            "fix": {
+                "text": "Add subscriptions.status to the probe in webhooktrap.yml. The next run then checks both.",
+                "framework": "webhooktrap.yml",
+                "snippet": "probe:\n  # keep your existing entries, then add:\n  - as: subscriptions.status\n    sql: select status from subscriptions where stripe_id = '{{subscription.id}}'"
+            },
+            "likelyCause": null,
+            "fingerprint": "example-f4",
+            "seenBefore": false,
+            "levelLabel": "Level 2 · judged on maya-mbp",
+            "caption": null,
+            "measured": "orders.count 0 → 1 after Shuffled and after Burst, expected 1 · subscription state not measured"
+        }
+    ],
+    "example": {
+        "label": "Example run",
+        "helper": "A real run against a deliberately buggy handler. Get a URL to prove your own."
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/auth-challenge.request.schema.json",
+    "title": "POST /agent/v1/auth/challenge (§5.2)",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "agent_id": {
+            "$ref": "common.schema.json#/$defs/agentId"
+        }
+    },
+    "required": ["proto", "agent_id"],
+    "additionalProperties": false
+}

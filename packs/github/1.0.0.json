@@ -1,0 +1,107 @@
+{
+    "$schema": "../_schema/pack.schema.json",
+    "format": 1,
+    "id": "github",
+    "version": "1.0.0",
+    "name": "GitHub",
+    "budget": {
+        "ms": 10000,
+        "source": "GitHub docs",
+        "label": "10 s · GitHub limit",
+        "source_label": "GitHub docs",
+        "documented": true
+    },
+    "detect": {
+        "headers_all": ["X-GitHub-Event"]
+    },
+    "event": {
+        "type_header": "X-GitHub-Event",
+        "id_header": "X-GitHub-Delivery",
+        "api_version_header": "X-GitHub-Api-Version"
+    },
+    "grouping": {
+        "types": {
+            "repository": {
+                "name": "Repository",
+                "key": "{label}"
+            },
+            "organization": {
+                "name": "Organization",
+                "key": "{label}"
+            }
+        },
+        "anchors": ["repository", "organization"],
+        "by_event": [
+            {
+                "events": ["*"],
+                "yield": [
+                    {
+                        "path": "repository.id",
+                        "type": "repository",
+                        "label_path": "repository.full_name"
+                    },
+                    {
+                        "path": "organization.id",
+                        "type": "organization",
+                        "label_path": "organization.login"
+                    }
+                ]
+            }
+        ],
+        "fallback": null
+    },
+    "signing": {
+        "scheme": "github_sha256",
+        "headers": ["X-Hub-Signature-256", "X-Hub-Signature"],
+        "signed_timestamp": false,
+        "tolerance_s": 0,
+        "secret_env": ["GITHUB_WEBHOOK_SECRET"]
+    },
+    "duplicate": {
+        "supported": true,
+        "verified": false,
+        "keep_headers": ["X-GitHub-Delivery"],
+        "citation": ""
+    },
+    "retry": {
+        "supported": false,
+        "verified": true,
+        "keep_headers": [],
+        "citation": "https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries"
+    },
+    "resend_headers": [
+        "User-Agent",
+        "X-GitHub-Event",
+        "X-GitHub-Delivery",
+        "X-GitHub-Hook-ID",
+        "X-GitHub-Hook-Installation-Target-ID",
+        "X-GitHub-Hook-Installation-Target-Type"
+    ],
+    "tamper_paths": [],
+    "objects": [],
+    "status_events": [],
+    "scrub": {
+        "paths": [
+            "pusher.email",
+            "pusher.name",
+            "sender.email",
+            "head_commit.author.*",
+            "head_commit.committer.*",
+            "commits.author.*",
+            "commits.committer.*"
+        ],
+        "keep_headers": [
+            "Content-Type",
+            "User-Agent",
+            "X-GitHub-Event",
+            "X-GitHub-Delivery"
+        ]
+    },
+    "id_pattern": "",
+    "citations": {},
+    "text": {
+        "findings": {},
+        "likely_cause": {},
+        "snippets": {}
+    }
+}

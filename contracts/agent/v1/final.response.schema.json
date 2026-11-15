@@ -1,0 +1,18 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/final.response.schema.json",
+    "title": "200 answer to final (first write or same hash)",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "run_id": {
+            "$ref": "common.schema.json#/$defs/runId"
+        },
+        "status": {
+            "type": "string"
+        }
+    },
+    "required": ["proto", "run_id", "status"]
+}

@@ -1,0 +1,162 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/job.response.schema.json",
+    "title": "200 answer to GET /agent/v1/jobs/next (§5.4); 204 when none, 503 + Retry-After above the long-poll cap",
+    "oneOf": [
+        {
+            "type": "object",
+            "properties": {
+                "proto": {
+                    "$ref": "common.schema.json#/$defs/proto"
+                },
+                "job_id": {
+                    "$ref": "common.schema.json#/$defs/jobId"
+                },
+                "kind": {
+                    "const": "run"
+                },
+                "run_id": {
+                    "$ref": "common.schema.json#/$defs/runId"
+                },
+                "run_number": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "remote": {
+                    "type": "boolean"
+                },
+                "requester": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_label": {
+                            "type": "string",
+                            "maxLength": 120
+                        }
+                    },
+                    "required": ["workspace_label"],
+                    "additionalProperties": false
+                },
+                "project_key": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9]{10}$"
+                },
+                "selection": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 5,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "capture_id": {
+                                "$ref": "common.schema.json#/$defs/captureId"
+                            },
+                            "seq": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "body_sha256": {
+                                "$ref": "common.schema.json#/$defs/sha256"
+                            }
+                        },
+                        "required": ["capture_id", "seq", "body_sha256"],
+                        "additionalProperties": false
+                    }
+                },
+                "scenarios": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 9,
+                    "items": {
+                        "$ref": "common.schema.json#/$defs/scenario"
+                    }
+                },
+                "target_ref": {
+                    "type": "string",
+                    "maxLength": 600,
+                    "pattern": "^https?://[\\x21-\\x7e]+$"
+                },
+                "pack": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "$ref": "common.schema.json#/$defs/providerId"
+                        },
+                        "version": {
+                            "$ref": "common.schema.json#/$defs/semver"
+                        }
+                    },
+                    "required": ["id", "version"],
+                    "additionalProperties": false
+                },
+                "fail_on": {
+                    "enum": ["critical", "high", "medium", "never"]
+                },
+                "seed": {
+                    "type": "string",
+                    "pattern": "^[0-9]{1,20}$"
+                },
+                "delivery_count": {
+                    "type": ["integer", "null"],
+                    "minimum": 1,
+                    "maximum": 50,
+                    "description": "null until the server can plan (EngineProcess); the agent plans and reports it in observations seq 1"
+                },
+                "expires_at": {
+                    "$ref": "common.schema.json#/$defs/timestamp"
+                }
+            },
+            "required": [
+                "proto",
+                "job_id",
+                "kind",
+                "run_id",
+                "run_number",
+                "remote",
+                "requester",
+                "project_key",
+                "selection",
+                "scenarios",
+                "target_ref",
+                "pack",
+                "fail_on",
+                "seed",
+                "delivery_count",
+                "expires_at"
+            ]
+        },
+        {
+            "type": "object",
+            "properties": {
+                "proto": {
+                    "$ref": "common.schema.json#/$defs/proto"
+                },
+                "job_id": {
+                    "$ref": "common.schema.json#/$defs/jobId"
+                },
+                "kind": {
+                    "const": "verify"
+                },
+                "captures": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "capture_id": {
+                                "$ref": "common.schema.json#/$defs/captureId"
+                            },
+                            "body_sha256": {
+                                "$ref": "common.schema.json#/$defs/sha256"
+                            }
+                        },
+                        "required": ["capture_id", "body_sha256"],
+                        "additionalProperties": false
+                    }
+                },
+                "expires_at": {
+                    "$ref": "common.schema.json#/$defs/timestamp"
+                }
+            },
+            "required": ["proto", "job_id", "kind", "captures", "expires_at"]
+        }
+    ]
+}

@@ -1,0 +1,54 @@
+---
+title: Installation
+description: Run Webhook Trap locally with Docker or pnpm.
+---
+
+## Docker (recommended)
+
+Requires Docker with the Compose plugin and about 2GB of RAM.
+
+```bash
+git clone https://github.com/jiordiviera/webhooktrap.git
+cd webhooktrap
+
+cp .env.example .env
+docker compose up
+```
+
+The database initializes on first run. Then open:
+
+- Web: [http://localhost:7777](http://localhost:7777)
+- API: [http://localhost:3333](http://localhost:3333)
+
+Stop with `docker compose down`; add `-v` to also drop the database.
+
+## pnpm (for contributors)
+
+Requires Node.js 18+, pnpm 9+, and PostgreSQL 16.
+
+```bash
+pnpm install
+cp .env.example .env   # point DATABASE_URL at your local Postgres
+pnpm dev               # API on :3333, web on :7777
+```
+
+Useful commands:
+
+```bash
+pnpm test          # API tests (Japa)
+pnpm lint
+pnpm check-types
+```
+
+## Verify
+
+```bash
+curl http://localhost:7777        # HTML from the landing page
+```
+
+Create an inbox in the UI, then send it a request; the event should appear within seconds. If it doesn't, check `docker compose logs -f api`.
+
+## Next steps
+
+1. [Create your first inbox](/guides/inboxes)
+2. [Replay a webhook to your server](/guides/replay)

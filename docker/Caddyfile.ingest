@@ -1,0 +1,69 @@
+# Webhook Trap ingest runtime: the capture path (`/c/…` and the capture host) on its own FrankenPHP
+# process, in its own container (`ingest` service in both Compose profiles; compose-profile.md §2.3).
+# A09 slice 3 review: S3-3 (no PHP form or multipart parsing before the app runs) and S3-4 (slow
+# bodies cannot hold the app's PHP threads). Only the `app` container's Caddy talks to it, over the
+# Compose network, re-signed with the edge secret (docker/Caddyfile, snippet `ingest-proxy`).
+# Checked in CI with `frankenphp validate` (ci.yml) next to docker/Caddyfile.
+
+import /etc/frankenphp/caddy/trust-site-*.caddy
+
+{
+	frankenphp {
+		# S3-4: a pool of its own (8, A09 S3-17), measured inside the 384m limit (compose-profile §3).
+		num_threads {$INGEST_NUM_THREADS:8}
+		# S3-3: PHP never parses form or multipart bodies here and never writes upload temp files;
+		# php://input carries every body byte for byte. Per-process INI, so the app keeps the default.
+		php_ini enable_post_data_reading Off
+	}
+	http_port 8080
+	auto_https off
+	servers {
+		timeouts {
+			# S3-4: a body must arrive within this time (whole request), so one slow sender holds a
+			# PHP thread at most this long. The app front keeps 30 s for its own routes.
+			read_body {$INGEST_READ_BODY_TIMEOUT:15s}
+			read_header 10s
+		}
+		# S3-7: bound the header block of a capture (Go's default is 1 MiB).
+		max_header_size 64KiB
+	}
+	# Same redaction as docker/Caddyfile (RD-1): no capture key, share token or proxy secret in a log.
+	log {
+		output stderr
+		format filter {
+			wrap console
+			fields {
+				request>uri regexp "(?s)^.*$" "/REDACTED"
+				request>headers>Referer delete
+				request>headers>X-Wt-Edge delete
+				request>headers>X_Wt-Edge delete
+				request>headers>X-Wt_Edge delete
+				request>headers>X_Wt_Edge delete
+			}
+		}
+	}
+}
+
+:8080 {
+	route {
+		# FIRST statement of the route (SV-2). Always mode `secret`: the only legitimate caller is the
+		# app front, which proves itself with X-WT-Edge. The entrypoint refuses any other mode here.
+		import trust-site-secret
+
+		@phpinfo path_regexp (?i)\.php/
+		respond @phpinfo 404
+
+		request_body {
+			max_size 25MiB
+		}
+		log_skip
+		root * /app/public
+		php_server
+	}
+	# S3-15: the same 413 shape PHP gives (ServeCaptureHost), whatever the key.
+	handle_errors 413 {
+		header Content-Type application/json
+		header Cache-Control "no-store, private"
+		respond `{"error":"too_large"}` 413
+	}
+}

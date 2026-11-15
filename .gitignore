@@ -1,0 +1,49 @@
+# Laravel (from the React starter kit)
+/.phpunit.cache
+/bootstrap/ssr
+/node_modules
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/resources/js/actions
+/resources/js/routes
+/resources/js/wayfinder
+/vendor
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+/auth.json
+
+# Env files: only the examples are tracked
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Go agent build output
+/agent/dist/
+/agent/bin/
+
+# Debug / OS / editors
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.pem
+coverage
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# Local-only workspace material (never committed)
+/spikes/
+/.worktrees/
+/.playwright-mcp/
+/project/validation/raw/
+/.claude/settings.local.json

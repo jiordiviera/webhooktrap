@@ -1,0 +1,75 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/capture-request.response.schema.json",
+    "title": "200 answer to GET /agent/v1/jobs/{jobId}/captures/{captureId}/request (§5.4). Headers as stored: credential headers carry '[redacted · N bytes]' and are listed in redacted_headers, never re-sent as such. Body ≤ 5 MiB.",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "capture_id": {
+            "$ref": "common.schema.json#/$defs/captureId"
+        },
+        "seq": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "method": {
+            "type": "string",
+            "maxLength": 32
+        },
+        "raw_target": {
+            "type": "string"
+        },
+        "headers": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "string"
+                    }
+                ],
+                "minItems": 2,
+                "maxItems": 2
+            }
+        },
+        "redacted_headers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "content_type": {
+            "type": ["string", "null"]
+        },
+        "body_base64": {
+            "type": "string"
+        },
+        "body_sha256": {
+            "$ref": "common.schema.json#/$defs/sha256"
+        },
+        "body_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5242880
+        }
+    },
+    "required": [
+        "proto",
+        "capture_id",
+        "seq",
+        "method",
+        "raw_target",
+        "headers",
+        "redacted_headers",
+        "content_type",
+        "body_base64",
+        "body_sha256",
+        "body_bytes"
+    ]
+}

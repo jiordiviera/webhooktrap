@@ -1,0 +1,349 @@
+#!/bin/sh
+# Backup tooling of the Postgres image (compose-profile.md §2 notes and §7; contabo plan §5.1).
+# One script, called by the name it is linked as:
+#   pgbackrest-queue PATH NAME  `postgres` archive_command (pgBackRest requires its name in the command): queue the WAL segment on the shared spool
+#                          volume (no network, no secret in the postgres container)
+#   wt-pgbackrest ARGS     pgBackRest with this deployment's options
+#   backup-loop            `backup` service: stanza, nightly full, ledger shipping, status file
+#   backup-now [--type=T]  one backup now (deploy.sh step 4: --type=incr)
+#   backup-status [--max-full-age=26h] [--max-archive-lag=15m]   healthcheck
+#   restore [--target-time=T]  restore into an empty, stopped pgdata; writes /status/restore.pending
+#   ledger-fetch           copy the newest shipped ledger (still age-encrypted) to /status/ledger-fetched.age
+#   restore-finish         remove /status/restore.pending once the ledger is re-applied (DL-3c)
+#
+# pgBackRest options come from the environment; the cipher pass and the S3 key and secret are
+# read from the Compose secret files inside this process only, never from the container
+# environment, and never printed.
+set -eu
+
+STANZA=webhooktrap
+SECRETS=/run/secrets
+# Postgres 18 images keep the cluster under /var/lib/postgresql/<major>/docker (PGDATA); the
+# volume is mounted at /var/lib/postgresql (docker-library/postgres#1259).
+PG_DATA=${PGDATA:-/var/lib/postgresql/18/docker}
+STATUS_DIR=/status
+STATUS=$STATUS_DIR/backup.json
+LEDGER=${LEDGER_PATH:-/ledger/deletions.jsonl}
+LEDGER_STATE=$STATUS_DIR/ledger-shipped.sha256
+QUEUE=/var/spool/pgbackrest/queue
+NAME=$(basename "$0")
+
+fail() { echo "$NAME: $1" >&2; exit "${2:-1}"; }
+note() { echo "$NAME: $1"; }
+now() { date -u +%s; }
+
+secret() {
+    [ -r "$SECRETS/$1" ] || fail "secret $1 missing or unreadable by uid $(id -u)"
+    tr -d '\n' < "$SECRETS/$1"
+}
+
+# Seconds from a value like 26h, 15m, 90s or 7d.
+seconds() {
+    case "$1" in
+        *d) echo $(( ${1%d} * 86400 )) ;;
+        *h) echo $(( ${1%h} * 3600 )) ;;
+        *m) echo $(( ${1%m} * 60 )) ;;
+        *s) echo "${1%s}" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+pgbr_env() {
+    export PGBACKREST_STANZA=$STANZA
+    export PGBACKREST_PG1_PATH=$PG_DATA
+    export PGBACKREST_PG1_SOCKET_PATH=/var/run/postgresql
+    export PGBACKREST_PG1_USER="${POSTGRES_USER:-postgres}"
+    export PGBACKREST_LOCK_PATH=/tmp/pgbackrest
+    export PGBACKREST_LOG_LEVEL_CONSOLE=warn
+    export PGBACKREST_LOG_LEVEL_FILE=off
+    export PGBACKREST_COMPRESS_TYPE=zst
+    export PGBACKREST_START_FAST=y
+    # Retention by time: full backups (and the WAL they need) kept this many days.
+    export PGBACKREST_REPO1_RETENTION_FULL_TYPE=time
+    export PGBACKREST_REPO1_RETENTION_FULL="${BACKUP_RETENTION_FULL:-14}"
+    export PGBACKREST_REPO1_CIPHER_TYPE=aes-256-cbc
+    PGBACKREST_REPO1_CIPHER_PASS=$(secret backup_cipher_pass)
+    export PGBACKREST_REPO1_CIPHER_PASS
+    case "${BACKUP_REPO_TYPE:-posix}" in
+        posix)
+            export PGBACKREST_REPO1_TYPE=posix
+            export PGBACKREST_REPO1_PATH=/var/lib/pgbackrest
+            ;;
+        s3)
+            [ -n "${BACKUP_S3_ENDPOINT:-}" ] && [ -n "${BACKUP_S3_BUCKET:-}" ] || fail "BACKUP_S3_ENDPOINT and BACKUP_S3_BUCKET are required for s3"
+            export PGBACKREST_REPO1_TYPE=s3
+            export PGBACKREST_REPO1_PATH=/pgbackrest
+            export PGBACKREST_REPO1_S3_URI_STYLE=path
+            export PGBACKREST_REPO1_S3_ENDPOINT="$BACKUP_S3_ENDPOINT"
+            export PGBACKREST_REPO1_S3_BUCKET="$BACKUP_S3_BUCKET"
+            export PGBACKREST_REPO1_S3_REGION="${BACKUP_S3_REGION:-auto}"
+            PGBACKREST_REPO1_S3_KEY=$(secret backup_s3_key)
+            PGBACKREST_REPO1_S3_KEY_SECRET=$(secret backup_s3_secret)
+            export PGBACKREST_REPO1_S3_KEY PGBACKREST_REPO1_S3_KEY_SECRET
+            ;;
+        *) fail "BACKUP_REPO_TYPE must be posix or s3" ;;
+    esac
+}
+
+pgbr() { pgbr_env; pgbackrest --config=/dev/null "$@"; }
+
+# Status file, written atomically: {"key": value, ...} with numbers and booleans only.
+status_get() {
+    [ -f "$STATUS" ] || { echo ""; return; }
+    sed -n "s/.*\"$1\": *\([^,}]*\).*/\1/p" "$STATUS"
+}
+status_set() {
+    mkdir -p "$STATUS_DIR"
+    tmp=$(mktemp "$STATUS_DIR/.backup.XXXXXX")
+    {
+        printf '{'
+        first=1
+        for key in last_full_at last_full_ok last_backup_at last_backup_ok ledger_last_ship_at ledger_verify_at ledger_verify_ok; do
+            if [ "$key" = "$1" ]; then value=$2; else value=$(status_get "$key"); fi
+            [ -n "$value" ] || continue
+            [ $first -eq 1 ] || printf ', '
+            printf '"%s": %s' "$key" "$value"
+            first=0
+        done
+        printf '}\n'
+    } > "$tmp"
+    chmod 0644 "$tmp"
+    mv "$tmp" "$STATUS"
+}
+
+wait_for_postgres() {
+    i=0
+    until pg_isready -q -h /var/run/postgresql -U "${POSTGRES_USER:-postgres}"; do
+        i=$((i + 1)); [ $i -lt 60 ] || fail "postgres not ready after 120 s"
+        sleep 2
+    done
+}
+
+# Push queued WAL segments to the repository, oldest first (the backup service has the egress
+# network and the repository secrets; postgres has neither).
+archive_drain() {
+    [ -d "$QUEUE" ] || return 0
+    for f in $(ls -1 "$QUEUE" 2>/dev/null | grep -v '\.tmp$' | sort); do
+        pgbr archive-push "$QUEUE/$f" || return 1
+        rm -f "$QUEUE/$f"
+    done
+}
+# Run a command while draining the queue in the background (backup and check wait for the WAL
+# they produce to reach the repository).
+with_drain() {
+    ( while :; do archive_drain || true; sleep 2; done ) &
+    drainer=$!
+    set +e; "$@"; rc=$?; set -e
+    kill "$drainer" 2>/dev/null || true
+    wait "$drainer" 2>/dev/null || true
+    archive_drain || true
+    return $rc
+}
+
+run_backup() { # $1 = full | diff | incr
+    started=$(now)
+    if with_drain pgbr backup --type="$1"; then
+        status_set last_backup_at "$started"
+        status_set last_backup_ok true
+        if [ "$1" = full ]; then status_set last_full_at "$started"; status_set last_full_ok true; fi
+        note "$1 backup done"
+    else
+        status_set last_backup_ok false
+        [ "$1" != full ] || status_set last_full_ok false
+        echo "$NAME: $1 backup failed" >&2
+        return 1
+    fi
+}
+
+# --- ledger (DL-3b): the deletion ledger, age-encrypted to a public recipient, shipped off-box ---
+ledger_ship() {
+    [ -f "$LEDGER" ] || return 0
+    [ -n "${LEDGER_AGE_RECIPIENT:-}" ] || { echo "$NAME: LEDGER_AGE_RECIPIENT unset, ledger not shipped" >&2; return 1; }
+    sum=$(sha256sum "$LEDGER" | cut -d' ' -f1)
+    [ "$sum" != "$(cat "$LEDGER_STATE" 2>/dev/null || true)" ] || { status_set ledger_last_ship_at "$(now)"; return 0; }
+    object="ledger-$(date -u +%Y%m%dT%H%M%SZ)-$(echo "$sum" | cut -c1-16).jsonl.age"
+    tmp=$(mktemp -d /tmp/ledger.XXXXXX)
+    age -r "$LEDGER_AGE_RECIPIENT" -o "$tmp/$object" "$LEDGER"
+    if ledger_put "$tmp/$object" "$object"; then
+        echo "$sum" > "$LEDGER_STATE"
+        status_set ledger_last_ship_at "$(now)"
+        note "ledger shipped"
+    else
+        echo "$NAME: ledger shipping failed" >&2
+    fi
+    rm -rf "$tmp"
+    ledger_prune || true
+}
+
+rclone_env() {
+    export RCLONE_CONFIG_REPO_TYPE=s3
+    export RCLONE_CONFIG_REPO_PROVIDER=Other
+    export RCLONE_CONFIG_REPO_ENDPOINT="$BACKUP_S3_ENDPOINT"
+    export RCLONE_CONFIG_REPO_REGION="${BACKUP_S3_REGION:-auto}"
+    RCLONE_CONFIG_REPO_ACCESS_KEY_ID=$(secret backup_s3_key)
+    RCLONE_CONFIG_REPO_SECRET_ACCESS_KEY=$(secret backup_s3_secret)
+    export RCLONE_CONFIG_REPO_ACCESS_KEY_ID RCLONE_CONFIG_REPO_SECRET_ACCESS_KEY
+    export RCLONE_CONFIG=/dev/null
+}
+ledger_dir() { echo "${LEDGER_S3_PREFIX:-ledger/}" | sed 's#/*$##'; }
+ledger_put() {
+    if [ "${BACKUP_REPO_TYPE:-posix}" = s3 ]; then
+        rclone_env
+        rclone copyto --quiet "$1" "repo:$BACKUP_S3_BUCKET/$(ledger_dir)/$2"
+    else
+        mkdir -p "/var/lib/pgbackrest/$(ledger_dir)"
+        cp "$1" "/var/lib/pgbackrest/$(ledger_dir)/$2"
+    fi
+}
+ledger_list() { # object names, oldest first
+    if [ "${BACKUP_REPO_TYPE:-posix}" = s3 ]; then
+        rclone_env
+        rclone lsf --files-only "repo:$BACKUP_S3_BUCKET/$(ledger_dir)/" | grep '^ledger-.*\.jsonl\.age$' | sort
+    else
+        ls -1 "/var/lib/pgbackrest/$(ledger_dir)/" 2>/dev/null | grep '^ledger-.*\.jsonl\.age$' | sort
+    fi
+}
+ledger_prune() { # keep at least LEDGER_RETENTION_DAYS (21) of copies, never the newest
+    keep_after=$(date -u -d "@$(( $(now) - ${LEDGER_RETENTION_DAYS:-21} * 86400 ))" +%Y%m%d%H%M%S)
+    newest=$(ledger_list | tail -n 1)
+    ledger_list | while read -r object; do
+        stamp=$(echo "$object" | cut -d- -f2 | tr -d 'TZ')   # ledger-<YYYYMMDDTHHMMSSZ>-<hash>.jsonl.age
+        [ "$object" != "$newest" ] && [ "$stamp" -lt "$keep_after" ] || continue
+        if [ "${BACKUP_REPO_TYPE:-posix}" = s3 ]; then
+            rclone deletefile "repo:$BACKUP_S3_BUCKET/$(ledger_dir)/$object"
+        else
+            rm -f "/var/lib/pgbackrest/$(ledger_dir)/$object"
+        fi
+    done
+}
+ledger_verify() { # weekly: the newest copy's name carries the local file's hash prefix
+    [ -f "$LEDGER" ] || { status_set ledger_verify_at "$(now)"; status_set ledger_verify_ok true; return 0; }
+    want=$(sha256sum "$LEDGER" | cut -c1-16)
+    newest=$(ledger_list | tail -n 1)
+    status_set ledger_verify_at "$(now)"
+    case "$newest" in
+        *-"$want".jsonl.age) status_set ledger_verify_ok true ;;
+        *) status_set ledger_verify_ok false; echo "$NAME: ledger verify: newest copy does not match" >&2 ;;
+    esac
+}
+
+# --- commands ------------------------------------------------------------------------------
+case "$NAME" in
+    pgbackrest-queue)
+        [ $# -eq 2 ] || fail "usage: pgbackrest-queue PATH NAME" 64
+        printf '%s' "$2" | grep -qx '[0-9A-F]\{24\}\(\.partial\|\.backup\|\.history\)\?\|[0-9A-F]\{8\}\.history\|[0-9A-F]\{24\}\.[0-9A-F]\{8\}\.backup' \
+            || fail "unexpected WAL file name" 1
+        mkdir -p "$QUEUE"
+        if [ -e "$QUEUE/$2" ]; then cmp -s "$1" "$QUEUE/$2" && exit 0; fail "$2 already queued with other content"; fi
+        cp "$1" "$QUEUE/$2.tmp"
+        sync "$QUEUE/$2.tmp" 2>/dev/null || sync
+        mv "$QUEUE/$2.tmp" "$QUEUE/$2"
+        ;;
+
+    wt-pgbackrest)
+        pgbr "$@"
+        ;;
+
+    backup-now)
+        type=incr
+        for arg in "$@"; do
+            case "$arg" in --type=full|--type=diff|--type=incr) type=${arg#--type=} ;; *) fail "unknown argument" 64 ;; esac
+        done
+        wait_for_postgres
+        pgbr stanza-create >/dev/null 2>&1 || true
+        # An incremental needs a full to build on; the first one is full.
+        if [ "$type" != full ] && ! pgbr info --output=json | grep -q '"type":"full"'; then type=full; fi
+        run_backup "$type"
+        ;;
+
+    backup-loop)
+        schedule="${BACKUP_FULL_SCHEDULE:-02:30}"   # daily full at this UTC time
+        printf '%s' "$schedule" | grep -qx '[0-2][0-9]:[0-5][0-9]' || fail "BACKUP_FULL_SCHEDULE must be HH:MM (UTC)"
+        interval="${LEDGER_SHIP_INTERVAL_SECONDS:-60}"
+        wait_for_postgres
+        pgbr stanza-create
+        with_drain pgbr check
+        note "stanza ready (${BACKUP_REPO_TYPE:-posix})"
+        [ -n "$(status_get last_full_at)" ] || run_backup full || true
+        last_verify=$(status_get ledger_verify_at); last_verify=${last_verify:-0}
+        last_ship=0
+        while :; do
+            today_due=$(date -u -d "$(date -u +%Y-%m-%d) $schedule" +%s)
+            last_full=$(status_get last_full_at); last_full=${last_full:-0}
+            if [ "$(now)" -ge "$today_due" ] && [ "$last_full" -lt "$today_due" ]; then
+                run_backup full && pgbr expire || true
+            fi
+            archive_drain || echo "$NAME: WAL push failed, retrying" >&2
+            if [ $(( $(now) - last_ship )) -ge "$interval" ]; then ledger_ship || true; last_ship=$(now); fi
+            if [ $(( $(now) - last_verify )) -ge 604800 ]; then ledger_verify || true; last_verify=$(now); fi
+            sleep 10
+        done
+        ;;
+
+    backup-status)
+        max_full=26h; max_lag=15m
+        for arg in "$@"; do
+            case "$arg" in
+                --max-full-age=*) max_full=${arg#*=} ;;
+                --max-archive-lag=*) max_lag=${arg#*=} ;;
+                *) fail "unknown argument" 64 ;;
+            esac
+        done
+        last_full=$(status_get last_full_at)
+        [ -n "$last_full" ] || fail "no full backup yet"
+        [ "$(status_get last_full_ok)" = true ] || fail "the last full backup failed"
+        [ $(( $(now) - last_full )) -le "$(seconds "$max_full")" ] || fail "last full backup is older than $max_full"
+        # Archive lag: the oldest WAL segment not yet in the repository (still .ready in pg_wal,
+        # or queued on the spool volume).
+        oldest=$({ find "$PG_DATA/pg_wal/archive_status" -name '*.ready' -printf '%T@\n' 2>/dev/null
+                   find "$QUEUE" -type f -printf '%T@\n' 2>/dev/null; } | sort -n | head -n 1 | cut -d. -f1)
+        if [ -n "$oldest" ] && [ $(( $(now) - oldest )) -gt "$(seconds "$max_lag")" ]; then
+            fail "WAL archiving is behind by more than $max_lag"
+        fi
+        if [ -n "${LEDGER_AGE_RECIPIENT:-}" ] && [ -f "$LEDGER" ]; then
+            shipped=$(status_get ledger_last_ship_at)
+            [ -n "$shipped" ] && [ $(( $(now) - shipped )) -le 900 ] || fail "deletion ledger not shipped for 15 min"
+        fi
+        [ "$(status_get ledger_verify_ok)" != false ] || fail "weekly ledger verify failed"
+        echo "ok"
+        ;;
+
+    restore)
+        target=""
+        for arg in "$@"; do
+            case "$arg" in --target-time=*) target=${arg#*=} ;; *) fail "unknown argument" 64 ;; esac
+        done
+        [ -z "$(ls -A "$PG_DATA" 2>/dev/null)" ] || fail "pgdata is not empty: restore only into an empty volume with postgres stopped"
+        mkdir -p "$STATUS_DIR"
+        : > "$STATUS_DIR/restore.pending"   # DL-3c: the app refuses to start until restore-finish
+        # Recovery fetches WAL with this command, so the recovering server must run where the
+        # repository is reachable: the runbook starts it once in a `backup` container
+        # (contabo-deployment-plan.md §5.1), then postgres starts normally.
+        set -- --recovery-option='restore_command=wt-pgbackrest archive-get %f "%p"'
+        if [ -n "$target" ]; then
+            pgbr restore "$@" --type=time --target="$target" --target-action=promote
+        else
+            pgbr restore "$@" --type=default
+        fi
+        note "restored; next: recovery in a backup container, then ledger-fetch, accounts:apply-ledger, restore-finish"
+        ;;
+
+    ledger-fetch)
+        newest=$(ledger_list | tail -n 1)
+        [ -n "$newest" ] || fail "no shipped ledger found"
+        if [ "${BACKUP_REPO_TYPE:-posix}" = s3 ]; then
+            rclone_env
+            rclone copyto --quiet "repo:$BACKUP_S3_BUCKET/$(ledger_dir)/$newest" "$STATUS_DIR/ledger-fetched.age"
+        else
+            cp "/var/lib/pgbackrest/$(ledger_dir)/$newest" "$STATUS_DIR/ledger-fetched.age"
+        fi
+        note "copied $newest to $STATUS_DIR/ledger-fetched.age (decrypt with the PO's age identity, off-box)"
+        ;;
+
+    restore-finish)
+        rm -f "$STATUS_DIR/restore.pending"
+        note "restore.pending removed"
+        ;;
+
+    *) fail "unknown command" 64 ;;
+esac

@@ -1,0 +1,1 @@
+{"id":"evt_1WtSelfTest0003","object":"event","created":1794659020,"livemode":false,"type":"charge.refunded","data":{"object":{"id":"ch_1WtSelfTest0003","object":"charge","amount_refunded":2900,"currency":"usd"}}}

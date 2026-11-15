@@ -1,0 +1,30 @@
+---
+title: "Webhooktrap Security: HTTPS, Redaction, and Access Controls"
+sidebarTitle: "Security Overview"
+description: "Webhooktrap protects your webhook data with HTTPS ingest, automatic header redaction, auth-gated dashboards, and controlled read-only sharing."
+---
+
+Webhooktrap is a developer debugging tool, not production infrastructure. It's designed for inspecting webhook payloads during development and sharing individual events with teammates in a controlled way. The security model reflects that purpose: every ingest URL is served over HTTPS, sensitive credential headers are automatically stripped before storage, dashboard access requires authentication, and sharing is scoped to individual read-only events. The sections below explain each property in detail.
+
+<CardGroup cols={2}>
+  <Card title="HTTPS Ingest" icon="lock">
+    Every ingest URL (`https://webhooktrap.dev/i/:inboxId`) is served over TLS. Payloads are encrypted in transit between your provider and the Webhooktrap inbox — no unencrypted HTTP ingest path exists. This means the event data your provider sends cannot be read by a network observer between the provider and Webhooktrap's servers.
+  </Card>
+  <Card title="Header Redaction" icon="eye-slash">
+    The `authorization` and `cookie` headers are stripped from every incoming request **before** the payload is written to storage. They are never persisted. Signature headers used for HMAC verification — `Stripe-Signature`, `X-Hub-Signature-256`, and `X-Shopify-Hmac-Sha256` — are preserved exactly as sent, so you can test your signature validation logic against real provider values.
+  </Card>
+  <Card title="Auth-Gated Dashboard" icon="shield-halved">
+    Saved inboxes, captured events, and replay history are accessible only to authenticated users. You can sign in with GitHub OAuth, Google OAuth, or email and password. Anonymous inboxes have no owner and expire after 48 hours — they are not linked to any account and are not accessible from the authenticated dashboard.
+  </Card>
+  <Card title="Read-Only Share Links" icon="link">
+    You can share an individual captured event with a teammate by generating a read-only link. The recipient can inspect headers and the request body but cannot replay the event, delete it, or access any other inbox or event. No Webhooktrap account is required to view a shared link. Access is scoped strictly to the one event you chose to share.
+  </Card>
+</CardGroup>
+
+## Anonymous inbox data minimization
+
+Anonymous inboxes (created without an account) expire automatically after **48 hours**. This limits how long captured payload data is retained for unauthenticated usage. If you need events to persist, create a free account and use a saved inbox — you control the retention by choosing when to delete the inbox.
+
+<Warning>
+  Webhooktrap is a developer debugger. Do not route webhook payloads that contain personally identifiable information or other sensitive data through Webhooktrap if your security policy requires that data to remain on-premise or within a controlled environment. Use Webhooktrap with test-mode events and development credentials wherever possible.
+</Warning>

@@ -1,0 +1,1894 @@
+{
+  "schema_version": "1.0.0-draft.1",
+  "profile": "local",
+  "run": {
+    "id": "run_01M75F1M56FYBB83XR91MMF2WJ",
+    "status": "findings",
+    "status_reason": null,
+    "exit_code": 1,
+    "fail_on": "high",
+    "fail_on_inconclusive": false,
+    "started_at": "2026-11-11T14:09:02.118Z",
+    "finished_at": "2026-11-11T14:09:38.901Z",
+    "duration_ms": 36783,
+    "seed": "1234567890",
+    "plan_hash": "sha256:02de70fd057aff692188cda5600d1a4df29253313a94007bda8cc4c753ad169d",
+    "provider": "stripe",
+    "pack": {
+      "id": "stripe",
+      "version": "1.0.0"
+    },
+    "budget": {
+      "ms": 10000,
+      "source": "default",
+      "label": "10 s budget · Webhook Trap default"
+    },
+    "target": {
+      "scheme": "http",
+      "host": "127.0.0.1",
+      "port": 3000,
+      "path": "/webhooks/stripe"
+    },
+    "provenance": {
+      "executor": "ci",
+      "source": "cli"
+    },
+    "agent": {
+      "name": "",
+      "version": "0.0.0-dev"
+    },
+    "framework": {
+      "name": "express",
+      "detected_from": "x_powered_by"
+    },
+    "levels": [
+      1,
+      2
+    ],
+    "probe_entries": [
+      {
+        "name": "orders.count",
+        "display_mode": "code"
+      }
+    ],
+    "probe_display_policy": "strict",
+    "label_bits": 24,
+    "reset_configured": true,
+    "order_dependent": false,
+    "side_effects_acknowledged": true
+  },
+  "events": [
+    {
+      "ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "provider_event_id": "evt_1QK9BpyOmOFtoVkdOlN4pjPU",
+      "event_type": "invoice.paid",
+      "capture_order": 1,
+      "body_sha256": "bdc57f1dc99b7aef6790c59f1c6840bed375da8593219c89fa52db721a56818d",
+      "primary": true
+    },
+    {
+      "ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+      "provider_event_id": "evt_1QKJfXfXlhXK6gvKcqAYSoq2",
+      "event_type": "payment_intent.succeeded",
+      "capture_order": 2,
+      "body_sha256": "0642fa6750ebd7dfaa6455ebaef9a806dad47b893eadd9a87ab2e0c274e25bd0",
+      "primary": false
+    },
+    {
+      "ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+      "provider_event_id": "evt_1QKc6nBRpPBPPR9iTuwy4C8U",
+      "event_type": "customer.subscription.updated",
+      "capture_order": 3,
+      "body_sha256": "64b5677e5ce40e70d5bdcd1856b7ffaf21d90ea97aa811ef59c8e16752eadc52",
+      "primary": false
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "once",
+      "result": "pass",
+      "reason": null,
+      "deliveries": [
+        1,
+        2,
+        3
+      ],
+      "findings": [],
+      "reading": {
+        "kind": "change",
+        "probe": "orders.count",
+        "display": {
+          "after": "1",
+          "before": "0"
+        },
+        "before": "0",
+        "after": "1"
+      },
+      "reading_text": "200 × 3 · orders.count 0 → 1"
+    },
+    {
+      "name": "twice",
+      "result": "finding",
+      "reason": null,
+      "deliveries": [
+        4,
+        5
+      ],
+      "findings": [
+        "F2"
+      ],
+      "reading": {
+        "kind": "change",
+        "probe": "orders.count",
+        "display": {
+          "after": "2",
+          "before": "1"
+        },
+        "before": "1",
+        "after": "2"
+      },
+      "reading_text": "orders.count 1 → 2 on D5, expected 1"
+    },
+    {
+      "name": "shuffled",
+      "result": "pass",
+      "reason": null,
+      "deliveries": [
+        6,
+        7,
+        8
+      ],
+      "findings": [
+        "F4"
+      ],
+      "reading": {
+        "kind": "change",
+        "probe": "orders.count",
+        "display": {
+          "after": "1",
+          "before": "0"
+        },
+        "before": "0",
+        "after": "1"
+      },
+      "reading_text": "reversed · orders.count 0 → 1"
+    },
+    {
+      "name": "late",
+      "result": "pass",
+      "reason": null,
+      "deliveries": [
+        9
+      ],
+      "findings": [],
+      "reading": {
+        "kind": "change",
+        "probe": "orders.count",
+        "display": {
+          "after": "0",
+          "before": "0"
+        },
+        "before": "0",
+        "after": "0"
+      },
+      "reading_text": "400 in 41 ms · rejected as expected"
+    },
+    {
+      "name": "retry",
+      "result": "finding",
+      "reason": null,
+      "deliveries": [
+        10,
+        11
+      ],
+      "findings": [
+        "F2",
+        "F3"
+      ],
+      "reading": {
+        "kind": "change",
+        "probe": "orders.count",
+        "display": {
+          "after": "2",
+          "before": "1"
+        },
+        "before": "1",
+        "after": "2"
+      },
+      "reading_text": "11 840 ms → retry → orders.count 1 → 2 on D11, expected 1"
+    },
+    {
+      "name": "tampered",
+      "result": "finding",
+      "reason": null,
+      "deliveries": [
+        12
+      ],
+      "findings": [
+        "F1"
+      ],
+      "reading": {
+        "kind": "change",
+        "probe": "orders.count",
+        "display": {
+          "after": "1",
+          "before": "0"
+        },
+        "before": "0",
+        "after": "1"
+      },
+      "reading_text": "expected 4xx · got 200 in 167 ms · orders.count 0 → 1"
+    },
+    {
+      "name": "burst",
+      "result": "pass",
+      "reason": null,
+      "deliveries": [
+        13,
+        14,
+        15
+      ],
+      "findings": [
+        "F4"
+      ],
+      "reading": {
+        "kind": "burst_final",
+        "probe": "orders.count",
+        "display": {
+          "after": "1",
+          "before": "0"
+        },
+        "before": "0",
+        "after": "1"
+      },
+      "reading_text": "200 × 3 · 312–601 ms · orders.count 0 → 1 (final)"
+    },
+    {
+      "name": "slow_budget",
+      "result": "finding",
+      "reason": null,
+      "deliveries": [
+        16
+      ],
+      "findings": [
+        "F3"
+      ],
+      "reading": {
+        "kind": "change",
+        "probe": "orders.count",
+        "display": {
+          "after": "1",
+          "before": "0"
+        },
+        "before": "0",
+        "after": "1"
+      },
+      "reading_text": "10 420 ms · 420 ms over budget"
+    }
+  ],
+  "deliveries": [
+    {
+      "n": 1,
+      "scenario": "once",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "normal",
+      "offset_ms": 650,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 184,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "1",
+              "before": "0",
+              "expected": null
+            },
+            "before": "0",
+            "after": "1",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 2,
+      "scenario": "once",
+      "event_ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+      "mode": "normal",
+      "offset_ms": 984,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 121,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": false,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "1",
+              "before": "1",
+              "expected": null
+            },
+            "before": "1",
+            "after": "1",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 3,
+      "scenario": "once",
+      "event_ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+      "mode": "normal",
+      "offset_ms": 1255,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 143,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": false,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "1",
+              "before": "1",
+              "expected": null
+            },
+            "before": "1",
+            "after": "1",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 4,
+      "scenario": "twice",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "normal",
+      "offset_ms": 2548,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 212,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "1",
+              "before": "0",
+              "expected": null
+            },
+            "before": "0",
+            "after": "1",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 5,
+      "scenario": "twice",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "duplicate",
+      "offset_ms": 3260,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 196,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": false,
+            "flagged": true,
+            "display": {
+              "after": "2",
+              "before": "1",
+              "expected": "1"
+            },
+            "before": "1",
+            "after": "2",
+            "expected": "1"
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "finding",
+      "severity": "high",
+      "completed": true
+    },
+    {
+      "n": 6,
+      "scenario": "shuffled",
+      "event_ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+      "mode": "normal",
+      "offset_ms": 4606,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 138,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": false,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "0",
+              "before": "0",
+              "expected": null
+            },
+            "before": "0",
+            "after": "0",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 7,
+      "scenario": "shuffled",
+      "event_ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+      "mode": "normal",
+      "offset_ms": 4894,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 117,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": false,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "0",
+              "before": "0",
+              "expected": null
+            },
+            "before": "0",
+            "after": "0",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 8,
+      "scenario": "shuffled",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "normal",
+      "offset_ms": 5161,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 199,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": true,
+            "flagged": false,
+            "display": {
+              "after": "1",
+              "before": "0",
+              "expected": "1"
+            },
+            "before": "0",
+            "after": "1",
+            "expected": "1"
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 9,
+      "scenario": "late",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "late",
+      "offset_ms": 6510,
+      "signing": {
+        "kind": "resigned",
+        "timestamp_offset_s": -360
+      },
+      "tamper": null,
+      "status": 400,
+      "transport": null,
+      "latency_ms": 41,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "2c74dce45989257b6f798fd794fc319ebe666dcd5b7c1c66de45db63052d5df8",
+        "body_bytes": 48
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": false,
+            "matches_expected": true,
+            "flagged": false,
+            "display": {
+              "after": "0",
+              "before": "0",
+              "expected": "0"
+            },
+            "before": "0",
+            "after": "0",
+            "expected": "0"
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 10,
+      "scenario": "retry",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "normal",
+      "offset_ms": 7701,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 11840,
+      "over_budget": true,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "1",
+              "before": "0",
+              "expected": null
+            },
+            "before": "0",
+            "after": "1",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "finding",
+      "severity": "medium",
+      "completed": true
+    },
+    {
+      "n": 11,
+      "scenario": "retry",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "retry",
+      "offset_ms": 21541,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 205,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": false,
+            "flagged": true,
+            "display": {
+              "after": "2",
+              "before": "1",
+              "expected": "1"
+            },
+            "before": "1",
+            "after": "2",
+            "expected": "1"
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "finding",
+      "severity": "high",
+      "completed": true
+    },
+    {
+      "n": 12,
+      "scenario": "tampered",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "tampered",
+      "offset_ms": 22896,
+      "signing": {
+        "kind": "original_body_fresh_ts"
+      },
+      "tamper": {
+        "path": "data.object.amount_paid",
+        "from": "2400",
+        "to": "0"
+      },
+      "status": 200,
+      "transport": null,
+      "latency_ms": 167,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": false,
+            "flagged": true,
+            "display": {
+              "after": "1",
+              "before": "0",
+              "expected": "0"
+            },
+            "before": "0",
+            "after": "1",
+            "expected": "0"
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "finding",
+      "severity": "critical",
+      "completed": true
+    },
+    {
+      "n": 13,
+      "scenario": "burst",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "normal",
+      "offset_ms": 24213,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 601,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": null,
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 14,
+      "scenario": "burst",
+      "event_ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+      "mode": "normal",
+      "offset_ms": 24213,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 312,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": null,
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 15,
+      "scenario": "burst",
+      "event_ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+      "mode": "normal",
+      "offset_ms": 24213,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 448,
+      "over_budget": false,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": null,
+      "result": "pass",
+      "severity": null,
+      "completed": true
+    },
+    {
+      "n": 16,
+      "scenario": "slow_budget",
+      "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+      "mode": "normal",
+      "offset_ms": 25363,
+      "signing": {
+        "kind": "resigned"
+      },
+      "tamper": null,
+      "status": 200,
+      "transport": null,
+      "latency_ms": 10420,
+      "over_budget": true,
+      "response": {
+        "content_type": "application/json; charset=utf-8",
+        "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+        "body_bytes": 17
+      },
+      "state": {
+        "readings": [
+          {
+            "name": "orders.count",
+            "changed": true,
+            "matches_expected": null,
+            "flagged": false,
+            "display": {
+              "after": "1",
+              "before": "0",
+              "expected": null
+            },
+            "before": "0",
+            "after": "1",
+            "expected": null
+          }
+        ],
+        "failed": false,
+        "unsettled": false
+      },
+      "result": "finding",
+      "severity": "medium",
+      "completed": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "type": "accepts_tampered",
+      "fingerprint": "b180b1b1c774",
+      "severity": "critical",
+      "level": 1,
+      "event_type": "invoice.paid",
+      "scenarios": [
+        "tampered"
+      ],
+      "evidence": [
+        {
+          "d": 12,
+          "role": "offending"
+        }
+      ],
+      "likely_cause_rule": "LC-1",
+      "framework": "express",
+      "params": {
+        "event_type": "invoice.paid",
+        "status": 200,
+        "latency_ms": 167,
+        "d": 12,
+        "d_ref": 9,
+        "tamper": {
+          "path": "data.object.amount_paid",
+          "from": "2400",
+          "to": "0"
+        },
+        "probe": "orders.count",
+        "before": "0",
+        "after": "1",
+        "expected": "0",
+        "framework": "express"
+      },
+      "measured": [
+        {
+          "d": 12,
+          "status": 200,
+          "latency_ms": 167,
+          "probe": "orders.count",
+          "before": "0",
+          "after": "1",
+          "expected": "0"
+        }
+      ],
+      "title": "Accepts tampered payload",
+      "what": "D12 changed amount_paid from 2400 to 0 and was signed for the original body. Your handler returned 200 in 167 ms: orders.count 0 → 1, expected a 4xx and no change.",
+      "why": "Stripe signs the exact bytes it sends. If a failed check doesn't stop the request, anyone who can reach this URL can make your handler act on content Stripe never sent.",
+      "citation": {
+        "label": "Stripe docs › Webhooks › Verify signatures",
+        "url": "https://docs.stripe.com/webhooks#verify-official-libraries"
+      },
+      "fix": {
+        "text": "Return 400 as soon as signature verification fails, before any write. After the fix, D12 should get 400 and leave orders.count at 0.",
+        "snippet": "app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), (req, res) => {\n  let event;\n  try {\n    event = stripe.webhooks.constructEvent(req.body, req.get('stripe-signature'), endpointSecret);\n  } catch (err) {\n    return res.status(400).send('Invalid signature'); // stop here, don't log and continue\n  }\n  // ...handle event\n});"
+      },
+      "likely_cause_text": "Late (D9) was rejected, so the timestamp check runs; the signature check probably fails into a log line instead of stopping the request."
+    },
+    {
+      "id": "F2",
+      "type": "duplicate_changed_state",
+      "fingerprint": "4de835f08879",
+      "severity": "high",
+      "level": 2,
+      "event_type": "invoice.paid",
+      "scenarios": [
+        "twice",
+        "retry"
+      ],
+      "evidence": [
+        {
+          "d": 4,
+          "role": "reference"
+        },
+        {
+          "d": 5,
+          "role": "offending"
+        },
+        {
+          "d": 10,
+          "role": "reference"
+        },
+        {
+          "d": 11,
+          "role": "offending"
+        }
+      ],
+      "likely_cause_rule": "LC-8",
+      "framework": "express",
+      "params": {
+        "event_type": "invoice.paid",
+        "status": 200,
+        "d": 5,
+        "d_ref": 4,
+        "probe": "orders.count",
+        "before": "1",
+        "after": "2",
+        "expected": "1",
+        "framework": "express"
+      },
+      "measured": [
+        {
+          "d": 5,
+          "status": 200,
+          "latency_ms": 196,
+          "probe": "orders.count",
+          "before": "1",
+          "after": "2",
+          "expected": "1"
+        },
+        {
+          "d": 11,
+          "status": 200,
+          "latency_ms": 205,
+          "probe": "orders.count",
+          "before": "1",
+          "after": "2",
+          "expected": "1"
+        }
+      ],
+      "title": "Duplicate delivery changed orders.count again",
+      "what": "The same invoice.paid event was delivered again and every response was a 2xx, but orders.count went 1 → 2 on D5 and 1 → 2 on D11, expected 1. Only the probe could see this.",
+      "why": "Stripe may deliver the same event more than once, and retries failed or timed-out deliveries with backoff for up to 3 days in live mode. Each duplicate repeats the write.",
+      "citation": {
+        "label": "Stripe docs › Webhooks › Handle duplicate events · Retry behavior",
+        "url": "https://docs.stripe.com/webhooks#handle-duplicate-events"
+      },
+      "fix": {
+        "text": "Record event.id before the write and return 200 early when it is already recorded. After the fix, D5 and D11 should leave orders.count at 1.",
+        "snippet": "// before the write\nconst { rowCount } = await db.query(\n  'INSERT INTO processed_events (id) VALUES ($1) ON CONFLICT DO NOTHING',\n  [event.id]\n);\nif (rowCount === 0) return res.sendStatus(200); // already handled"
+      },
+      "likely_cause_text": "The handler doesn't record the event id before it writes."
+    },
+    {
+      "id": "F3",
+      "type": "over_budget",
+      "fingerprint": "8dedeee56a4c",
+      "severity": "medium",
+      "level": 1,
+      "event_type": "invoice.paid",
+      "scenarios": [
+        "retry",
+        "slow_budget"
+      ],
+      "evidence": [
+        {
+          "d": 10,
+          "role": "offending"
+        },
+        {
+          "d": 16,
+          "role": "offending"
+        }
+      ],
+      "likely_cause_rule": "LC-4",
+      "framework": "express",
+      "params": {
+        "event_type": "invoice.paid",
+        "latency_ms": 11840,
+        "over_by_ms": 1840,
+        "budget_ms": 10000,
+        "budget_label": "10 s budget · Webhook Trap default",
+        "slow_count": 2,
+        "valid_count": 8,
+        "d": 10,
+        "framework": "express"
+      },
+      "measured": [
+        {
+          "d": 10,
+          "status": 200,
+          "latency_ms": 11840,
+          "over_by_ms": 1840
+        },
+        {
+          "d": 16,
+          "status": 200,
+          "latency_ms": 10420,
+          "over_by_ms": 420
+        }
+      ],
+      "title": "Over the 10 s budget for Stripe",
+      "what": "2 of 8 valid invoice.paid deliveries took longer than the 10 s budget (Webhook Trap default): D10 (11 840 ms) and D16 (10 420 ms). Stripe doesn't publish its timeout, so these are over our default budget, not proven failures at Stripe.",
+      "why": "If Stripe times out waiting, the delivery counts as failed and is retried. Stripe doesn't publish the timeout.",
+      "citation": {
+        "label": "Stripe docs › Webhooks › Quickly return a 2xx response",
+        "url": "https://docs.stripe.com/webhooks#acknowledge-events-immediately"
+      },
+      "fix": {
+        "text": "Acknowledge with 200 first, then queue the slow work. After the fix, D10 and D16 should respond within the budget.",
+        "snippet": "res.sendStatus(200);            // acknowledge first\nawait queue.add('handle-event', { eventId: event.id });"
+      },
+      "likely_cause_text": "Only some deliveries of invoice.paid were slow, so the slow step is intermittent: usually an external call or a lock wait before the response."
+    },
+    {
+      "id": "F4",
+      "type": "probe_gap",
+      "fingerprint": "d26fcdaf619f",
+      "severity": "info",
+      "level": 2,
+      "event_type": "customer.subscription.updated",
+      "scenarios": [
+        "shuffled",
+        "burst"
+      ],
+      "evidence": [
+        {
+          "d": 6,
+          "role": "offending"
+        },
+        {
+          "d": 15,
+          "role": "offending"
+        }
+      ],
+      "likely_cause_rule": "",
+      "framework": "express",
+      "params": {
+        "event_type": "customer.subscription.updated",
+        "d": 6,
+        "probe": "orders.count",
+        "object_type": "subscription",
+        "framework": "express"
+      },
+      "measured": [],
+      "title": "Probe doesn't see subscription state",
+      "what": "customer.subscription.updated was delivered in Shuffled and Burst (D6 and D15), and no probe reads subscription state.",
+      "why": "Out-of-order delivery usually breaks status fields, not counts.",
+      "citation": {
+        "label": "Stripe docs › Webhooks › Event ordering",
+        "url": "https://docs.stripe.com/webhooks#event-ordering"
+      },
+      "fix": {
+        "text": "Add a subscription entry to the probe in webhooktrap.yml. The next run then checks both.",
+        "snippet": "probe:\n  # keep your existing entries, then add:\n  - as: subscriptions.status\n    cmd: psql \"$DATABASE_URL\" -Atc \"select status from subscriptions where stripe_id = '{{subscription.id}}'\""
+      },
+      "likely_cause_text": null
+    }
+  ],
+  "counts": {
+    "critical": 1,
+    "high": 1,
+    "medium": 1,
+    "info": 1,
+    "findings": 3
+  },
+  "not_checked": [
+    "subscription state, which no probe reads",
+    "side effects outside your database, such as emails"
+  ],
+  "warnings": [
+    "This run sends the same events several times. If your handler sends emails or charges cards, honour the Webhooktrap-Dry-Run header first."
+  ],
+  "plan": {
+    "seed": "1234567890",
+    "provider": "stripe",
+    "pack": {
+      "id": "stripe",
+      "version": "1.0.0"
+    },
+    "budget": {
+      "ms": 10000,
+      "source": "default",
+      "label": "10 s budget · Webhook Trap default"
+    },
+    "events": [
+      {
+        "ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "provider_event_id": "evt_1QK9BpyOmOFtoVkdOlN4pjPU",
+        "event_type": "invoice.paid",
+        "capture_order": 1,
+        "body_sha256": "bdc57f1dc99b7aef6790c59f1c6840bed375da8593219c89fa52db721a56818d",
+        "primary": true
+      },
+      {
+        "ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+        "provider_event_id": "evt_1QKJfXfXlhXK6gvKcqAYSoq2",
+        "event_type": "payment_intent.succeeded",
+        "capture_order": 2,
+        "body_sha256": "0642fa6750ebd7dfaa6455ebaef9a806dad47b893eadd9a87ab2e0c274e25bd0",
+        "primary": false
+      },
+      {
+        "ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+        "provider_event_id": "evt_1QKc6nBRpPBPPR9iTuwy4C8U",
+        "event_type": "customer.subscription.updated",
+        "capture_order": 3,
+        "body_sha256": "64b5677e5ce40e70d5bdcd1856b7ffaf21d90ea97aa811ef59c8e16752eadc52",
+        "primary": false
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "once",
+        "deliveries": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "name": "twice",
+        "deliveries": [
+          4,
+          5
+        ]
+      },
+      {
+        "name": "shuffled",
+        "deliveries": [
+          6,
+          7,
+          8
+        ]
+      },
+      {
+        "name": "late",
+        "deliveries": [
+          9
+        ]
+      },
+      {
+        "name": "retry",
+        "deliveries": [
+          10,
+          11
+        ]
+      },
+      {
+        "name": "tampered",
+        "deliveries": [
+          12
+        ]
+      },
+      {
+        "name": "burst",
+        "deliveries": [
+          13,
+          14,
+          15
+        ]
+      },
+      {
+        "name": "slow_budget",
+        "deliveries": [
+          16
+        ]
+      }
+    ],
+    "deliveries": [
+      {
+        "n": 1,
+        "scenario": "once",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "baseline_primary"
+      },
+      {
+        "n": 2,
+        "scenario": "once",
+        "event": 1,
+        "event_ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "none"
+      },
+      {
+        "n": 3,
+        "scenario": "once",
+        "event": 2,
+        "event_ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "baseline_final"
+      },
+      {
+        "n": 4,
+        "scenario": "twice",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "none"
+      },
+      {
+        "n": 5,
+        "scenario": "twice",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "duplicate",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 500,
+        "expect": "same_as_previous"
+      },
+      {
+        "n": 6,
+        "scenario": "shuffled",
+        "event": 2,
+        "event_ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "none"
+      },
+      {
+        "n": 7,
+        "scenario": "shuffled",
+        "event": 1,
+        "event_ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "none"
+      },
+      {
+        "n": 8,
+        "scenario": "shuffled",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "b_final"
+      },
+      {
+        "n": 9,
+        "scenario": "late",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "late",
+        "signing": {
+          "kind": "resigned",
+          "timestamp_offset_s": -360
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "unchanged"
+      },
+      {
+        "n": 10,
+        "scenario": "retry",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "retry_a1"
+      },
+      {
+        "n": 11,
+        "scenario": "retry",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "retry",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 2000,
+        "expect": "retry_a2"
+      },
+      {
+        "n": 12,
+        "scenario": "tampered",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "tampered",
+        "signing": {
+          "kind": "original_body_fresh_ts"
+        },
+        "tamper": {
+          "path": "data.object.amount_paid",
+          "from": "2400",
+          "to": "0"
+        },
+        "gap_ms": 150,
+        "expect": "unchanged"
+      },
+      {
+        "n": 13,
+        "scenario": "burst",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "concurrent": true,
+        "expect": "burst_final"
+      },
+      {
+        "n": 14,
+        "scenario": "burst",
+        "event": 1,
+        "event_ref": "webhooktrap/fixtures/stripe/payment_intent.succeeded.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 0,
+        "concurrent": true,
+        "expect": "burst_final"
+      },
+      {
+        "n": 15,
+        "scenario": "burst",
+        "event": 2,
+        "event_ref": "webhooktrap/fixtures/stripe/customer.subscription.updated.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 0,
+        "concurrent": true,
+        "expect": "burst_final"
+      },
+      {
+        "n": 16,
+        "scenario": "slow_budget",
+        "event": 0,
+        "event_ref": "webhooktrap/fixtures/stripe/invoice.paid.json",
+        "mode": "normal",
+        "signing": {
+          "kind": "resigned"
+        },
+        "tamper": null,
+        "gap_ms": 150,
+        "expect": "none"
+      }
+    ],
+    "needs_secret": false
+  },
+  "observations": {
+    "probe_names": [
+      "orders.count"
+    ],
+    "reset_configured": true,
+    "deliveries": [
+      {
+        "n": 1,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 650,
+        "status": 200,
+        "latency_ms": 184,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 2,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 984,
+        "status": 200,
+        "latency_ms": 121,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "1"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 3,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 1255,
+        "status": 200,
+        "latency_ms": 143,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "1"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 4,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 2548,
+        "status": 200,
+        "latency_ms": 212,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 5,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 3260,
+        "status": 200,
+        "latency_ms": 196,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "1"
+          ],
+          "after": [
+            "2"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 6,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 4606,
+        "status": 200,
+        "latency_ms": 138,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "0"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 7,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 4894,
+        "status": 200,
+        "latency_ms": 117,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "0"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 8,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 5161,
+        "status": 200,
+        "latency_ms": 199,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 9,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 6510,
+        "status": 400,
+        "latency_ms": 41,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "2c74dce45989257b6f798fd794fc319ebe666dcd5b7c1c66de45db63052d5df8",
+          "body_bytes": 48
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "0"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 10,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 7701,
+        "status": 200,
+        "latency_ms": 11840,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 11,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 21541,
+        "status": 200,
+        "latency_ms": 205,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "1"
+          ],
+          "after": [
+            "2"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 12,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 22896,
+        "status": 200,
+        "latency_ms": 167,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "n": 13,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 24213,
+        "status": 200,
+        "latency_ms": 601,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express"
+      },
+      {
+        "n": 14,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 24213,
+        "status": 200,
+        "latency_ms": 312,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express"
+      },
+      {
+        "n": 15,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 24213,
+        "status": 200,
+        "latency_ms": 448,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express"
+      },
+      {
+        "n": 16,
+        "sent": true,
+        "completed": true,
+        "offset_ms": 25363,
+        "status": 200,
+        "latency_ms": 10420,
+        "responded": true,
+        "response": {
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "332ddb00d111581386a54b79f7f57765ffc70cf17001c124c3db983a6e7d131b",
+          "body_bytes": 17
+        },
+        "framework": "express",
+        "state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "once"
+      },
+      {
+        "name": "twice"
+      },
+      {
+        "name": "shuffled"
+      },
+      {
+        "name": "late"
+      },
+      {
+        "name": "retry"
+      },
+      {
+        "name": "tampered"
+      },
+      {
+        "name": "burst",
+        "spread_ms": 0,
+        "burst_state": {
+          "before": [
+            "0"
+          ],
+          "after": [
+            "1"
+          ],
+          "failed": false,
+          "unsettled": false
+        }
+      },
+      {
+        "name": "slow_budget"
+      }
+    ],
+    "duration_ms": 36783
+  }
+}

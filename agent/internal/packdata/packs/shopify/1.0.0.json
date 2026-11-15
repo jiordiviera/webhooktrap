@@ -1,0 +1,170 @@
+{
+    "$schema": "../_schema/pack.schema.json",
+    "format": 1,
+    "id": "shopify",
+    "version": "1.0.0",
+    "name": "Shopify",
+    "budget": {
+        "ms": 5000,
+        "source": "Shopify docs",
+        "label": "5 s · Shopify limit",
+        "source_label": "Shopify docs",
+        "documented": true
+    },
+    "detect": {
+        "headers_all": ["X-Shopify-Topic"]
+    },
+    "event": {
+        "type_header": "X-Shopify-Topic",
+        "id_header": "X-Shopify-Webhook-Id",
+        "api_version_header": "X-Shopify-Api-Version"
+    },
+    "grouping": {
+        "types": {
+            "order": {
+                "name": "Order",
+                "key": "order_{id}"
+            },
+            "product": {
+                "name": "Product",
+                "key": "product_{id}"
+            },
+            "customer": {
+                "name": "Customer",
+                "group": false
+            }
+        },
+        "anchors": ["order", "product"],
+        "by_event": [
+            {
+                "events": ["orders/*"],
+                "yield": [
+                    {
+                        "path": "id",
+                        "type": "order",
+                        "label_path": "name",
+                        "label": "Order {value}"
+                    },
+                    {
+                        "path": "name",
+                        "type": "order_name",
+                        "search_only": true
+                    }
+                ]
+            },
+            {
+                "events": [
+                    "refunds/*",
+                    "fulfillments/*",
+                    "order_transactions/*"
+                ],
+                "yield": [
+                    {
+                        "path": "order_id",
+                        "type": "order"
+                    }
+                ]
+            },
+            {
+                "events": ["products/*"],
+                "yield": [
+                    {
+                        "path": "id",
+                        "type": "product",
+                        "label_path": "title"
+                    }
+                ]
+            },
+            {
+                "events": ["customers/*"],
+                "yield": [
+                    {
+                        "path": "id",
+                        "type": "customer"
+                    }
+                ]
+            }
+        ],
+        "fallback": null
+    },
+    "signing": {
+        "scheme": "shopify_hmac_sha256",
+        "headers": ["X-Shopify-Hmac-Sha256"],
+        "signed_timestamp": false,
+        "tolerance_s": 0,
+        "secret_env": ["SHOPIFY_API_SECRET"]
+    },
+    "duplicate": {
+        "supported": true,
+        "verified": false,
+        "keep_headers": ["X-Shopify-Webhook-Id"],
+        "citation": ""
+    },
+    "retry": {
+        "supported": true,
+        "verified": false,
+        "keep_headers": ["X-Shopify-Webhook-Id"],
+        "citation": "https://shopify.dev/docs/apps/build/webhooks/troubleshooting-webhooks"
+    },
+    "resend_headers": [
+        "User-Agent",
+        "X-Shopify-Topic",
+        "X-Shopify-Webhook-Id",
+        "X-Shopify-Shop-Domain",
+        "X-Shopify-Api-Version",
+        "X-Shopify-Event-Id",
+        "X-Shopify-Triggered-At"
+    ],
+    "tamper_paths": [
+        {
+            "event_types": ["orders/*"],
+            "path": "total_price",
+            "value": "0.00"
+        },
+        {
+            "event_types": ["orders/*"],
+            "path": "subtotal_price",
+            "value": "0.00"
+        }
+    ],
+    "objects": [],
+    "status_events": [
+        {
+            "event_type": "orders/cancelled",
+            "object_type": "order"
+        },
+        {
+            "event_type": "orders/fulfilled",
+            "object_type": "order"
+        },
+        {
+            "event_type": "orders/paid",
+            "object_type": "order"
+        }
+    ],
+    "scrub": {
+        "paths": [
+            "email",
+            "contact_email",
+            "phone",
+            "customer.*",
+            "billing_address.*",
+            "shipping_address.*",
+            "browser_ip",
+            "client_details.*"
+        ],
+        "keep_headers": [
+            "Content-Type",
+            "User-Agent",
+            "X-Shopify-Topic",
+            "X-Shopify-Webhook-Id"
+        ]
+    },
+    "id_pattern": "",
+    "citations": {},
+    "text": {
+        "findings": {},
+        "likely_cause": {},
+        "snippets": {}
+    }
+}

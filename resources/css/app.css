@@ -1,0 +1,278 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@import './fonts.css';
+
+@import './identity.css' layer(components);
+
+@import './landing.css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+/* Dark follows the kit's `.dark` class; `data-theme="dark"` (Timetable DS) works too. */
+@custom-variant dark (&:is(.dark *, [data-theme='dark'] *));
+
+@theme {
+    /* Decision 57: Martian Mono is the UI face. Archivo stays available as
+       font-archivo for a dense form that reads badly in mono. */
+    --font-sans:
+        'Martian Mono Variable', 'Martian Mono', ui-monospace, 'SF Mono', Menlo,
+        Consolas, monospace;
+    --font-archivo:
+        'Archivo Variable', 'Archivo', 'Public Sans', ui-sans-serif, system-ui,
+        sans-serif;
+    --font-mono:
+        'Martian Mono Variable', 'Martian Mono', ui-monospace, 'SF Mono', Menlo,
+        Consolas, monospace;
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    /* Timetable DS tokens as utilities (bg-ground, text-ink-muted, ...). */
+    --color-ground: var(--ground);
+    --color-surface: var(--surface);
+    --color-rule: var(--rule);
+    --color-rule-strong: var(--rule-strong);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-on-ink: var(--on-ink);
+    --color-conflict: var(--conflict);
+    --color-on-conflict: var(--on-conflict);
+    --color-now: var(--now);
+    --color-budget-fill: var(--budget-fill);
+    --color-budget-edge: var(--budget-edge);
+    --color-pass: var(--pass);
+    --color-sev-critical: var(--sev-critical);
+    --color-sev-high: var(--sev-high);
+    --color-sev-medium: var(--sev-medium);
+    --color-sev-info: var(--sev-info);
+    --color-win: var(--win);
+    --color-rule-soft: var(--rule-soft);
+    --color-ink-dim: var(--ink-dim);
+    --color-on-now: var(--on-now);
+    --color-conflict-wash: var(--conflict-wash);
+    --color-pass-wash: var(--pass-wash);
+
+    /* shadcn/ui semantic colours (re-skinned from the DS below). */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ---- Timetable DS v16 tokens, terminal layer (decision 57) ----------------
+ * Dark is the default theme; light is kept. Text contrast (WCAG 2.x, AA 4.5):
+ * light  ink/ground 16.08 · ink-muted/ground 6.35 · ink-muted/surface 5.91
+ *        ink-dim/win 5.43 · ink-dim/surface 4.71 · now/ground 5.75
+ *        on-now/now 6.17 · on-badge/pass 5.30 · on-badge/conflict 5.46
+ *        on-badge/sev-medium 5.20 · conflict/win 5.86 · conflict/wash 5.00
+ * dark   ink/ground 15.04 · ink-muted/ground 7.47 · ink-muted/surface 6.83
+ *        ink-dim/win 5.59 · ink-dim/surface 4.81 · now/ground 6.87
+ *        on-now/now 7.09 · on-badge/pass 8.46 · on-badge/conflict 5.93
+ *        on-badge/sev-medium 10.50 · conflict/win 6.30
+ * Non-text (3:1): rule-strong/ground 3.49 light, 3.94 dark; focus ring
+ * (now) 5.75 light, 6.87 dark.
+ * ------------------------------------------------------------------------- */
+
+:root,
+[data-theme='light'] {
+    --ground: #f7f7f4;
+    --surface: #efefeb;
+    --rule: #d2d1cd;
+    --rule-strong: #85847e;
+    --ink: #1c1b15;
+    --ink-muted: #5c5b55;
+    --on-ink: var(--ground);
+    --conflict: #c51f17;
+    --on-conflict: var(--ground);
+    --now: #b12083;
+    --budget-fill: #ecd5a3;
+    --budget-edge: #886108;
+    --pass: #2a7449;
+    --sev-critical: var(--conflict);
+    --sev-high: #9f5013;
+    --sev-medium: #886108;
+    --sev-info: #52657a;
+    /* Decision 57 (terminal): panel ground, soft rules, dim text, magenta. */
+    --win: #ffffff;
+    --rule-soft: #e2e1dd;
+    --ink-dim: #6b6a64;
+    --on-now: #ffffff;
+    --conflict-wash: #fbe9e6;
+    --pass-wash: #e3f1e7;
+    --on-badge: var(--ground);
+    --focus-ring: var(--now);
+    color-scheme: light;
+}
+
+.dark,
+[data-theme='dark'] {
+    --ground: #141411;
+    --surface: #1e1d19;
+    --rule: #393833;
+    --rule-strong: #75746e;
+    --ink: #e9e8e3;
+    --ink-muted: #a6a59f;
+    --on-ink: var(--ground);
+    --conflict: #f36451;
+    --on-conflict: var(--ground);
+    --now: #e977bb;
+    --budget-fill: #443717;
+    --budget-edge: #ebbd57;
+    --pass: #5ec386;
+    --sev-critical: var(--conflict);
+    --sev-high: #f1944f;
+    --sev-medium: #ebbd57;
+    --sev-info: #97b1cd;
+    --win: #0c0c0a;
+    --rule-soft: #2a2925;
+    --ink-dim: #8a8984;
+    --on-now: #1c0a15;
+    --conflict-wash: #2c1411;
+    --pass-wash: #11241a;
+    --on-badge: var(--ground);
+    --focus-ring: var(--now);
+    color-scheme: dark;
+}
+
+:root {
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-30: 120px;
+    --row-dense: 28px;
+    --row-group: 40px;
+    --row-touch: 52px;
+    --bar-top: 48px;
+    --station-gap: 56px;
+    --pane-findings: 420px;
+    --pane-list: 480px;
+
+    /* Square corners; controls take 2px (md = radius - 2px). */
+    --radius: 4px;
+}
+
+/* ---- shadcn/ui variables, mapped from the DS (follow the active theme) --- */
+
+:root,
+.dark,
+[data-theme='light'],
+[data-theme='dark'] {
+    --background: var(--ground);
+    --foreground: var(--ink);
+    --card: var(--ground);
+    --card-foreground: var(--ink);
+    --popover: var(--ground);
+    --popover-foreground: var(--ink);
+    --primary: var(--ink);
+    --primary-foreground: var(--on-ink);
+    --secondary: var(--surface);
+    --secondary-foreground: var(--ink);
+    --muted: var(--surface);
+    --muted-foreground: var(--ink-muted);
+    --accent: var(--surface);
+    --accent-foreground: var(--ink);
+    --destructive: var(--conflict);
+    --destructive-foreground: var(--on-conflict);
+    --border: var(--rule);
+    --input: var(--rule-strong);
+    --ring: var(--focus-ring);
+    --chart-1: var(--conflict);
+    --chart-2: var(--now);
+    --chart-3: var(--budget-edge);
+    --chart-4: var(--pass);
+    --chart-5: var(--sev-info);
+    --sidebar: var(--surface);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--ink);
+    --sidebar-primary-foreground: var(--on-ink);
+    --sidebar-accent: var(--ground);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--rule);
+    --sidebar-ring: var(--focus-ring);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-variant-numeric: tabular-nums;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--focus-ring);
+        outline-offset: 2px;
+    }
+}
+
+/* Landing hero demo (S-01): delivery 1, delivery 2, then the finding. Final
+   frame when motion is reduced or the demo is paused (no `.wt-play`). */
+@keyframes wt-reveal {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .wt-play .wt-seq-1 {
+        animation: wt-reveal 0.5s ease-out 0.2s backwards;
+    }
+
+    .wt-play .wt-seq-2 {
+        animation: wt-reveal 0.5s ease-out 1.2s backwards;
+    }
+
+    .wt-play .wt-seq-finding {
+        animation: wt-reveal 0.5s ease-out 2s backwards;
+    }
+}

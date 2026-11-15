@@ -1,0 +1,84 @@
+---
+title: "Share Captured Webhook Events with Read-Only Links"
+sidebarTitle: "Sharing"
+description: "Generate a read-only link to any captured event so teammates can inspect the payload, copy JSON, and rebuild cURL — no Webhooktrap account needed."
+---
+
+Share links give you a permanent, read-only view of any captured event that you can hand to a teammate, paste into a bug report, or attach to a pull request. Anyone with the link can inspect the full payload in their browser — no Webhooktrap account required.
+
+## What a recipient can do
+
+When someone opens a share link, they get a full read-only view of the captured event.
+
+<CardGroup cols={2}>
+  <Card title="Inspect headers and body" icon="eye">
+    View every captured header and the raw request body, formatted for readability. The same redaction rules apply — `authorization` and `cookie` are shown as `[REDACTED]`.
+  </Card>
+  <Card title="Copy payload as JSON" icon="copy">
+    Download or copy the entire event as a structured JSON object, ready to paste into a test fixture or a ticket.
+  </Card>
+  <Card title="Rebuild a cURL command" icon="terminal">
+    Generate a ready-to-run `curl` command that reproduces the original request, including method, headers, and body.
+  </Card>
+  <Card title="No account needed" icon="user-slash">
+    Recipients do not need a Webhooktrap account to view a shared event. Opening the link is all it takes.
+  </Card>
+</CardGroup>
+
+## What a recipient cannot do
+
+Share links are strictly read-only. A recipient cannot:
+
+- **Replay** the event to any destination URL
+- **Modify** the inbox configuration or event data
+- **Delete** events or the inbox itself
+- **Access** any other event in the same inbox
+
+## How to generate a share link
+
+<Tabs>
+  <Tab title="Dashboard">
+    <Steps>
+      <Step title="Open the event">
+        Navigate to your inbox in the Webhooktrap dashboard and click the event you want to share.
+      </Step>
+      <Step title="Click Share">
+        Click the **Share** button in the top-right corner of the event detail view.
+      </Step>
+      <Step title="Copy the link">
+        Copy the generated share link from the dialog. The link is active immediately — paste it anywhere.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="API">
+    Request a share link for any event by calling the share-link endpoint:
+
+    ```bash
+    curl https://api.webhooktrap.dev/api/v1/events/EVT_4rTx9wBnLp2k/share-link
+    ```
+
+    The response contains the full share URL:
+
+    ```json
+    {
+      "data": {
+        "shareLink": {
+          "url": "https://webhooktrap.dev/share/s_7Hq3mNpR9xZ2"
+        }
+      }
+    }
+    ```
+
+    Pass this URL to anyone who needs to inspect the payload.
+  </Tab>
+</Tabs>
+
+## Use cases
+
+- **Collaborate on a bug** — paste the share link into a GitHub issue or Slack message so a teammate can see the exact payload that caused the problem, without needing access to your inbox.
+- **Document an integration** — attach a share link to a pull request to show reviewers the real payload your new handler will process.
+- **File a support ticket** — send a share link to a provider's support team as evidence of what their webhook actually contained.
+
+<Note>
+  A share link becomes inaccessible when the underlying event is deleted or when the inbox it belongs to expires. Anonymous inboxes expire after 48 hours, so share links from anonymous inboxes have the same effective lifetime. If you need a permanent share link, capture the event in a saved inbox first.
+</Note>

@@ -1,0 +1,25 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/auth-token.request.schema.json",
+    "title": "POST /agent/v1/auth/token (§5.2). Signature over the length-prefixed message: 'webhooktrap-agent-auth/v1' ‖ server_origin ‖ agent_id ‖ nonce (32 raw bytes) ‖ expires_at (the exact string of the challenge answer); each part prefixed with its length as 2 bytes big-endian.",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "agent_id": {
+            "$ref": "common.schema.json#/$defs/agentId"
+        },
+        "nonce": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9+/]{43}=$"
+        },
+        "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9+/]{86}==$",
+            "description": "base64 of the 64-byte Ed25519 signature"
+        }
+    },
+    "required": ["proto", "agent_id", "nonce", "signature"],
+    "additionalProperties": false
+}

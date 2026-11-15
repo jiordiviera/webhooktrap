@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Webhook Trap</title>
+<meta name="description" content="Direction 3, bold: one brand red, large condensed type and scenario cards that show what each one breaks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Martian+Mono:wdth,wght@75..112.5,400..700&display=swap" rel="stylesheet">
+<style>
+/* Direction 3 · Bold. One colour: the red of the buffer stop in the logo, used as a field, not an accent.
+   Type is the image: Archivo from width 62 (display) to 125 (labels). */
+:root{
+  --red:#C51F17; --on-red:#FFFFFF; --on-red-2:#FFE4DF;
+  --paper:#F2F2EF; --ink:#141414; --muted:#55554F; --rule:#CDCDC7;
+  --night:#161615; --night-2:#21211F; --night-ink:#EEEDE8; --night-muted:#ABAAA4; --night-rule:#3A3A36;
+  --pass:#5EC386; --bad:#FF7A66;
+  --sans:"Archivo", ui-sans-serif, system-ui, sans-serif;
+  --mono:"Martian Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#121211; --ink:#EEEDE8; --muted:#ABAAA4; --rule:#34342F; --night:#1C1C1A; --night-2:#262623; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --paper:#121211; --ink:#EEEDE8; --muted:#ABAAA4; --rule:#34342F; --night:#1C1C1A; --night-2:#262623; color-scheme:dark; }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.5;font-feature-settings:"tnum" 1}
+a{color:inherit}
+:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+code,pre,.mono{font-family:var(--mono);font-variation-settings:"wdth" 85}
+.wrap{max-width:1320px;margin:0 auto;padding-left:32px;padding-right:32px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- HERO: the red field ---------- */
+.field{background:var(--red);color:var(--on-red);position:relative;overflow:hidden}
+.top{display:flex;align-items:center;gap:28px;height:80px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand .mark{width:30px;height:30px}
+.brand .word{height:17px;width:auto}
+.top nav{margin-left:auto;display:flex;gap:28px;align-items:center;font-size:15px;font-variation-settings:"wdth" 110}
+.top nav a{text-decoration:none}
+.top nav a:hover{text-decoration:underline;text-underline-offset:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:56px;padding:0 26px;background:var(--on-red);color:var(--red);font:700 17px/1 var(--sans);font-variation-settings:"wdth" 105;text-decoration:none;border:2px solid var(--on-red);border-radius:2px;transition:background .15s,color .15s}
+.btn:hover{background:transparent;color:var(--on-red)}
+.top .btn{height:42px;font-size:15px;padding:0 16px}
+.top nav .btn:hover{text-decoration:none}
+.btn.ink{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.ink:hover{background:transparent;color:var(--ink)}
+
+.hero{padding-top:56px;padding-bottom:56px;min-height:calc(100svh - 80px);display:flex;flex-direction:column;justify-content:space-between;gap:48px}
+.h1box{position:relative}
+h1{margin:0;font-weight:850;font-variation-settings:"wdth" 62;font-size:clamp(76px,13.2vw,212px);line-height:.84;letter-spacing:-.02em;word-spacing:.1em}
+h1 .l{display:block}
+/* the echo: "Once." delivered a second time */
+.echo{position:absolute;left:0;top:0;font-weight:850;font-variation-settings:"wdth" 62;font-size:clamp(76px,13.2vw,212px);line-height:.84;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:2px var(--on-red);pointer-events:none;opacity:0}
+.stamp{position:absolute;left:calc(var(--onceW, 4.6em) + .5em);bottom:.1em;font-size:clamp(76px,13.2vw,212px);display:flex;align-items:flex-end}
+.stamp span{font:600 15px/1.35 var(--mono);font-variation-settings:"wdth" 85;background:var(--ink);color:#fff;padding:10px 14px;max-width:290px;opacity:0;transform:translateY(10px)}
+.stamp b{color:var(--bad)}
+.js .echo{animation:echo .7s cubic-bezier(.2,.9,.2,1) 1.1s forwards}
+.js .stamp span{animation:pop .45s cubic-bezier(.2,1.4,.3,1) 1.75s forwards}
+@keyframes echo{0%{opacity:0;transform:translateX(1.2em)}100%{opacity:1;transform:none}}
+@keyframes pop{to{opacity:1;transform:none}}
+.js h1 .l{opacity:0;transform:translateY(.25em);animation:rise .6s cubic-bezier(.2,.8,.2,1) forwards}
+.js h1 .l:nth-child(2){animation-delay:.12s}
+.js h1 .l:nth-child(3){animation-delay:.24s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+.hbottom{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:end;border-top:2px solid var(--on-red);padding-top:28px}
+.sub{margin:0;font-size:clamp(19px,1.7vw,24px);line-height:1.35;max-width:36ch;font-variation-settings:"wdth" 95}
+.acts{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.acts .row{display:flex;flex-wrap:wrap;gap:12px}
+.chip{display:inline-flex;align-items:center;height:56px;border:2px solid var(--on-red);border-radius:2px;padding-left:16px;font-size:14px}
+.chip button{height:52px;margin-left:12px;padding:0 16px;border:0;border-left:2px solid var(--on-red);background:transparent;color:var(--on-red);font:700 14px var(--sans);cursor:pointer}
+.chip button:hover{background:var(--on-red);color:var(--red)}
+.trust{margin:0;font-size:15px;color:var(--on-red-2)}
+
+/* ---------- reveal ---------- */
+.js [data-reveal]{opacity:0;transform:translateY(32px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+.js [data-reveal].in{opacity:1;transform:none}
+
+/* ---------- 1 → 2 ---------- */
+section.s{padding-top:136px}
+.kicker{font-size:15px;font-weight:600;font-variation-settings:"wdth" 125;margin:0 0 18px;color:var(--muted)}
+h2{margin:0;font-weight:850;font-variation-settings:"wdth" 62;font-size:clamp(56px,8vw,128px);line-height:.88;letter-spacing:-.015em}
+.lede{font-size:20px;line-height:1.45;max-width:44ch;color:var(--muted);margin:24px 0 0}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr);margin-top:64px;border-top:2px solid var(--ink)}
+.duo > div{padding:24px 28px 0 0}
+.duo > div + div{padding-left:28px;border-left:1px solid var(--rule)}
+.duo .lbl{font:600 13px/1.5 var(--mono);font-variation-settings:"wdth" 85;color:var(--muted)}
+.duo .lbl b{color:var(--ink)}
+.big{display:block;font-weight:850;font-variation-settings:"wdth" 62;font-size:clamp(160px,22vw,340px);line-height:.8;letter-spacing:-.04em;margin:28px 0 16px}
+.big.red{color:var(--red)}
+.duo .cap{font-size:17px;margin:0}
+.duo .cap span{color:var(--muted)}
+.finding{background:var(--red);color:var(--on-red);padding:28px !important;display:flex;flex-direction:column;gap:14px;border-left:0 !important}
+.finding .sev{align-self:flex-start;font:700 13px/1 var(--sans);font-variation-settings:"wdth" 110;background:var(--on-red);color:var(--red);padding:7px 10px;display:inline-flex;gap:7px;align-items:center}
+.finding h3{margin:0;font-weight:800;font-variation-settings:"wdth" 70;font-size:clamp(34px,3.4vw,50px);line-height:.95}
+.finding p{margin:0;font-size:16px}
+.finding cite{font-style:normal;font-size:14px;color:var(--on-red-2)}
+.finding pre{margin:6px 0 0;background:rgba(0,0,0,.22);padding:14px;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.alt{font-size:14px;color:var(--muted);margin:20px 0 0;max-width:80ch}
+
+/* ---------- catalogue (night) ---------- */
+.night{background:var(--night);color:var(--night-ink);margin-top:136px;padding-top:120px;padding-bottom:120px}
+.night .kicker{color:var(--night-muted)}
+.night .lede{color:var(--night-muted)}
+.grid9{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;margin-top:64px;background:var(--night-rule);border:2px solid var(--night-rule)}
+.card{background:var(--night);padding:22px 24px 28px;display:flex;flex-direction:column;gap:10px;outline-offset:-3px}
+.card:hover .stage,.card:focus-within .stage{border-color:var(--night-ink)}
+.card h3{margin:8px 0 0;font-weight:800;font-variation-settings:"wdth" 70;font-size:38px;line-height:1;letter-spacing:-.01em}
+.card .what{margin:0;font-size:16px;line-height:1.4}
+.card .why{margin:0;font-size:14.5px;color:var(--night-muted);line-height:1.45}
+.card cite{font-style:normal;font-size:12.5px;color:var(--night-muted);font-variation-settings:"wdth" 110}
+.card .brk{font:600 12px/1.4 var(--mono);font-variation-settings:"wdth" 85;color:var(--bad)}
+.card .brk.ok{color:var(--pass)}
+.later{margin:28px 0 0;color:var(--night-muted);font-size:16px}
+
+/* stage */
+.stage{position:relative;height:150px;border:1px solid var(--night-rule);background:var(--night-2);overflow:hidden;font-family:var(--mono);font-variation-settings:"wdth" 80;transition:border-color .2s}
+.stage .track{position:absolute;left:14px;right:96px;top:50%;border-top:1px dashed var(--night-rule)}
+.stage .src{position:absolute;left:12px;top:10px;font-size:10.5px;color:var(--night-muted)}
+.stage .hd{position:absolute;right:14px;top:50%;width:70px;height:78px;margin-top:-39px;border:2px solid var(--night-ink);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.stage .hd small{font-size:9px;color:var(--night-muted);position:absolute;top:5px}
+.stage .ct{position:relative;width:100%;height:40px;margin-top:10px}
+.stage .ct i{position:absolute;inset:0;text-align:center;font:850 40px/40px var(--sans);font-style:normal;font-variation-settings:"wdth" 62;opacity:0}
+.stage .ct i.bad{color:var(--bad)}
+.pk{position:absolute;left:14px;top:50%;height:26px;margin-top:-13px;padding:0 8px;background:var(--night-ink);color:var(--night);font-size:10.5px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;opacity:0}
+.pk.r{background:var(--bad);color:#200805}
+.gate{position:absolute;top:22px;bottom:22px;width:2px;background:var(--night-muted)}
+.gate.b{background:#EBBD57}
+.gl{position:absolute;top:8px;font-size:10px;color:var(--night-muted);white-space:nowrap}
+.bar{position:absolute;left:14px;top:50%;height:10px;margin-top:-5px;background:#EBBD57;width:0}
+.note{position:absolute;left:14px;bottom:9px;font-size:10.5px;color:var(--night-muted);opacity:0}
+.note.bad{color:var(--bad)}
+
+/* run animations only while the card is in view */
+.stage *{animation-duration:5s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.4,0,.2,1);animation-play-state:paused}
+.card.in .stage *{animation-play-state:running}
+
+/* generic keyframes: packet travel (from track start to handler) */
+@keyframes go1{0%,6%{opacity:0;transform:translateX(0)}10%{opacity:1}34%{opacity:1;transform:translateX(var(--d))}38%,100%{opacity:0;transform:translateX(var(--d))}}
+@keyframes go2{0%,40%{opacity:0;transform:translateX(0)}44%{opacity:1}68%{opacity:1;transform:translateX(var(--d))}72%,100%{opacity:0;transform:translateX(var(--d))}}
+@keyframes c0{0%,36%{opacity:1}38%,100%{opacity:0}}
+@keyframes c1a{0%,36%{opacity:0}38%,100%{opacity:1}}
+@keyframes c1b{0%,36%{opacity:0}38%,70%{opacity:1}72%,100%{opacity:0}}
+@keyframes c2{0%,70%{opacity:0}72%,100%{opacity:1}}
+@keyframes noteIn{0%,72%{opacity:0}78%,96%{opacity:1}100%{opacity:0}}
+@keyframes noteIn1{0%,38%{opacity:0}44%,96%{opacity:1}100%{opacity:0}}
+.stage{--d:calc(100% - 0px)}
+
+/* final frame for reduced motion / no JS: show the outcome */
+@media (prefers-reduced-motion: reduce){
+  .js [data-reveal]{opacity:1;transform:none;transition:none}
+  .js h1 .l,.js .echo,.js .stamp span{animation:none;opacity:1;transform:none}
+  .stage *{animation:none!important}
+  .stage .final{opacity:1!important}
+  .stage .bar.final{width:var(--w)!important}
+}
+
+/* ---------- pipeline ---------- */
+.pipe{list-style:none;margin:64px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:2px solid var(--ink)}
+.pipe li{padding:22px 24px 0 0;display:flex;flex-direction:column;gap:12px}
+.pipe li + li{padding-left:24px;border-left:1px solid var(--rule)}
+.pipe .n{font:850 88px/.8 var(--sans);font-variation-settings:"wdth" 62;color:var(--red)}
+.pipe h3{margin:0;font-weight:800;font-variation-settings:"wdth" 75;font-size:34px;line-height:1}
+.pipe code{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.pipe .scrub{font:12.5px/1.75 var(--mono);font-variation-settings:"wdth" 80}
+.pipe .scrub s{color:var(--muted)}
+
+/* ---------- secrets / json ---------- */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:start}
+.facts{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+.facts li{padding:20px 0;border-bottom:1px solid var(--rule);font-size:21px;line-height:1.35;display:grid;grid-template-columns:36px 1fr;gap:8px;font-variation-settings:"wdth" 95}
+.facts svg{color:var(--red);margin-top:6px}
+.json{margin:0;background:var(--ink);color:var(--paper);padding:28px;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.json .k{opacity:.65} .json .hi{color:#FF9E8F;font-weight:700}
+
+/* ---------- providers ---------- */
+.prov{list-style:none;padding:0;margin:56px 0 0;display:flex;flex-wrap:wrap;gap:8px 56px;align-items:center}
+.prov li{display:flex;align-items:center;gap:16px;font-weight:800;font-variation-settings:"wdth" 62;font-size:clamp(48px,6vw,88px);line-height:1;letter-spacing:-.01em}
+.prov svg{width:.55em;height:.55em}
+.coming{margin:20px 0 0;color:var(--muted);font-size:18px;font-variation-settings:"wdth" 110}
+
+/* ---------- final ---------- */
+.end{margin-top:160px}
+.end .in{padding-top:96px;padding-bottom:64px}
+.end h2{color:var(--on-red);font-size:clamp(64px,10vw,168px);max-width:12ch}
+.end .acts{margin-top:44px}
+footer nav{display:flex;flex-wrap:wrap;gap:28px;padding-top:28px;margin-top:80px;border-top:2px solid var(--on-red);font-size:16px;font-variation-settings:"wdth" 110}
+footer a{text-decoration:none}
+footer a:hover{text-decoration:underline;text-underline-offset:4px}
+
+@media (max-width:980px){
+  .duo{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .duo .finding{grid-column:1/-1;margin-top:28px}
+  .grid9{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pipe{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:36px}
+  .pipe li:nth-child(3){padding-left:0;border-left:0}
+  .split,.hbottom{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .wrap{padding-left:16px;padding-right:16px}
+  .top nav a:not(.btn){display:none}
+  .top .btn{height:40px;font-size:14px}
+  .hero{min-height:0;padding-top:32px;gap:36px}
+  .stamp{position:static;font-size:16px;margin-top:40px}
+  .stamp span{max-width:none}
+  .echo{-webkit-text-stroke-width:1.5px}
+  .grid9{grid-template-columns:minmax(0,1fr)}
+  .pipe{grid-template-columns:minmax(0,1fr)}
+  .pipe li,.pipe li + li{padding-left:0;border-left:0}
+  .duo > div + div{padding-left:16px}
+  .duo > div{padding-right:12px}
+  .big{font-size:150px}
+  section.s{padding-top:96px}
+  .night{margin-top:96px;padding-top:88px;padding-bottom:88px}
+  .btn,.chip{width:100%}
+  .chip{justify-content:space-between}
+  .acts{align-items:stretch}
+  .facts li{font-size:18px}
+}
+</style>
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+<div class="field">
+  <header class="wrap top">
+    <a class="brand" href="#" aria-label="Webhook Trap home">
+      <svg class="mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H16M0 12H12M1 3L10 12M6 3L14 11" fill="none" stroke="currentColor" stroke-width="2"/><rect x="12" y="10" width="4" height="4" fill="var(--ink)"/></svg>
+      <svg class="word" viewBox="0 0 174 26" aria-hidden="true"><path fill="currentColor" d="M3 0L3 14.88L5.12 17L7.88 17L11.5 13.38L15.12 17L17.88 17L20 14.88L20 0L23 0L23 16.12L19.12 20L13.88 20L11.5 17.62L9.12 20L3.88 20L0 16.12L0 0ZM10 15.5L10 6L13 6L13 15.5ZM25.5 11.5L34.5 11.5L34.5 11.12L32.38 9L30.62 9L28.5 11.12L28.5 14.88L30.62 17L37.5 17L37.5 20L29.38 20L25.5 16.12L25.5 9.88L29.38 6L33.62 6L37.5 9.88L37.5 14.5L25.5 14.5ZM43 0L43 20L40 20L40 0ZM41.5 6L48.12 6L52 9.88L52 16.12L48.12 20L41.5 20L41.5 17L46.88 17L49 14.88L49 11.12L46.88 9L41.5 9ZM57.5 0L57.5 20L54.5 20L54.5 0ZM56 6L62.62 6L66.5 9.88L66.5 20L63.5 20L63.5 11.12L61.38 9L56 9ZM72.88 6L77.12 6L81 9.88L81 16.12L77.12 20L72.88 20L69 16.12L69 9.88ZM72 11.12L72 14.88L74.12 17L75.88 17L78 14.88L78 11.12L75.88 9L74.12 9ZM87.38 6L91.62 6L95.5 9.88L95.5 16.12L91.62 20L87.38 20L83.5 16.12L83.5 9.88ZM86.5 11.12L86.5 14.88L88.62 17L90.38 17L92.5 14.88L92.5 11.12L90.38 9L88.62 9ZM101 0L101 20L98 20L98 0ZM106.76 6L111 6L102.24 14.76L98 14.76ZM98.76 12L103 12L111 20L106.76 20ZM118 0L132 0L132 3L118 3ZM126.5 3L126.5 20L123.5 20L123.5 3ZM137.5 6L137.5 20L134.5 20L134.5 6ZM134.94 9.44L138.38 6L144.5 6L144.5 9L139.62 9L137.06 11.56ZM157.5 9L152.12 9L150 11.12L150 14.88L152.12 17L157.5 17L157.5 20L150.88 20L147 16.12L147 9.88L150.88 6L157.5 6ZM159 6L159 20L156 20L156 6ZM164.5 6L164.5 26L161.5 26L161.5 6ZM163 6L169.62 6L173.5 9.88L173.5 16.12L169.62 20L163 20L163 17L168.38 17L170.5 14.88L170.5 11.12L168.38 9L163 9Z"/></svg>
+    </a>
+    <nav aria-label="Main"><a href="#">Docs</a><a href="#">GitHub</a><a href="#">Self-host</a><a class="btn" href="#">Get a URL</a></nav>
+  </header>
+
+  <section class="wrap hero" aria-labelledby="h1">
+    <div class="h1box">
+      <h1 id="h1"><span class="l">Your webhook</span><span class="l">handler works.</span><span class="l" id="once">Once.</span></h1>
+      <span class="echo" aria-hidden="true">Once.</span>
+      <div class="stamp" aria-hidden="true"><span>D5 · same event id<br>orders.count <b>1 → 2</b></span></div>
+    </div>
+    <div class="hbottom">
+      <!-- COPY PROPOSAL (A04): subline -->
+      <p class="sub">Stripe, Shopify and GitHub deliver twice, out of order, late and after timeouts. Webhook Trap replays your real events that way and shows you what changed in your database.</p>
+      <div class="acts">
+        <div class="row">
+          <a class="btn" href="#">Get a URL, no sign-up</a>
+          <span class="chip"><code>npx @webhooktrap/agent</code><button type="button" data-copy="npx @webhooktrap/agent">Copy</button></span>
+        </div>
+        <p class="trust">Open source · self-hostable · secrets stay on your machine</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<main>
+<section class="s wrap" aria-labelledby="s-demo">
+  <p class="kicker">Run #3 · Brindle Coffee · invoice.paid</p>
+  <h2 id="s-demo" data-reveal>One delivery isn't a test.</h2>
+  <div class="duo">
+    <div data-reveal>
+      <span class="lbl"><b>D4</b> invoice.paid · evt_1QK9…pjPU</span>
+      <span class="big" aria-hidden="true">1</span>
+      <p class="cap">200 {"received":true}<br><span>orders.count 0 → 1</span></p>
+    </div>
+    <div data-reveal style="transition-delay:.15s">
+      <span class="lbl"><b>D5</b> same event, 500 ms later</span>
+      <span class="big red" aria-hidden="true">2</span>
+      <p class="cap">200 {"received":true}<br><span>orders.count 1 → 2, expected 1</span></p>
+    </div>
+    <div class="finding" data-reveal style="transition-delay:.3s">
+      <span class="sev"><svg width="12" height="11" viewBox="0 0 11 10" aria-hidden="true"><path d="M5.5 0 11 10H0z" fill="currentColor"/></svg>High · F2</span>
+      <h3>Duplicate delivery created a second order</h3>
+      <p>Stripe may deliver the same event more than once.</p>
+      <cite>Stripe docs › Webhooks › Handle duplicate events</cite>
+<pre>// before creating the order
+const { rowCount } = await db.query(
+  'INSERT INTO processed_events (id) VALUES ($1) ON CONFLICT DO NOTHING',
+  [event.id]
+);
+if (rowCount === 0) return res.sendStatus(200); // already handled</pre>
+    </div>
+  </div>
+  <p class="alt">Delivery 1 of invoice.paid: 200, orders.count 1. Delivery 2, same event: 200, orders.count 2. Finding: Duplicate delivery created a second order.</p>
+</section>
+
+<section class="night" aria-labelledby="s-cat">
+  <div class="wrap">
+    <p class="kicker">Nine scenarios, run in this order</p>
+    <h2 id="s-cat" data-reveal>Every way a webhook can arrive</h2>
+    <p class="lede">Each card plays what the provider does and what it breaks in a handler that wasn't ready for it.</p>
+    <div class="grid9" id="grid9"></div>
+    <p class="later">Sequence packs and test commands: later.</p>
+  </div>
+</section>
+
+<section class="s wrap" aria-labelledby="s-traffic">
+  <h2 id="s-traffic" data-reveal>Real traffic, not fixtures you wrote</h2>
+  <p class="lede">The event that broke your handler becomes the test that keeps it fixed.</p>
+  <ol class="pipe">
+    <li data-reveal><span class="n" aria-hidden="true">1</span><h3>Capture</h3><code>https://webhooktrap.dev/c/Br7nDLk2Qm9x</code></li>
+    <li data-reveal style="transition-delay:.1s"><span class="n" aria-hidden="true">2</span><h3>Scrub</h3><div class="scrub">customer_email → customer1@example.test<br>customer_name → Test Customer 1<br>hosted_invoice_url → https://invoice.stripe.test/redacted</div></li>
+    <li data-reveal style="transition-delay:.2s"><span class="n" aria-hidden="true">3</span><h3>Commit</h3><code>webhooktrap/fixtures/stripe/invoice.paid.json</code></li>
+    <li data-reveal style="transition-delay:.3s"><span class="n" aria-hidden="true">4</span><h3>CI</h3><code>webhooktrap test --fail-on high</code></li>
+  </ol>
+</section>
+
+<section class="s wrap split" aria-labelledby="s-sec">
+  <h2 id="s-sec" data-reveal>Secrets stay on your machine</h2>
+  <ul class="facts">
+    <li><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>Sends deliveries only to targets you allow</li>
+    <li><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>Keeps signing secrets on your machine (we see names, never values)</li>
+    <li><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>Probe values stay on your machine. Only small counts and codes reach the server.</li>
+    <li><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg><span>Open source. Run your own with <code>docker compose up</code></span></li>
+  </ul>
+</section>
+
+<section class="s wrap split" aria-labelledby="s-agent">
+  <div>
+    <h2 id="s-agent" data-reveal>Works with your coding agent</h2>
+    <p class="lede">Findings come out as JSON: what broke, the deliveries that prove it, and the fix.</p>
+  </div>
+  <pre class="json" tabindex="0" aria-label="Example finding as JSON" data-reveal>{
+  <span class="k">"id":</span> "F2",
+  <span class="k">"type":</span> "duplicate_changed_state",
+  <span class="k">"severity":</span> <span class="hi">"high"</span>,
+  <span class="k">"title":</span> "Duplicate delivery created a second order",
+  <span class="k">"evidence":</span> ["D4", "D5", "D10", "D11"],
+  <span class="k">"fix":</span> { <span class="k">"text":</span> "Record event.id before creating the order and return 200 early when it is already recorded. After the fix, D5 and D11 should leave orders.count at 1." }
+}</pre>
+</section>
+
+<section class="s wrap" aria-labelledby="s-prov">
+  <p class="kicker" id="s-prov">Providers</p>
+  <ul class="prov">
+    <li><svg aria-hidden="true" focusable="false" viewBox="100 100 312 312" fill="none" xmlns="http://www.w3.org/2000/svg" > <path fill="#533afd" fill-rule="evenodd" clip-rule="evenodd" d="m120 392 272-57.683V120l-272 58.357z" /> </svg>Stripe</li><li><svg aria-hidden="true" focusable="false" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" > <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M512 0C229.12 0 0 229.12 0 512c0 226.56 146.56 417.92 350.08 485.76 25.6 4.48 35.2-10.88 35.2-24.32 0-12.16-.64-52.48-.64-95.36-128.64 23.68-161.92-31.36-172.16-60.16-5.76-14.72-30.72-60.16-52.48-72.32-17.92-9.6-43.52-33.28-.64-33.92 40.32-.64 69.12 37.12 78.72 52.48 46.08 77.44 119.68 55.68 149.12 42.24 4.48-33.28 17.92-55.68 32.64-68.48-113.92-12.8-232.96-56.96-232.96-252.8 0-55.68 19.84-101.76 52.48-137.6-5.12-12.8-23.04-65.28 5.12-135.68 0 0 42.88-13.44 140.8 52.48 40.96-11.52 84.48-17.28 128-17.28s87.04 5.76 128 17.28c97.92-66.56 140.8-52.48 140.8-52.48 28.16 70.4 10.24 122.88 5.12 135.68 32.64 35.84 52.48 81.28 52.48 137.6 0 196.48-119.68 240-233.6 252.8 18.56 16 34.56 46.72 34.56 94.72 0 68.48-.64 123.52-.64 140.8 0 13.44 9.6 29.44 35.2 24.32C877.44 929.92 1024 737.92 1024 512 1024 229.12 794.88 0 512 0" /> </svg>GitHub</li><li><svg aria-hidden="true" focusable="false" viewBox="0 0 256 292" preserveAspectRatio="xMidYMid" xmlns="http://www.w3.org/2000/svg" > <path fill="#95BF46" d="M223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-1.703-1.703-5.029-1.185-6.32-.805-.19.056-3.388 1.043-8.678 2.68-5.18-14.906-14.322-28.604-30.405-28.604-.444 0-.901.018-1.358.044C129.31 3.407 123.644.779 118.75.779c-37.465 0-55.364 46.835-60.976 70.635-14.558 4.511-24.9 7.718-26.221 8.133-8.126 2.549-8.383 2.805-9.45 10.462C21.3 95.806.038 260.235.038 260.235l165.678 31.042 89.77-19.42S223.973 58.8 223.775 57.34zM156.49 40.848l-14.019 4.339c.005-.988.01-1.96.01-3.023 0-9.264-1.286-16.723-3.349-22.636 8.287 1.04 13.806 10.469 17.358 21.32zm-27.638-19.483c2.304 5.773 3.802 14.058 3.802 25.238 0 .572-.005 1.095-.01 1.624-9.117 2.824-19.024 5.89-28.953 8.966 5.575-21.516 16.025-31.908 25.161-35.828zm-11.131-10.537c1.617 0 3.246.549 4.805 1.622-12.007 5.65-24.877 19.88-30.312 48.297l-22.886 7.088C75.694 46.16 90.81 10.828 117.72 10.828z" /> <path fill="#5E8E3E" d="M221.237 54.983c-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-.637-.634-1.496-.959-2.394-1.099l-12.527 256.233 89.762-19.418S223.972 58.8 223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357" /> <path fill="#FFF" d="M135.242 104.585l-11.069 32.926s-9.698-5.176-21.586-5.176c-17.428 0-18.305 10.937-18.305 13.693 0 15.038 39.2 20.8 39.2 56.024 0 27.713-17.577 45.558-41.277 45.558-28.44 0-42.984-17.7-42.984-17.7l7.615-25.16s14.95 12.835 27.565 12.835c8.243 0 11.596-6.49 11.596-11.232 0-19.616-32.16-20.491-32.16-52.724 0-27.129 19.472-53.382 58.778-53.382 15.145 0 22.627 4.338 22.627 4.338" /> </svg>Shopify</li><li>Standard Webhooks</li>
+  </ul>
+  <p class="coming">Coming: Twilio, Slack</p>
+</section>
+</main>
+
+<div class="field end">
+  <div class="wrap in">
+    <h2 id="s-final" data-reveal>Prove your first handler in 5 minutes.</h2>
+    <div class="acts"><div class="row"><a class="btn" href="#">Get a URL, no sign-up</a><span class="chip"><code>npx @webhooktrap/agent</code><button type="button" data-copy="npx @webhooktrap/agent">Copy</button></span></div></div>
+    <footer><nav aria-label="Footer"><a href="#">Docs</a><a href="#">GitHub</a><a href="#">Self-host</a><a href="#">Status</a><a href="#">Privacy</a></nav></footer>
+  </div>
+</div>
+
+<script>
+(() => {
+const IC = {
+  once:'M3 3 13 13', twice:'M1.5 3 11.5 13M5.5 3 15.5 13', shuffled:'M3 3 13 13M13 3 3 13', late:'M6.5 1.5V14.5M2 3 13 14',
+  retry:'M2 3 7 13M9 3 14 13M7 13H9', tampered:'M2 2 6 6H10L14 10', unsigned:'M2 2 14 14', burst:'M3 3 13 13M3 3V13M3 3H13', slow:'M2 11.5H10V2M2 3.5 6 7.5H14'
+};
+/* each stage: html + what it breaks. Classes with "final" are the state shown under reduced motion. */
+const hd = (cts, lbl='handler') => `<div class="hd"><small>${lbl}</small><div class="ct">${cts}</div></div>`;
+const TR = '<div class="track"></div>';
+const D = 'style="--d:calc(var(--w0) - 0px)"';
+const C = [
+ ['Once','once','Every selected event once, in capture order. Sets the baseline.','Every provider','',
+  `${TR}<span class="src">stripe</span><span class="pk" style="animation-name:go1">evt_…pjPU</span>${hd('<i style="animation-name:c0">0</i><i class="final" style="animation-name:c1a">1</i>','orders')}<span class="note final" style="animation-name:noteIn1">200 · orders.count 0 → 1</span>`,
+  'Baseline: what a passing handler looks like.', true],
+ ['Twice','twice','The first event again, 500 ms after the first delivery completes: same event id, new signature timestamp','Stripe may deliver the same event more than once.','Stripe docs › Webhooks › Handle duplicate events',
+  `${TR}<span class="src">stripe</span><span class="pk" style="animation-name:go1">evt_…pjPU</span><span class="pk r" style="animation-name:go2">evt_…pjPU</span>${hd('<i style="animation-name:c0">0</i><i style="animation-name:c1b">1</i><i class="bad final" style="animation-name:c2">2</i>','orders')}<span class="note bad final" style="animation-name:noteIn">same id · second order</span>`,
+  'Breaks: handlers that write before checking event.id.'],
+ ['Shuffled','shuffled','Related events in reverse order',"Stripe doesn't guarantee delivery order.",'Stripe docs › Webhooks › Event ordering',
+  `${TR}<span class="src">sent 1 · 2 · 3</span><span class="pk" style="animation-name:go1">3 subscription</span><span class="pk" style="animation-name:go2;animation-delay:-.6s">2 payment</span><span class="pk r" style="animation-name:go2;animation-delay:.6s">1 invoice</span>${hd('<i class="bad final" style="animation-name:c2;font-size:22px">3·2·1</i>','arrived')}<span class="note bad final" style="animation-name:noteIn">update before create</span>`,
+  'Breaks: status fields that assume creation came first.'],
+ ['Late','late','Valid signature, timestamp 360 s old (tolerance 300 s)','Replay protection relies on the timestamp tolerance.','Stripe docs › Webhooks › Prevent replay attacks',
+  `${TR}<span class="gate" style="left:52%"></span><span class="gl" style="left:calc(52% - 40px)">300 s</span><span class="src">t − 360 s</span><span class="pk r" style="animation-name:go1">t − 360 s</span>${hd('<i style="animation-name:c0">?</i><i class="final" style="animation-name:c1a;font-size:28px">400</i>','expects')}<span class="note final" style="animation-name:noteIn1">should be rejected</span>`,
+  'Breaks: handlers that never check the timestamp.'],
+ ['Retry after error','retry',"Sends the event, then the provider's retry 2 s after it completes. Providers retry when a delivery fails or takes too long; your handler can't tell which.",'Stripe retries failed or timed-out deliveries with backoff for up to 3 days in live mode.','Stripe docs › Webhooks › Retry behavior',
+  `${TR}<span class="src">stripe</span><span class="pk" style="animation-name:go1;animation-duration:5s">D10 · 11 840 ms</span><span class="pk r" style="animation-name:go2">D11 retry</span>${hd('<i style="animation-name:c0">0</i><i style="animation-name:c1b">1</i><i class="bad final" style="animation-name:c2">2</i>','orders')}<span class="note bad final" style="animation-name:noteIn">retry wrote again</span>`,
+  'Breaks: slow handlers that finish the work anyway.'],
+ ['Tampered','tampered','amount_paid 2400 → 0 in the body, signed for the original body','A signature only protects you if a failed check stops the request.','Stripe docs › Webhooks › Verify signatures',
+  `${TR}<span class="src">signed for 2400</span><span class="pk" style="animation-name:go1">amount_paid 2400</span><span class="pk r" style="animation-name:go2">amount_paid 0</span>${hd('<i style="animation-name:c0">0</i><i style="animation-name:c1b;font-size:26px">…</i><i class="bad final" style="animation-name:c2;font-size:28px">200</i>','got')}<span class="note bad final" style="animation-name:noteIn">expected 4xx · got 200</span>`,
+  'Breaks: a check that logs the failure and carries on.'],
+ ['Unsigned','unsigned','The event with every signature header removed','A handler that checks the signature only when the header is present accepts anything.','Stripe docs › Webhooks › Verify signatures',
+  `${TR}<span class="src"><s>Stripe-Signature</s></span><span class="pk r" style="animation-name:go1">no signature</span>${hd('<i style="animation-name:c0">?</i><i class="final" style="animation-name:c1a;font-size:28px">4xx</i>','expects')}<span class="note final" style="animation-name:noteIn1">accepting it means accepting anything</span>`,
+  'Breaks: "if (header) verify()".'],
+ ['Burst','burst','Every selected event, released together (≤ 20 ms apart)','Stripe sends related events close together, often concurrently.','Stripe docs › Webhooks › Event ordering',
+  `<span class="src">≤ 20 ms apart</span><div class="track" style="top:30%"></div><div class="track"></div><div class="track" style="top:70%"></div><span class="pk" style="animation-name:go1;top:30%">invoice</span><span class="pk" style="animation-name:go1">payment</span><span class="pk" style="animation-name:go1;top:70%">subscription</span>${hd('<i style="animation-name:c0">0</i><i class="final" style="animation-name:c1a">1</i>','final')}<span class="note final" style="animation-name:noteIn1">read once, after all three</span>`,
+  'Breaks: read-then-write races without a lock.'],
+ ['Slow budget','slow','One more delivery after the others, measured against the budget: 10 s budget · Webhook Trap default',"If Stripe times out waiting, the delivery counts as failed and is retried. Stripe doesn't publish the timeout.",'Stripe docs › Webhooks › Quickly return a 2xx response',
+  `<span class="src">D16</span><span class="gate b" style="left:calc(14px + (100% - 110px) * .8)"></span><span class="gl" style="left:calc(14px + (100% - 110px) * .8 - 30px)">10 s</span><span class="bar final" style="--w:calc((100% - 110px) * .834);animation-name:fill"></span>${hd('<i style="animation-name:c0;font-size:22px">…</i><i class="bad final" style="animation-name:c2;font-size:26px">+420</i>','ms over')}<span class="note bad final" style="animation-name:noteIn">10 420 ms</span>`,
+  'Breaks: doing the slow work before answering.'],
+];
+document.getElementById('grid9').innerHTML = C.map(([n,k,what,why,cite,stage,brk,ok])=>`
+ <article class="card" tabindex="0" aria-labelledby="c-${k}">
+   <div class="stage" aria-hidden="true">${stage}</div>
+   <h3 id="c-${k}"><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true" style="margin-right:10px"><path d="${IC[k]}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>${n}</h3>
+   <p class="what">${what}</p>
+   <p class="brk${ok?' ok':''}">${brk}</p>
+   <p class="why">${why}</p>${cite?`<cite>${cite}</cite>`:''}
+ </article>`).join('');
+
+/* packet travel distance per stage */
+const st = document.createElement('style');
+st.textContent = `@keyframes fill{0%,8%{width:0}70%,100%{width:var(--w)}}`;
+document.head.appendChild(st);
+function sizeStages(){ document.querySelectorAll('.stage').forEach(s=>{ s.style.setProperty('--d', (s.clientWidth - 110 - 150)+'px'); }); }
+sizeStages(); addEventListener('resize', sizeStages);
+
+/* hero stamp sits after the real width of "Once." */
+const once=document.getElementById('once');
+function placeStamp(){ const r=document.createRange(); r.selectNodeContents(once); const w=r.getBoundingClientRect().width; const fs=parseFloat(getComputedStyle(once).fontSize); const e=document.querySelector('.echo'); e.style.left=(w+fs*.14)+'px'; e.style.top=once.offsetTop+'px'; document.querySelector('.stamp').style.left = (2*w + fs*.36) + 'px'; }
+document.fonts?.ready.then(placeStamp); addEventListener('resize', placeStamp); placeStamp();
+
+/* reveals + card loops */
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); if(!e.target.classList.contains('card')) io.unobserve(e.target);} else if(e.target.classList.contains('card')) e.target.classList.remove('in'); }), {threshold:.2});
+document.querySelectorAll('[data-reveal],.card').forEach(el=>io.observe(el));
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>navigator.clipboard?.writeText(b.dataset.copy).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1500)}).catch(()=>{})));
+})();
+</script>
+</body>
+</html>

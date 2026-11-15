@@ -1,0 +1,55 @@
+---
+title: Inboxes
+description: Create inboxes and capture your first webhook.
+---
+
+An inbox is a unique URL that captures every HTTP request sent to it.
+
+## Create an inbox
+
+On the landing page, click **Open a free inbox** and choose how long to keep it:
+
+- **Just try it.** No account. The inbox expires after 48 hours.
+- **Save to my account.** Kept until you delete it. Requires a free account.
+
+You land directly on the inbox page with its ingest URL (a 12-character ID):
+
+```
+https://webhooktrap.dev/i/xK9m2pQ7nR4a
+```
+
+Ingest always answers `200 OK`, even for unknown or expired inboxes, so webhook providers never see failures and never learn whether an inbox exists.
+
+## Send a test webhook
+
+```bash
+curl -X POST https://webhooktrap.dev/i/xK9m2pQ7nR4a \
+  -H "Content-Type: application/json" \
+  -d '{"event": "test", "timestamp": 1234567890}'
+```
+
+The event appears in the inbox within seconds (the page polls, no refresh needed).
+
+## Inspect an event
+
+Click any event to open the inspector:
+
+- **Headers**, as they arrived. `Authorization`, `Cookie`, and `X-API-Key` are stored as `[REDACTED]`; they never touch the database.
+- **Body**, formatted JSON or raw text, up to 1MB.
+- **Metadata**: method, path, query, source IP, size, timestamp.
+
+## Anonymous vs. account
+
+| | Anonymous | With account |
+|---|---|---|
+| Capture and inspect | Yes | Yes |
+| Replay | Yes | Yes |
+| Lifetime | 48 hours | Until deleted |
+| Dashboard and inbox list | No | Yes |
+| API tokens | No | Yes |
+
+Anyone who knows an anonymous inbox URL can open it: treat the ID as a secret.
+
+## Next
+
+[Replay captured webhooks to your server](/guides/replay).

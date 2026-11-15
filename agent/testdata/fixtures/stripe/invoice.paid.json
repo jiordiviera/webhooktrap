@@ -1,0 +1,19 @@
+{
+  "provider": "stripe",
+  "event_type": "invoice.paid",
+  "capture_order": 1,
+  "source": "#01",
+  "headers": [
+    [
+      "User-Agent",
+      "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+    ],
+    [
+      "Content-Type",
+      "application/json; charset=utf-8"
+    ]
+  ],
+  "signature": "resign",
+  "body_sha256": "bdc57f1dc99b7aef6790c59f1c6840bed375da8593219c89fa52db721a56818d",
+  "body": "{\n  \"id\": \"evt_1QK9BpyOmOFtoVkdOlN4pjPU\",\n  \"object\": \"event\",\n  \"api_version\": \"2024-06-20\",\n  \"created\": 1794405483,\n  \"data\": {\n    \"object\": {\n      \"id\": \"in_1QKImRcZJ8HR9BZYostEV4ui\",\n      \"object\": \"invoice\",\n      \"account_country\": \"US\",\n      \"account_name\": \"Brindle Coffee Co.\",\n      \"amount_due\": 2400,\n      \"amount_paid\": 2400,\n      \"amount_remaining\": 0,\n      \"attempt_count\": 1,\n      \"billing_reason\": \"subscription_cycle\",\n      \"charge\": \"ch_3QKQSfbDEoGWoz5h9BH30pt1\",\n      \"collection_method\": \"charge_automatically\",\n      \"created\": 1794405482,\n      \"currency\": \"usd\",\n      \"customer\": \"cus_RLwECeeQJ3SXHr\",\n      \"customer_email\": \"jonah.reyes@example.com\",\n      \"customer_name\": \"Jonah Reyes\",\n      \"hosted_invoice_url\": \"https://invoice.stripe.com/i/acct_1Pzc49RWKdUzp4lH/test_5XWMojZxxCsr36dv66c0R3qVrgDFk6VN9FgoVMQu\",\n      \"lines\": {\n        \"object\": \"list\",\n        \"data\": [\n          {\n            \"id\": \"il_1QKSKkpwf4w9hEY1TqQPBmyg\",\n            \"object\": \"line_item\",\n            \"amount\": 2400,\n            \"currency\": \"usd\",\n            \"description\": \"1 \\u00d7 Brindle Monthly, Whole Bean (at $24.00 / month)\",\n            \"period\": {\n              \"end\": 1796997451,\n              \"start\": 1794405451\n            },\n            \"price\": {\n              \"id\": \"price_1PZ9vRSRGb251gkl9ZzLRVR1\",\n              \"object\": \"price\",\n              \"unit_amount\": 2400,\n              \"recurring\": {\n                \"interval\": \"month\",\n                \"interval_count\": 1\n              }\n            },\n            \"quantity\": 1,\n            \"subscription\": \"sub_1QH3UF1HXb5oPQT3wfdt4drI\",\n            \"type\": \"subscription\"\n          }\n        ],\n        \"has_more\": false,\n        \"total_count\": 1,\n        \"url\": \"/v1/invoices/in_1QKImRcZJ8HR9BZYostEV4ui/lines\"\n      },\n      \"livemode\": false,\n      \"number\": \"BRNDL-0042\",\n      \"paid\": true,\n      \"payment_intent\": \"pi_3QK4RAqNlKszZLwoglztTHYj\",\n      \"period_end\": 1794405451,\n      \"period_start\": 1791727051,\n      \"status\": \"paid\",\n      \"subscription\": \"sub_1QH3UF1HXb5oPQT3wfdt4drI\",\n      \"subtotal\": 2400,\n      \"total\": 2400\n    }\n  },\n  \"livemode\": false,\n  \"pending_webhooks\": 1,\n  \"request\": {\n    \"id\": null,\n    \"idempotency_key\": \"in_auto_RTmsWZwV3q\"\n  },\n  \"type\": \"invoice.paid\"\n}"
+}

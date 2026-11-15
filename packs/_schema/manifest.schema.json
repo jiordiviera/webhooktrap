@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/schema/packs/manifest-1.json",
+    "title": "Webhook Trap pack manifest (format 1)",
+    "description": "The pack set both the server and the engine load (domain-model §8). `packs` order is detection order: the first pack whose rules match a capture wins. `version` is the version of the set; captures with no matching pack record `none@<version>`.",
+    "type": "object",
+    "required": ["format", "version", "packs", "unknown"],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": { "type": "string" },
+        "format": { "const": 1 },
+        "version": { "$ref": "#/$defs/semver" },
+        "packs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": ["id", "version"],
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{1,31}$"
+                    },
+                    "version": { "$ref": "#/$defs/semver" }
+                }
+            }
+        },
+        "coming": { "type": "array", "items": { "type": "string" } },
+        "unknown": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": { "group_fallback": { "enum": ["data_id", null] } }
+        }
+    },
+    "$defs": {
+        "semver": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+    }
+}

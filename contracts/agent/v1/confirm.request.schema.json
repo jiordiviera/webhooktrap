@@ -1,0 +1,13 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/confirm.request.schema.json",
+    "title": "POST /agent/v1/confirm (§5.3); also the body of accept and DELETE /agent/v1/agent when one is sent",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        }
+    },
+    "required": ["proto"],
+    "additionalProperties": false
+}

@@ -1,0 +1,99 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/pair.response.schema.json",
+    "title": "201 answer to pair",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "agent_id": {
+            "$ref": "common.schema.json#/$defs/agentId"
+        },
+        "name": {
+            "$ref": "common.schema.json#/$defs/agentName",
+            "description": "AC-3: the name the server kept; a name colliding with a live agent of the workspace gets a suffix (maya-mbp-2); a code bound to a replacement takes the replaced agent's name"
+        },
+        "replaces": {
+            "description": "AC-3: the agent this pairing revokes at confirmation (the owner bound the code to it), or null",
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "agent_id": {
+                            "$ref": "common.schema.json#/$defs/agentId"
+                        },
+                        "name": {
+                            "$ref": "common.schema.json#/$defs/agentName"
+                        },
+                        "key_fingerprint": {
+                            "type": "string",
+                            "pattern": "^SHA256:[A-Za-z0-9+/]{43}$"
+                        }
+                    },
+                    "required": ["agent_id", "name", "key_fingerprint"],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "workspace": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "maxLength": 120
+                },
+                "guest": {
+                    "type": "boolean"
+                }
+            },
+            "required": ["label", "guest"],
+            "additionalProperties": false
+        },
+        "server": {
+            "type": "object",
+            "properties": {
+                "origin": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "kind": {
+                    "enum": ["hosted", "selfhost"],
+                    "description": "A09 decision 6: the client refuses --insecure-dev-origin when hosted; a server with APP_ENV=local reports selfhost"
+                },
+                "min_agent_version": {
+                    "$ref": "common.schema.json#/$defs/semver"
+                }
+            },
+            "required": ["origin", "name", "kind", "min_agent_version"],
+            "additionalProperties": false
+        },
+        "probe_display_policy": {
+            "enum": ["strict", "opt_in_allowed", "opt_in_disabled"]
+        },
+        "guest": {
+            "type": "boolean"
+        },
+        "needs_reconfirm": {
+            "const": true
+        }
+    },
+    "required": [
+        "proto",
+        "agent_id",
+        "name",
+        "replaces",
+        "workspace",
+        "server",
+        "probe_display_policy",
+        "guest",
+        "needs_reconfirm"
+    ]
+}

@@ -1,0 +1,68 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/hello.response.schema.json",
+    "title": "200 answer to hello",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "server": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "enum": ["hosted", "selfhost"],
+                    "description": "the same value as pair's server.kind (A09 decision 6)"
+                }
+            },
+            "required": ["kind"],
+            "additionalProperties": false
+        },
+        "guest": {
+            "type": "boolean"
+        },
+        "needs_reconfirm": {
+            "type": "boolean"
+        },
+        "workspace": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "maxLength": 120
+                }
+            },
+            "required": ["label"],
+            "additionalProperties": false
+        },
+        "probe_display_policy": {
+            "enum": ["strict", "opt_in_allowed", "opt_in_disabled"]
+        },
+        "min_agent_version": {
+            "$ref": "common.schema.json#/$defs/semver"
+        },
+        "deprecation": {
+            "type": ["string", "null"]
+        },
+        "pending_jobs": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "signature_checks_pending": {
+            "type": "integer",
+            "minimum": 0
+        }
+    },
+    "required": [
+        "proto",
+        "server",
+        "guest",
+        "needs_reconfirm",
+        "workspace",
+        "probe_display_policy",
+        "min_agent_version",
+        "deprecation",
+        "pending_jobs",
+        "signature_checks_pending"
+    ]
+}

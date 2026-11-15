@@ -1,0 +1,36 @@
+---
+title: "Webhooktrap: Debug Webhooks with Capture and Replay"
+sidebarTitle: "Home"
+description: "Webhooktrap captures every webhook exactly as received and lets you replay it to localhost or staging with full response visibility."
+---
+
+Webhooktrap gives you an instant ingest URL that records every incoming webhook — method, headers, body, and query string — exactly as your provider sent it. When you're ready to debug, replay any captured event to localhost or staging and see the full HTTP response without touching a tunnel.
+
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Learn what Webhooktrap does, how inbox modes work, and which providers it supports.
+  </Card>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Create an inbox, capture your first webhook, and replay it to localhost in minutes.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Explore the full REST API for managing inboxes, events, and replays programmatically.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/integrations/overview">
+    Step-by-step guides for connecting Stripe, GitHub, Shopify, Twilio, and more.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Receive">
+    Point any webhook provider at your Webhooktrap ingest URL (`https://webhooktrap.dev/i/:inboxId`). Every request is captured instantly — no configuration, no tunnel, no waiting.
+  </Step>
+  <Step title="Inspect">
+    Open the dashboard to review the full request: status line, headers, query parameters, and raw body. Share a read-only link with a teammate so they can see exactly what arrived.
+  </Step>
+  <Step title="Replay">
+    Send any stored event to a destination URL you choose — your local dev server, a staging environment, or a feature branch. Webhooktrap shows you the response status code, latency, and body so you can confirm your handler behaves correctly.
+  </Step>
+</Steps>

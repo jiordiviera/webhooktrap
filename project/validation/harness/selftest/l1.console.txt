@@ -1,0 +1,70 @@
+Webhook Trap | Proving CLI prototype | run_20261114T153918Z-9cd5
+  target    http://127.0.0.1:4510/webhooks/stripe
+  events    #01 invoice.paid | #02 payment_intent.succeeded | #03 charge.refunded
+  checks    Level 1 transport
+  budget    10 000 ms (Webhook Trap default)
+
+    D        +ms  event                      http    latency  state     result
+  Once
+    D1        +0  invoice.paid               200       10 ms  -         [-] pass
+    D2       +10  payment_intent.succeeded   200        0 ms  -         [-] pass
+    D3       +11  charge.refunded            200   12 006 ms  -         [-] pass
+  Twice
+    D4   +12 018  invoice.paid               200        0 ms  -         [-] pass
+    D5   +12 519  invoice.paid = D4'         200        0 ms  -         [I] Info, inconclusive
+          new finding  [I] Info | Inconclusive: add a probe to see side effects
+  Shuffled
+    D6   +12 520  charge.refunded            200   12 011 ms  -         [-] pass
+    D7   +24 531  payment_intent.succeeded   500        0 ms  -         [H] High, HTTP 500
+    D8   +24 532  invoice.paid               200        0 ms  -         [-] pass
+          new finding  [H] High | Out-of-order delivery broke the handler
+  Late
+    D9   +24 532  invoice.paid t - 360 s     400        0 ms  -         [-] pass (rejected)
+  Tampered
+    D10  +24 533  invoice.paid body changed  400        0 ms  -         [-] pass (rejected)
+  Slow budget
+    D3       +11  charge.refunded            200   12 006 ms  -         [M] Medium, +2 006 over
+    D6   +12 520  charge.refunded            200   12 011 ms  -         [M] Medium, +2 011 over
+          new finding  [M] Medium | Slow response | 10 s budget | Webhook Trap default
+
+Scenarios  6 | 3 passed | 2 with findings | 1 inconclusive
+  [-] Once           pass                       200 x 3 | 0-12 006 ms
+  [I] Twice          Inconclusive (not passed)  200, 200 in 0 ms
+  [H] Shuffled       F1 High                    200, 500, 200 | 0-12 011 ms
+  [-] Late           pass                       400 in 0 ms | rejected as expected
+  [-] Tampered       pass                       400 in 0 ms | rejected as expected
+  [M] Slow budget    F2 Medium                  2 over the budget | slowest 12 011 ms
+
+[H] F1 High | Out-of-order delivery broke the handler                                         D7
+  What happened   Related events arrived in reverse order. D7 (payment_intent.succeeded) got
+                  HTTP 500.
+  Why it matters  Providers don't guarantee that events arrive in the order they happened.
+                  Stripe docs > Webhooks > Event ordering
+  Fix             Make each handler cope with an event that arrives before the one it depends
+                  on: check for missing records, or fetch the current object from the provider
+                  instead of trusting arrival order.
+
+[M] F2 Medium | Slow response | 10 s budget | Webhook Trap default                         D3 D6
+  What happened   D3 took 12 006 ms (+2 006 over); D6 took 12 011 ms (+2 011 over). The median
+                  delivery in this run took 0 ms.
+  Why it matters  Stripe expects a quick 2xx and doesn't publish its timeout. Webhook Trap
+                  applies a 10 s default budget.
+                  Stripe docs > Webhooks > Quickly return a 2xx response
+  Fix             Acknowledge with a 2xx first, then do the slow work in a background job. After
+                  the fix these deliveries should respond within the budget.
+
+[I] F3 Info | Inconclusive: add a probe to see side effects                                D4 D5
+  What happened   Both deliveries got HTTP 200 and the responses look the same. Without a probe
+                  the tool cannot see whether D5 repeated a side effect.
+  Why it matters  A duplicate can look clean over HTTP and still create a second record or send
+                  a second email.
+                  Stripe docs > Webhooks > Handle duplicate events
+  Fix             In proving.yml set probe: to a command that prints one value, for example
+                  probe: psql -Atc "select count(*) from orders". The next run compares it after
+                  each delivery.
+
+3 findings | 1 High | 1 Medium | 1 Info
+6 scenarios | 10 deliveries | 24.5 s | run_20261114T153918Z-9cd5
+  run file  .proving/runs/run_20261114T153918Z-9cd5.json
+  next      proto judge   (say which findings are real)
+exit_code: 1

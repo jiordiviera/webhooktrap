@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Webhook Trap</title>
+<meta name="description" content="Direction 1, product at the centre: the run board plays live in the hero.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=Martian+Mono:wdth,wght@75..112.5,400..700&display=swap" rel="stylesheet">
+<style>
+/* Direction 1 · Product at the centre
+   Idea: the landing page IS the run board. The visitor watches Run #3 happen. */
+:root{
+  --ground:#F3F4F1; --surface:#FFFFFF; --sunk:#E9EBE7; --rule:#D5D8D3; --rule-strong:#AEB2AC;
+  --ink:#15171A; --muted:#565B61;
+  --conflict:#C51F17; --conflict-wash:#FBE7E4; --on-conflict:#FFFFFF;
+  --high:#A04B0C; --high-wash:#FBEADB;
+  --medium:#7F5A06; --medium-wash:#F7EDCF;
+  --info:#4E6176;
+  --pass:#1F7344; --pass-wash:#DFF0E5;
+  --now:#B12083;
+  --budget:#E5BF6D;
+  --focus:#B12083;
+  --sans:"Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono:"Martian Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1113; --surface:#171A1D; --sunk:#0B0D0F; --rule:#2A2E33; --rule-strong:#454B52;
+    --ink:#ECEEEA; --muted:#A3A9AF;
+    --conflict:#FF6B57; --conflict-wash:#3A1612; --on-conflict:#1A0705;
+    --high:#F59A55; --high-wash:#38210F;
+    --medium:#EBBD57; --medium-wash:#33290F;
+    --info:#97B1CD;
+    --pass:#5EC386; --pass-wash:#12301F;
+    --now:#E977BB; --budget:#8C6C1F; --focus:#E977BB;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1113; --surface:#171A1D; --sunk:#0B0D0F; --rule:#2A2E33; --rule-strong:#454B52;
+  --ink:#ECEEEA; --muted:#A3A9AF;
+  --conflict:#FF6B57; --conflict-wash:#3A1612; --on-conflict:#1A0705;
+  --high:#F59A55; --high-wash:#38210F;
+  --medium:#EBBD57; --medium-wash:#33290F;
+  --info:#97B1CD;
+  --pass:#5EC386; --pass-wash:#12301F;
+  --now:#E977BB; --budget:#8C6C1F; --focus:#E977BB;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;font-feature-settings:"tnum" 1;}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+code,pre,.mono{font-family:var(--mono);font-variation-settings:"wdth" 87.5}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+.top{display:flex;align-items:center;gap:24px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.brand svg.mark{width:26px;height:26px}
+.brand svg.word{height:15px;width:auto}
+.top nav{margin-left:auto;display:flex;gap:22px;font-size:14px}
+.top nav a{text-decoration:none;color:var(--muted)}
+.top nav a:hover{color:var(--ink)}
+.top nav a.btn{color:var(--ground)}
+.top nav a.btn:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:var(--ground);font:600 15px/1 var(--sans);text-decoration:none;cursor:pointer}
+.btn:hover{background:transparent;color:var(--ink)}
+.btn.sm{height:36px;font-size:14px;padding:0 14px}
+
+/* hero copy */
+.hero{padding:40px 0 28px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:48px;align-items:end}
+h1{margin:0;font-size:clamp(44px,6.4vw,88px);line-height:.98;letter-spacing:-.025em;font-weight:700;font-variation-settings:"wdth" 82}
+.sub{margin:0 0 20px;font-size:19px;line-height:1.45;color:var(--muted);max-width:44ch}
+.cta-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:4px;height:44px;padding:0 4px 0 14px;border:1px solid var(--rule-strong);border-radius:6px;font-size:13px;background:var(--surface)}
+.chip button{height:34px;width:34px;border:0;background:transparent;color:var(--ink);border-radius:4px;cursor:pointer;display:grid;place-items:center}
+.chip button:hover{background:var(--sunk)}
+.trust{margin:14px 0 0;font-size:13px;color:var(--muted)}
+
+/* BOARD */
+.board-shell{position:relative;margin-top:8px}
+.board{background:var(--surface);border:1px solid var(--rule-strong);border-radius:12px;overflow:hidden;box-shadow:0 1px 0 var(--rule),0 30px 60px -30px rgba(20,22,26,.35)}
+.bhead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:14px 18px;border-bottom:1px solid var(--rule)}
+.bhead .title{font-weight:650;font-size:16px}
+.bhead .meta{font-size:12px;color:var(--muted)}
+.status{margin-left:auto;display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--rule-strong)}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--now)}
+.status.running .dot{animation:pulse 1s ease-in-out infinite}
+.status.fail{background:var(--conflict);border-color:var(--conflict);color:var(--on-conflict)}
+.status.fail .dot{background:var(--on-conflict)}
+@keyframes pulse{50%{opacity:.25}}
+
+.strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));border-bottom:1px solid var(--rule)}
+.cell{padding:10px 12px;border-right:1px solid var(--rule);font-size:12.5px;display:flex;flex-direction:column;gap:4px;min-width:0;transition:background .3s}
+.cell:last-child{border-right:0}
+.cell .n{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:6px;align-items:center}
+.cell .r{font-size:11.5px;color:var(--muted);font-family:var(--mono);font-variation-settings:"wdth" 80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell.run{box-shadow:inset 0 -3px 0 var(--now)}
+.cell.pass .r{color:var(--pass)}
+.cell.bad{background:var(--conflict-wash)}
+.cell.bad .r{color:var(--conflict);font-weight:600}
+.cell svg{flex:none}
+
+.bbody{display:grid;grid-template-columns:minmax(0,1fr) 380px;min-height:540px}
+.rows{border-right:1px solid var(--rule);font-size:13px}
+.rhead,.row{display:grid;grid-template-columns:40px 62px 116px minmax(0,1fr) 40px 220px 72px 58px;align-items:center;gap:0 10px;padding:0 16px}
+.rhead{height:32px;color:var(--muted);font-size:11.5px;border-bottom:1px solid var(--rule);background:var(--ground)}
+.row{height:31px;border-bottom:1px solid var(--rule);opacity:.0;transform:translateY(-4px);transition:opacity .25s,transform .25s,background .3s}
+.row.on{opacity:1;transform:none}
+.row .d{font-weight:650}
+.row .t,.row .ev{font-family:var(--mono);font-variation-settings:"wdth" 78;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .ev{color:var(--ink)}
+.row .sc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .st{font-family:var(--mono);font-size:12px;font-weight:600}
+.row .pr{font-family:var(--mono);font-variation-settings:"wdth" 78;font-size:11.5px;white-space:nowrap}
+.row .v{display:flex;align-items:center;gap:5px;font-weight:650;font-size:12px}
+.row.bad{background:var(--conflict-wash)}
+.row.bad .pr,.row.bad .v{color:var(--conflict)}
+.row.med .lat-n{color:var(--medium)}
+.row .v.pass{color:var(--pass)}
+.lat{position:relative;height:8px;background:var(--sunk);border-radius:2px}
+.lat i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--ink);width:0;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.lat .budget{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--medium);left:83.3%}
+.row.over .lat i{background:var(--medium)}
+.lat-n{white-space:nowrap;font-family:var(--mono);font-size:10.5px;color:var(--muted);font-variation-settings:"wdth" 75}
+.latcell{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:8px;align-items:center}
+.row.over .lat-n{color:var(--medium);font-weight:700}
+
+.moment{display:flex;align-items:center;gap:20px;margin:18px 16px;padding:16px 18px;border-radius:8px;background:var(--conflict);color:var(--on-conflict);font-size:14.5px;line-height:1.4;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+.moment.on{opacity:1;transform:none}
+.moment .mnum{font-size:44px;font-weight:700;font-variation-settings:"wdth" 75;letter-spacing:-.02em;white-space:nowrap;line-height:1}
+.side.flash{animation:flash 1s ease-out}
+@keyframes flash{0%{background:var(--conflict-wash)}100%{background:var(--ground)}}
+.side{display:flex;flex-direction:column;background:var(--ground)}
+.probe{padding:18px 20px 16px;border-bottom:1px solid var(--rule)}
+.probe .lbl{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between}
+.probe .nums{display:flex;align-items:baseline;gap:14px;margin-top:6px;font-weight:700;font-variation-settings:"wdth" 75;letter-spacing:-.03em}
+.probe .before{font-size:56px;color:var(--muted);line-height:1}
+.probe .arrow{font-size:28px;color:var(--muted)}
+.probe .after{font-size:112px;line-height:.9;transition:color .2s}
+.probe.bad .after{color:var(--conflict)}
+.probe .exp{font-size:13px;color:var(--muted);min-height:20px}
+.probe.bad .exp{color:var(--conflict);font-weight:600}
+.probe .on{font-size:12px;color:var(--muted);font-family:var(--mono);font-variation-settings:"wdth" 80}
+.bump{animation:bump .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bump{0%{transform:scale(.7);opacity:.2}100%{transform:none;opacity:1}}
+
+.flist{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.flist .h{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between}
+.fcard{border-radius:8px;background:var(--surface);border:1px solid var(--rule);padding:12px 14px;transform-origin:top center}
+.fcard.land{animation:land .55s cubic-bezier(.2,1.2,.3,1)}
+@keyframes land{0%{transform:translateY(-14px) scale(.96);opacity:0}100%{transform:none;opacity:1}}
+.fcard.big{border:2px solid var(--conflict)}
+.sev{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;height:22px;padding:0 8px;border-radius:4px}
+.sev.critical{background:var(--conflict);color:var(--on-conflict)}
+.sev.high{background:var(--high-wash);color:var(--high)}
+.sev.medium{background:var(--medium-wash);color:var(--medium)}
+.sev.info{color:var(--info);border:1px solid var(--rule-strong)}
+.fcard .ft{font-weight:650;font-size:15px;line-height:1.25;margin:8px 0 4px}
+.fcard.small .ft{font-size:13.5px;margin:6px 0 0}
+.fcard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45}
+.fcard pre{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border-radius:6px;font-size:11px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.fcard pre .add{color:var(--pass)}
+.fcard .row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fcard .ev2{font-size:11.5px;color:var(--muted);font-family:var(--mono);font-variation-settings:"wdth" 80}
+.empty{font-size:13px;color:var(--muted);padding:6px 0}
+
+.bfoot{display:flex;align-items:center;gap:14px;padding:10px 14px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.bfoot button{height:32px;padding:0 12px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--surface);color:var(--ink);font:600 13px var(--sans);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.alt{margin:12px 2px 0;font-size:13px;color:var(--muted);max-width:90ch}
+
+/* sections */
+section.s{padding-top:96px}
+h2{margin:0 0 12px;font-size:clamp(32px,4vw,52px);line-height:1.02;letter-spacing:-.02em;font-weight:700;font-variation-settings:"wdth" 80}
+.lede{margin:0 0 36px;color:var(--muted);font-size:18px;max-width:58ch}
+
+/* findings trio */
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.trio article{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.trio article.crit{border:2px solid var(--conflict)}
+.trio h3{margin:0;font-size:22px;line-height:1.15;letter-spacing:-.01em;font-variation-settings:"wdth" 85}
+.trio .measure{font-family:var(--mono);font-variation-settings:"wdth" 82;font-size:12.5px;padding:10px 12px;border-radius:6px;background:var(--ground)}
+.trio .measure b{color:var(--conflict)}
+.trio p{margin:0;font-size:14.5px;color:var(--muted)}
+.trio .fix{margin-top:auto;border-top:1px solid var(--rule);padding-top:12px;font-size:14px}
+.trio .fix strong{display:block;font-size:13px;margin-bottom:2px}
+.trio cite{font-style:normal;font-size:12.5px;color:var(--muted)}
+
+/* catalogue */
+.cat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule-strong)}
+.sc-item{padding:22px 22px 24px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:40px minmax(0,1fr);gap:4px 12px}
+.sc-item:nth-child(3n+2),.sc-item:nth-child(3n){padding-left:22px;border-left:1px solid var(--rule)}
+.sc-item .ic{grid-row:span 4;width:40px;height:40px;border-radius:8px;background:var(--surface);border:1px solid var(--rule);display:grid;place-items:center}
+.sc-item h3{margin:0;font-size:19px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.res{font-size:11.5px;font-weight:650;height:22px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;border-radius:4px;background:var(--pass-wash);color:var(--pass)}
+.res.f{background:var(--conflict-wash);color:var(--conflict)}
+.res.n{background:var(--sunk);color:var(--muted)}
+.sc-item p{margin:0;font-size:14.5px}
+.sc-item .why{color:var(--muted);font-size:13.5px}
+.sc-item cite{font-style:normal;font-size:12px;color:var(--muted)}
+.later{margin:18px 0 0;color:var(--muted);font-size:14px}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;counter-reset:p}
+.pipe li{list-style:none;padding:20px 20px 22px;border-top:3px solid var(--ink);position:relative;display:flex;flex-direction:column;gap:8px;background:var(--surface);border-right:1px solid var(--rule)}
+.pipe li:last-child{border-right:0}
+.pipe ol{margin:0;padding:0}
+.pipe h3{margin:0;font-size:20px}
+.pipe .step{font-size:12.5px;color:var(--muted)}
+.pipe code{font-size:12px;overflow-wrap:anywhere;line-height:1.6}
+.pipe .scrub{font-size:12px;font-family:var(--mono);font-variation-settings:"wdth" 80;line-height:1.7}
+.pipe .scrub s{color:var(--muted)}
+
+/* split sections */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:48px;align-items:start}
+.checks{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule-strong)}
+.checks li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:16px 0;border-bottom:1px solid var(--rule);font-size:17px}
+.checks svg{color:var(--pass);margin-top:4px}
+.json{margin:0;background:var(--sunk);border:1px solid var(--rule);border-radius:12px;padding:22px;font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.json .k{color:var(--muted)} .json .s{color:var(--ink)} .json .hi{color:var(--high);font-weight:700}
+.json .t{color:var(--conflict);font-weight:700}
+
+.prov{display:flex;flex-wrap:wrap;gap:12px 40px;align-items:center;font-size:28px;font-weight:650;font-variation-settings:"wdth" 85;letter-spacing:-.01em;margin:0;padding:0;list-style:none}
+.prov li{display:flex;align-items:center;gap:12px}
+.prov svg{width:28px;height:28px}
+.coming{margin:16px 0 0;color:var(--muted);font-size:15px}
+
+.final{margin-top:120px;border-top:1px solid var(--rule-strong);padding:72px 0 40px;display:flex;flex-wrap:wrap;align-items:end;gap:24px;justify-content:space-between}
+.final h2{margin:0;font-size:clamp(36px,5vw,64px);max-width:16ch}
+footer nav{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;border-top:1px solid var(--rule);padding:22px 0 56px}
+footer nav a{text-decoration:none;color:var(--muted)}
+footer nav a:hover{color:var(--ink)}
+
+@media (max-width:1100px){
+  .bbody{grid-template-columns:minmax(0,1fr)}
+  .rows{border-right:0;border-bottom:1px solid var(--rule)}
+  .side{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+  .probe{border-bottom:0;border-right:1px solid var(--rule)}
+}
+@media (max-width:860px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:20px;padding-top:20px}
+  .top nav a:not(.btn){display:none}
+  .trio,.cat,.pipe,.split{grid-template-columns:minmax(0,1fr)}
+  .sc-item,.sc-item:nth-child(3n+2),.sc-item:nth-child(3n){padding:18px 0;border-left:0}
+  .pipe li{border-right:0;border-bottom:1px solid var(--rule)}
+  .strip{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cell:nth-child(4){border-right:0}
+  .cell:nth-child(-n+4){border-bottom:1px solid var(--rule)}
+  .rhead,.row{grid-template-columns:34px minmax(0,1fr) 40px 70px 58px;padding:0 12px}
+  .row .t,.rhead .t,.row .ev,.rhead .ev,.row .latcell,.rhead .lc{display:none}
+  .side{grid-template-columns:minmax(0,1fr)}
+  .probe{border-right:0;border-bottom:1px solid var(--rule)}
+  .probe .after{font-size:84px}
+  .bbody{min-height:0}
+  .moment{margin:12px;flex-direction:column;align-items:flex-start;gap:8px}
+  section.s{padding-top:72px}
+}
+@media (max-width:520px){
+  .wrap{padding:0 16px}
+  .cta-row .btn{width:100%}
+  .chip{width:100%;justify-content:space-between}
+  .bhead .meta{width:100%}
+  .status{margin-left:0}
+  .prov{font-size:22px}
+  .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cell{border-bottom:1px solid var(--rule)}
+  .cell:nth-child(2n){border-right:0}
+  .cell:nth-child(4){border-right:0}
+  .cell:nth-child(odd){border-right:1px solid var(--rule)}
+  .top .btn.sm{font-size:13px;padding:0 10px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="#" aria-label="Webhook Trap home">
+    <svg class="mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H16M0 12H12M1 3L10 12M6 3L14 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="miter"/><rect x="12" y="10" width="4" height="4" fill="var(--conflict)"/></svg>
+    <svg class="word" viewBox="0 0 174 26" aria-hidden="true"><path fill="currentColor" d="M3 0L3 14.88L5.12 17L7.88 17L11.5 13.38L15.12 17L17.88 17L20 14.88L20 0L23 0L23 16.12L19.12 20L13.88 20L11.5 17.62L9.12 20L3.88 20L0 16.12L0 0ZM10 15.5L10 6L13 6L13 15.5ZM25.5 11.5L34.5 11.5L34.5 11.12L32.38 9L30.62 9L28.5 11.12L28.5 14.88L30.62 17L37.5 17L37.5 20L29.38 20L25.5 16.12L25.5 9.88L29.38 6L33.62 6L37.5 9.88L37.5 14.5L25.5 14.5ZM43 0L43 20L40 20L40 0ZM41.5 6L48.12 6L52 9.88L52 16.12L48.12 20L41.5 20L41.5 17L46.88 17L49 14.88L49 11.12L46.88 9L41.5 9ZM57.5 0L57.5 20L54.5 20L54.5 0ZM56 6L62.62 6L66.5 9.88L66.5 20L63.5 20L63.5 11.12L61.38 9L56 9ZM72.88 6L77.12 6L81 9.88L81 16.12L77.12 20L72.88 20L69 16.12L69 9.88ZM72 11.12L72 14.88L74.12 17L75.88 17L78 14.88L78 11.12L75.88 9L74.12 9ZM87.38 6L91.62 6L95.5 9.88L95.5 16.12L91.62 20L87.38 20L83.5 16.12L83.5 9.88ZM86.5 11.12L86.5 14.88L88.62 17L90.38 17L92.5 14.88L92.5 11.12L90.38 9L88.62 9ZM101 0L101 20L98 20L98 0ZM106.76 6L111 6L102.24 14.76L98 14.76ZM98.76 12L103 12L111 20L106.76 20ZM118 0L132 0L132 3L118 3ZM126.5 3L126.5 20L123.5 20L123.5 3ZM137.5 6L137.5 20L134.5 20L134.5 6ZM134.94 9.44L138.38 6L144.5 6L144.5 9L139.62 9L137.06 11.56ZM157.5 9L152.12 9L150 11.12L150 14.88L152.12 17L157.5 17L157.5 20L150.88 20L147 16.12L147 9.88L150.88 6L157.5 6ZM159 6L159 20L156 20L156 6ZM164.5 6L164.5 26L161.5 26L161.5 6ZM163 6L169.62 6L173.5 9.88L173.5 16.12L169.62 20L163 20L163 17L168.38 17L170.5 14.88L170.5 11.12L168.38 9L163 9Z"/></svg>
+  </a>
+  <nav aria-label="Main">
+    <a href="#">Docs</a><a href="#">GitHub</a><a href="#">Self-host</a>
+    <a class="btn sm" href="#">Get a URL, no sign-up</a>
+  </nav>
+</header>
+
+<main>
+<div class="wrap">
+  <section class="hero" aria-labelledby="h1">
+    <h1 id="h1">Your webhook handler works. Once.</h1>
+    <div>
+      <!-- COPY PROPOSAL (A04): subline, replaces "[Subline: A02 copy, not in RD yet]" -->
+      <p class="sub">Providers deliver twice, out of order, late, and again after a timeout. Webhook Trap replays your real events that way and shows you what changed in your database.</p>
+      <div class="cta-row">
+        <a class="btn" href="#">Get a URL, no sign-up</a>
+        <span class="chip"><code>npx @webhooktrap/agent</code>
+          <button type="button" aria-label="Copy command" data-copy="npx @webhooktrap/agent"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 5.5H13.5V13.5H5.5zM2.5 10.5V2.5H10.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+        </span>
+      </div>
+      <p class="trust">Open source · self-hostable · secrets stay on your machine</p>
+    </div>
+  </section>
+
+  <!-- THE BOARD -->
+  <section class="board-shell" aria-labelledby="board-title">
+    <h2 id="board-title" class="sr-only">A real run, replayed</h2>
+    <div class="board" aria-hidden="true">
+      <div class="bhead">
+        <span class="title">Run #3 · Prove invoice.paid · renewal</span>
+        <span class="meta mono">localhost:3000/webhooks/stripe via maya-mbp · Express</span>
+        <span class="status running" id="status"><span class="dot"></span><span id="status-t">Preflight · reset</span></span>
+      </div>
+      <div class="strip" id="strip"></div>
+      <div class="bbody">
+        <div class="rows">
+          <div class="rhead"><span>D</span><span class="t">+ms</span><span>Scenario</span><span class="ev">Event</span><span>HTTP</span><span class="lc">Latency · 10 s budget</span><span>orders.count</span><span>Verdict</span></div>
+          <div id="rows"></div>
+          <div class="moment" id="moment"><span class="mnum">1 → 2</span><span><strong>D5 changed state.</strong> Same event id as D4, same 200 {"received":true}, one more order. A status code check would have passed it.</span></div>
+        </div>
+        <div class="side">
+          <div class="probe" id="probe">
+            <div class="lbl"><span>Probe · orders.count</span><span class="mono" id="probe-d">before D1</span></div>
+            <div class="nums"><span class="before" id="pb">0</span><span class="arrow">→</span><span class="after" id="pa">0</span></div>
+            <div class="exp" id="pe">Read from your database by maya-mbp.</div>
+            <div class="on">select count(*) from orders where stripe_invoice_id = …</div>
+          </div>
+          <div class="flist">
+            <div class="h"><span>Findings</span><span id="fcount">none yet</span></div>
+            <div id="findings"><p class="empty">Findings land here as deliveries finish.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="bfoot">
+        <button type="button" id="play" aria-hidden="false"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path id="play-g" d="M4.5 3H6.5V13H4.5zM9.5 3H11.5V13H9.5z" fill="currentColor"/></svg><span id="play-t">Pause</span></button>
+        <span>Replay of Run #3 from Brindle Coffee: 16 deliveries in 43.2 s, shown faster.</span>
+      </div>
+    </div>
+    <p class="alt">Delivery 1 of invoice.paid: 200, orders.count 1. Delivery 2, same event: 200, orders.count 2. Finding: Duplicate delivery created a second order.</p>
+  </section>
+</div>
+
+<section class="s wrap" aria-labelledby="s-found">
+  <h2 id="s-found">Every response said 200. Three things were wrong.</h2>
+  <p class="lede">Run #3 sent 16 deliveries to Maya's Express handler. Status codes alone would have passed it. The probe and the signatures did not.</p>
+  <div class="trio">
+    <article class="crit">
+      <span class="sev critical"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect width="10" height="10" fill="currentColor"/></svg>Critical</span>
+      <h3>Accepts tampered payload</h3>
+      <div class="measure">D12 amount_paid 2400 → 0<br>HTTP 200 in 167 ms · <b>orders.count 0 → 1</b><br>expected: a 4xx and no change</div>
+      <p>If a failed check doesn't stop the request, anyone who can reach this URL can create paid orders.</p>
+      <div class="fix"><strong>Fix</strong>Return 400 as soon as constructEvent throws, before any write.</div>
+      <cite>Stripe docs › Webhooks › Verify signatures</cite>
+    </article>
+    <article>
+      <span class="sev high"><svg width="11" height="10" viewBox="0 0 11 10" aria-hidden="true"><path d="M5.5 0 11 10H0z" fill="currentColor"/></svg>High</span>
+      <h3>Duplicate delivery created a second order</h3>
+      <div class="measure">D5 same event as D4<br>HTTP 200 in 196 ms · <b>orders.count 1 → 2</b><br>expected 1 · the retry D11 did the same</div>
+      <p>Each duplicate Stripe sends, and each retry for up to 3 days, creates another order.</p>
+      <div class="fix"><strong>Fix</strong>Record event.id before creating the order and return 200 early when it is already recorded.</div>
+      <cite>Stripe docs › Webhooks › Handle duplicate events</cite>
+    </article>
+    <article>
+      <span class="sev medium"><svg width="11" height="10" viewBox="0 0 11 10" aria-hidden="true"><path d="M5.5 1.5 10 9.3H1z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Medium</span>
+      <h3>Over the 10 s budget for Stripe</h3>
+      <div class="measure">D10 11 840 ms (+1 840 over)<br>D16 10 420 ms (+420 over)<br>median of the other 6: 202 ms</div>
+      <p>A slow delivery counts as failed and is retried. Here, the retry after D10 caused the duplicate order.</p>
+      <div class="fix"><strong>Fix</strong>Acknowledge with 200 first, then queue the slow work.</div>
+      <cite>Stripe docs › Webhooks › Quickly return a 2xx response</cite>
+    </article>
+  </div>
+</section>
+
+<section class="s wrap" aria-labelledby="s-cat">
+  <h2 id="s-cat">Every way a webhook can arrive</h2>
+  <p class="lede">Nine scenarios, run in this order. Each one is something a provider really does, with the page in its docs that says so. The tags show what Run #3 found.</p>
+  <div class="cat" id="cat"></div>
+  <p class="later">Sequence packs and test commands: later.</p>
+</section>
+
+<section class="s wrap" aria-labelledby="s-traffic">
+  <h2 id="s-traffic">Real traffic, not fixtures you wrote</h2>
+  <p class="lede">The event that broke your handler becomes the test that keeps it fixed.</p>
+  <ol class="pipe">
+    <li><span class="step">Capture</span><h3>Point Stripe at a URL</h3><code>https://webhooktrap.dev/c/Br7nDLk2Qm9x</code></li>
+    <li><span class="step">Scrub</span><h3>Personal data out</h3><div class="scrub">customer_email → customer1@example.test<br>customer_name → Test Customer 1<br>hosted_invoice_url → https://invoice.stripe.test/redacted</div></li>
+    <li><span class="step">Commit</span><h3>A fixture in your repo</h3><code>webhooktrap/fixtures/stripe/invoice.paid.json</code></li>
+    <li><span class="step">CI</span><h3>Fails the build on High</h3><code>webhooktrap test --fail-on high</code></li>
+  </ol>
+</section>
+
+<section class="s wrap split" aria-labelledby="s-secrets">
+  <div>
+    <h2 id="s-secrets">Secrets stay on your machine</h2>
+    <p class="lede">The agent signs and sends from your laptop or your CI runner. We see names, never values.</p>
+  </div>
+  <ul class="checks">
+    <li><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Sends deliveries only to targets you allow</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Keeps signing secrets on your machine (we see names, never values)</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Probe values stay on your machine. Only small counts and codes reach the server.</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Open source. Run your own with <code>docker compose up</code></span></li>
+  </ul>
+</section>
+
+<section class="s wrap split" aria-labelledby="s-agent">
+  <div>
+    <h2 id="s-agent">Works with your coding agent</h2>
+    <p class="lede">Every finding comes out as JSON your agent can act on: what broke, which deliveries prove it, and the fix.</p>
+  </div>
+  <pre class="json" tabindex="0" aria-label="Example finding as JSON"><span class="k">{</span>
+  <span class="k">"id":</span> "F2",
+  <span class="k">"type":</span> "duplicate_changed_state",
+  <span class="k">"severity":</span> <span class="hi">"high"</span>,
+  <span class="k">"title":</span> <span class="t">"Duplicate delivery created a second order"</span>,
+  <span class="k">"evidence":</span> ["D4", "D5", "D10", "D11"],
+  <span class="k">"fix":</span> { <span class="k">"text":</span> "Record event.id before creating the order and return 200 early when it is already recorded. After the fix, D5 and D11 should leave orders.count at 1." }
+<span class="k">}</span></pre>
+</section>
+
+<section class="s wrap" aria-labelledby="s-prov">
+  <h2 id="s-prov">Providers</h2>
+  <ul class="prov">
+    <li><svg aria-hidden="true" focusable="false" viewBox="100 100 312 312" fill="none" xmlns="http://www.w3.org/2000/svg" > <path fill="#533afd" fill-rule="evenodd" clip-rule="evenodd" d="m120 392 272-57.683V120l-272 58.357z" /> </svg>Stripe</li>
+    <li><svg aria-hidden="true" focusable="false" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" > <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M512 0C229.12 0 0 229.12 0 512c0 226.56 146.56 417.92 350.08 485.76 25.6 4.48 35.2-10.88 35.2-24.32 0-12.16-.64-52.48-.64-95.36-128.64 23.68-161.92-31.36-172.16-60.16-5.76-14.72-30.72-60.16-52.48-72.32-17.92-9.6-43.52-33.28-.64-33.92 40.32-.64 69.12 37.12 78.72 52.48 46.08 77.44 119.68 55.68 149.12 42.24 4.48-33.28 17.92-55.68 32.64-68.48-113.92-12.8-232.96-56.96-232.96-252.8 0-55.68 19.84-101.76 52.48-137.6-5.12-12.8-23.04-65.28 5.12-135.68 0 0 42.88-13.44 140.8 52.48 40.96-11.52 84.48-17.28 128-17.28s87.04 5.76 128 17.28c97.92-66.56 140.8-52.48 140.8-52.48 28.16 70.4 10.24 122.88 5.12 135.68 32.64 35.84 52.48 81.28 52.48 137.6 0 196.48-119.68 240-233.6 252.8 18.56 16 34.56 46.72 34.56 94.72 0 68.48-.64 123.52-.64 140.8 0 13.44 9.6 29.44 35.2 24.32C877.44 929.92 1024 737.92 1024 512 1024 229.12 794.88 0 512 0" /> </svg>GitHub</li>
+    <li><svg aria-hidden="true" focusable="false" viewBox="0 0 256 292" preserveAspectRatio="xMidYMid" xmlns="http://www.w3.org/2000/svg" > <path fill="#95BF46" d="M223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-1.703-1.703-5.029-1.185-6.32-.805-.19.056-3.388 1.043-8.678 2.68-5.18-14.906-14.322-28.604-30.405-28.604-.444 0-.901.018-1.358.044C129.31 3.407 123.644.779 118.75.779c-37.465 0-55.364 46.835-60.976 70.635-14.558 4.511-24.9 7.718-26.221 8.133-8.126 2.549-8.383 2.805-9.45 10.462C21.3 95.806.038 260.235.038 260.235l165.678 31.042 89.77-19.42S223.973 58.8 223.775 57.34zM156.49 40.848l-14.019 4.339c.005-.988.01-1.96.01-3.023 0-9.264-1.286-16.723-3.349-22.636 8.287 1.04 13.806 10.469 17.358 21.32zm-27.638-19.483c2.304 5.773 3.802 14.058 3.802 25.238 0 .572-.005 1.095-.01 1.624-9.117 2.824-19.024 5.89-28.953 8.966 5.575-21.516 16.025-31.908 25.161-35.828zm-11.131-10.537c1.617 0 3.246.549 4.805 1.622-12.007 5.65-24.877 19.88-30.312 48.297l-22.886 7.088C75.694 46.16 90.81 10.828 117.72 10.828z" /> <path fill="#5E8E3E" d="M221.237 54.983c-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-.637-.634-1.496-.959-2.394-1.099l-12.527 256.233 89.762-19.418S223.972 58.8 223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357" /> <path fill="#FFF" d="M135.242 104.585l-11.069 32.926s-9.698-5.176-21.586-5.176c-17.428 0-18.305 10.937-18.305 13.693 0 15.038 39.2 20.8 39.2 56.024 0 27.713-17.577 45.558-41.277 45.558-28.44 0-42.984-17.7-42.984-17.7l7.615-25.16s14.95 12.835 27.565 12.835c8.243 0 11.596-6.49 11.596-11.232 0-19.616-32.16-20.491-32.16-52.724 0-27.129 19.472-53.382 58.778-53.382 15.145 0 22.627 4.338 22.627 4.338" /> </svg>Shopify</li>
+    <li>Standard Webhooks</li>
+  </ul>
+  <p class="coming">Coming: Twilio, Slack</p>
+</section>
+
+<div class="wrap">
+  <section class="final" aria-labelledby="s-final">
+    <h2 id="s-final">Prove your first handler in 5 minutes.</h2>
+    <a class="btn" href="#">Get a URL, no sign-up</a>
+  </section>
+  <footer><nav aria-label="Footer"><a href="#">Docs</a><a href="#">GitHub</a><a href="#">Self-host</a><a href="#">Status</a><a href="#">Privacy</a></nav></footer>
+</div>
+</main>
+
+<script>
+(() => {
+const ICON = {
+  once:'M3 3 13 13', twice:'M1.5 3 11.5 13M5.5 3 15.5 13', shuffled:'M3 3 13 13M13 3 3 13',
+  late:'M6.5 1.5V14.5M2 3 13 14', retry:'M2 3 7 13M9 3 14 13M7 13H9', tampered:'M2 2 6 6H10L14 10',
+  unsigned:'M2 2 14 14', burst:'M3 3 13 13M3 3V13M3 3H13', slow:'M2 11.5H10V2M2 3.5 6 7.5H14'
+};
+const ico = (k, s=16) => `<svg width="${s}" height="${s}" viewBox="0 0 16 16" aria-hidden="true"><path d="${ICON[k]}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>${k==='unsigned'?'<circle cx="8" cy="8" r="3" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/>':''}</svg>`;
+
+/* catalogue (scenarios.ts copy, RD §5) + Run #3 result */
+const CAT = [
+ ['Once','once','Every selected event once, in capture order. Sets the baseline.','Every provider','','Pass','p'],
+ ['Twice','twice','The first event again, 500 ms after the first delivery completes: same event id, new signature timestamp','Stripe may deliver the same event more than once.','Stripe docs › Webhooks › Handle duplicate events','F2 High','f'],
+ ['Shuffled','shuffled','Related events in reverse order',"Stripe doesn't guarantee delivery order.",'Stripe docs › Webhooks › Event ordering','Pass','p'],
+ ['Late','late','Valid signature, timestamp 360 s old (tolerance 300 s)','Replay protection relies on the timestamp tolerance.','Stripe docs › Webhooks › Prevent replay attacks','Pass','p'],
+ ['Retry after error','retry',"Sends the event, then the provider's retry 2 s after it completes. Providers retry when a delivery fails or takes too long; your handler can't tell which.",'Stripe retries failed or timed-out deliveries with backoff for up to 3 days in live mode.','Stripe docs › Webhooks › Retry behavior','F2 F3','f'],
+ ['Tampered','tampered','amount_paid 2400 → 0 in the body, signed for the original body','A signature only protects you if a failed check stops the request.','Stripe docs › Webhooks › Verify signatures','F1 Critical','f'],
+ ['Unsigned','unsigned','The event with every signature header removed','A handler that checks the signature only when the header is present accepts anything.','Stripe docs › Webhooks › Verify signatures','Added in Run #4','n'],
+ ['Burst','burst','Every selected event, released together (≤ 20 ms apart)','Stripe sends related events close together, often concurrently.','Stripe docs › Webhooks › Event ordering','Pass','p'],
+ ['Slow budget','slow','One more delivery after the others, measured against the budget: 10 s budget · Webhook Trap default',"If Stripe times out waiting, the delivery counts as failed and is retried. Stripe doesn't publish the timeout.",'Stripe docs › Webhooks › Quickly return a 2xx response','F3 Medium','f'],
+];
+document.getElementById('cat').innerHTML = CAT.map(([n,k,what,why,cite,res,c]) =>
+ `<article class="sc-item"><span class="ic">${ico(k,20)}</span><h3>${n}<span class="res ${c==='f'?'f':c==='n'?'n':''}">${res}</span></h3><p>${what}</p><p class="why">${why}</p>${cite?`<cite>${cite}</cite>`:''}</article>`).join('');
+
+/* run board */
+const SC = [['Once','once'],['Twice','twice'],['Shuffled','shuffled'],['Late','late'],['Retry after error','retry'],['Tampered','tampered'],['Burst','burst'],['Slow budget','slow']];
+const D = [
+ // d, ms, scen idx, event, status, latency, before, after, verdict
+ [1,'1 320',0,'invoice.paid',200,184,0,1,'pass'],
+ [2,'1 684',0,'payment_intent.succeeded',200,121,1,1,'pass'],
+ [3,'1 985',0,'customer.subscription.updated',200,143,1,1,'pass'],
+ [4,'3 978',1,'invoice.paid',200,212,0,1,'pass'],
+ [5,'4 720',1,'invoice.paid · duplicate',200,196,1,2,'F2'],
+ [6,'6 766',2,'customer.subscription.updated',200,138,0,0,'pass'],
+ [7,'7 084',2,'payment_intent.succeeded',200,117,0,0,'pass'],
+ [8,'7 381',2,'invoice.paid',200,199,0,1,'pass'],
+ [9,'9 430',3,'invoice.paid · t − 360 s',400,41,0,0,'pass'],
+ [10,'11 321',4,'invoice.paid',200,11840,0,1,'F3'],
+ [11,'25 191',4,'invoice.paid · retry',200,205,1,2,'F2'],
+ [12,'27 246',5,'invoice.paid · tampered',200,167,0,1,'F1'],
+ [13,'29 263',6,'invoice.paid',200,601,null,null,'pass'],
+ [14,'29 265',6,'payment_intent.succeeded',200,312,null,null,'pass'],
+ [15,'29 266',6,'customer.subscription.updated',200,448,0,1,'pass'],
+ [16,'31 714',7,'invoice.paid',200,10420,0,1,'F3'],
+];
+const SCRES = ['0 → 1','1 → 2 · exp. 1','0 → 1','400 · 41 ms','11 840 ms · 1 → 2','200 · exp. 4xx','0 → 1 (final)','10 420 ms · +420'];
+const SCBAD = [0,1,0,0,1,1,0,1];
+const FIND = {
+ F2:{cls:'high',sev:'High',glyph:'<svg width="11" height="10" viewBox="0 0 11 10" aria-hidden="true"><path d="M5.5 0 11 10H0z" fill="currentColor"/></svg>',
+   t:'Duplicate delivery created a second order',
+   p:'D5 delivered the same invoice.paid event as D4. Both got 200 {"received":true}, but orders.count went 1 → 2, expected 1.',
+   code:'<span class="add">+ const { rowCount } = await db.query(\n+   \'INSERT INTO processed_events (id) VALUES ($1) ON CONFLICT DO NOTHING\',\n+   [event.id]);\n+ if (rowCount === 0) return res.sendStatus(200); // already handled</span>', ev:'D4 · D5 · D10 · D11'},
+ F3:{cls:'medium',sev:'Medium',glyph:'<svg width="11" height="10" viewBox="0 0 11 10" aria-hidden="true"><path d="M5.5 1.5 10 9.3H1z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+   t:'Over the 10 s budget for Stripe', ev:'D10 11 840 ms · D16 10 420 ms'},
+ F1:{cls:'critical',sev:'Critical',glyph:'<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true"><rect width="10" height="10" fill="currentColor"/></svg>',
+   t:'Accepts tampered payload', ev:'D12 · 200 in 167 ms · orders.count 0 → 1'},
+};
+const $ = id => document.getElementById(id);
+const strip = $('strip'), rows = $('rows');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function build(){
+  strip.innerHTML = SC.map(([n,k],i)=>`<div class="cell" id="c${i}"><span class="n">${ico(k,14)}${n}</span><span class="r" id="cr${i}">queued</span></div>`).join('');
+  rows.innerHTML = D.map(r=>{
+    const [d,ms,si,ev,st,lat,b,a,v] = r;
+    const w = Math.min(100, lat/12000*100);
+    const bad = v!=='pass' && v!=='F3';
+    const over = lat>10000;
+    const vHTML = v==='pass' ? `<span class="v pass"><svg width="12" height="4" viewBox="0 0 12 4" aria-hidden="true"><rect width="12" height="3" fill="currentColor"/></svg>pass</span>`
+      : `<span class="v" style="color:var(--${FIND[v].cls==='critical'?'conflict':FIND[v].cls})">${FIND[v].glyph}${v}</span>`;
+    return `<div class="row ${bad?'bad':''} ${over?'over med':''}" id="r${d}" data-w="${w}">
+      <span class="d">D${d}</span><span class="t">+${ms}</span><span class="sc">${SC[si][0]}</span><span class="ev">${ev}</span>
+      <span class="st" style="color:${st===400?'var(--muted)':'inherit'}">${st}</span>
+      <span class="latcell"><span class="lat"><i></i><span class="budget"></span></span><span class="lat-n">${lat.toLocaleString('en').replace(/,/g,' ')} ms${over?' over':''}</span></span>
+      <span class="pr">${b===null?'read after':(b+' → '+a)}</span>${vHTML}</div>`;
+  }).join('');
+  $('moment').classList.remove('on');
+  $('findings').innerHTML = '<p class="empty">Findings land here as deliveries finish.</p>';
+  $('fcount').textContent='none yet';
+  setStatus('running','Preflight · reset');
+  $('pb').textContent='0'; $('pa').textContent='0'; $('probe').classList.remove('bad');
+  $('pe').textContent='Read from your database by maya-mbp.'; $('probe-d').textContent='before D1';
+}
+function setStatus(cls,t){ const s=$('status'); s.className='status '+cls; $('status-t').textContent=t; }
+let found = [];
+function addFinding(key, big){
+  if (found.includes(key)) return;
+  found.push(key);
+  const f = FIND[key];
+  const el = document.createElement('div');
+  el.className = 'fcard land ' + (big?'big':'small');
+  el.innerHTML = `<div class="row2"><span class="sev ${f.cls}">${f.glyph}${f.sev}</span><span class="ev2">${key} · ${f.ev}</span></div><div class="ft">${f.t}</div>` +
+    (big ? `<p>${f.p}</p><pre>${f.code}</pre>` : '');
+  const box = $('findings');
+  if (box.querySelector('.empty')) box.innerHTML='';
+  if (big) box.prepend(el); else box.appendChild(el);
+  $('fcount').textContent = found.length + (found.length===1?' finding':' findings');
+}
+function step(i){
+  const r = D[i]; const [d,ms,si,ev,st,lat,b,a,v] = r;
+  const row = $('r'+d); row.classList.add('on');
+  requestAnimationFrame(()=>{ row.querySelector('.lat i').style.width = row.dataset.w+'%'; });
+  for (let k=0;k<SC.length;k++){ const c=$('c'+k); c.classList.toggle('run',k===si); }
+  const c=$('c'+si); $('cr'+si).textContent='D'+d+' sent';
+  setStatus('running','Running · D'+d+' of 16');
+  const last = i===D.length-1 || D[i+1][2]!==si;
+  if (last){ $('cr'+si).textContent=SCRES[si]; c.classList.add(SCBAD[si]?'bad':'pass'); }
+  if (b!==null){
+    $('probe-d').textContent='D'+d; $('pb').textContent=b;
+    const pa=$('pa'); pa.textContent=a; pa.classList.remove('bump'); void pa.offsetWidth; pa.classList.add('bump');
+    const bad = (v==='F2'||v==='F1');
+    $('probe').classList.toggle('bad',bad);
+    $('pe').textContent = v==='F2' ? 'expected 1 · same event id as D'+(d-1) : v==='F1' ? 'expected 0 · body was changed' : 'as expected';
+  }
+  if (v==='F2'){ addFinding('F2', true); $('moment').classList.add('on'); const s=document.querySelector('.side'); s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash'); }
+  if (v==='F3') addFinding('F3', false);
+  if (v==='F1') addFinding('F1', false);
+  if (i===D.length-1){
+    $('cr7').textContent=SCRES[7];
+    for (let k=0;k<SC.length;k++) $('c'+k).classList.remove('run');
+    setStatus('fail','3 findings · exit 1');
+    $('probe-d').textContent='D5 · the 1 → 2 moment'; $('pb').textContent='1'; $('pa').textContent='2'; $('probe').classList.add('bad'); $('pe').textContent='expected 1 · same event id as D4';
+  }
+}
+let timer=null, idx=0, playing=true;
+const DELAY = i => { const v=D[i][8]; if (i===0) return 900; const prev=D[i-1][8]; return prev==='F2'&&i===5 ? 2600 : (prev!=='pass'?1300:520); };
+function tick(){
+  if (!playing) return;
+  if (idx>=D.length){ timer=setTimeout(()=>{ found=[]; idx=0; build(); tick(); }, 6500); return; }
+  step(idx); idx++;
+  timer=setTimeout(tick, idx<D.length?DELAY(idx):0);
+}
+function finalFrame(){ build(); found=[]; D.forEach((_,i)=>step(i)); idx=D.length; }
+build();
+const pbtn=$('play');
+function setBtn(p){ $('play-t').textContent=p?'Pause':'Play'; $('play-g').setAttribute('d', p?'M4.5 3H6.5V13H4.5zM9.5 3H11.5V13H9.5z':'M5 3 13 8 5 13z'); }
+if (reduce){ finalFrame(); playing=false; setBtn(false); }
+else { timer=setTimeout(tick, 600); }
+pbtn.addEventListener('click',()=>{
+  playing=!playing; setBtn(playing); clearTimeout(timer);
+  if (playing){ if (idx>=D.length){ found=[]; idx=0; build(); } tick(); }
+});
+/* the board is aria-hidden; its button must still be reachable */
+pbtn.closest('.board').removeAttribute('aria-hidden');
+document.querySelectorAll('.bhead,.strip,.bbody').forEach(e=>e.setAttribute('aria-hidden','true'));
+
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>navigator.clipboard?.writeText(b.dataset.copy).catch(()=>{})));
+if (location.hash==='#final') finalFrame(), playing=false, setBtn(false), clearTimeout(timer);
+})();
+</script>
+</body>
+</html>

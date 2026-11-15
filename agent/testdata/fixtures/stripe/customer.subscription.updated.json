@@ -1,0 +1,19 @@
+{
+  "provider": "stripe",
+  "event_type": "customer.subscription.updated",
+  "capture_order": 3,
+  "source": "#04",
+  "headers": [
+    [
+      "User-Agent",
+      "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+    ],
+    [
+      "Content-Type",
+      "application/json; charset=utf-8"
+    ]
+  ],
+  "signature": "resign",
+  "body_sha256": "64b5677e5ce40e70d5bdcd1856b7ffaf21d90ea97aa811ef59c8e16752eadc52",
+  "body": "{\n  \"id\": \"evt_1QKc6nBRpPBPPR9iTuwy4C8U\",\n  \"object\": \"event\",\n  \"api_version\": \"2024-06-20\",\n  \"created\": 1794405483,\n  \"data\": {\n    \"object\": {\n      \"id\": \"sub_1QH3UF1HXb5oPQT3wfdt4drI\",\n      \"object\": \"subscription\",\n      \"billing_cycle_anchor\": 1789135051,\n      \"cancel_at_period_end\": false,\n      \"collection_method\": \"charge_automatically\",\n      \"currency\": \"usd\",\n      \"current_period_end\": 1796997451,\n      \"current_period_start\": 1794405451,\n      \"customer\": \"cus_RLwECeeQJ3SXHr\",\n      \"items\": {\n        \"object\": \"list\",\n        \"data\": [\n          {\n            \"id\": \"si_R1PuhlPNU75CXi\",\n            \"object\": \"subscription_item\",\n            \"price\": {\n              \"id\": \"price_1PZ9vRSRGb251gkl9ZzLRVR1\",\n              \"unit_amount\": 2400,\n              \"recurring\": {\n                \"interval\": \"month\"\n              }\n            },\n            \"quantity\": 1\n          }\n        ],\n        \"has_more\": false,\n        \"total_count\": 1\n      },\n      \"latest_invoice\": \"in_1QKImRcZJ8HR9BZYostEV4ui\",\n      \"livemode\": false,\n      \"metadata\": {\n        \"plan\": \"monthly-whole-bean\"\n      },\n      \"status\": \"active\"\n    },\n    \"previous_attributes\": {\n      \"current_period_end\": 1794405451,\n      \"current_period_start\": 1791727051,\n      \"latest_invoice\": \"in_1Q9ypNfMcWfaq1SrOB1zPWie\"\n    }\n  },\n  \"livemode\": false,\n  \"pending_webhooks\": 1,\n  \"request\": {\n    \"id\": null,\n    \"idempotency_key\": \"in_auto_tvto8RFf1t\"\n  },\n  \"type\": \"customer.subscription.updated\"\n}"
+}

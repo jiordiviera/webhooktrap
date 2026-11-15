@@ -1,0 +1,81 @@
+---
+title: "Webhooktrap Inboxes: Your Webhook Capture Endpoints"
+sidebarTitle: "Inboxes"
+description: "An inbox is a unique HTTPS endpoint that receives webhook events from any provider. Learn how inboxes work and when to use anonymous vs saved."
+---
+
+An inbox is a unique HTTPS endpoint that accepts webhook requests from any provider. Every inbox gets a URL in the form `https://webhooktrap.dev/i/:inboxId` — drop that URL into Stripe, GitHub, Shopify, or any other service, and Webhooktrap starts capturing every request it receives immediately.
+
+## Anonymous vs saved inboxes
+
+Webhooktrap gives you two inbox types depending on how much staying power you need.
+
+<Tabs>
+  <Tab title="Anonymous inbox">
+    An anonymous inbox requires no account and is ready the moment you create it. Use it when you need a quick capture endpoint for a one-off test or a short debugging session.
+
+    - **No sign-up required** — create one with a single API call or from the dashboard
+    - **48-hour TTL** — the inbox and all its events are automatically deleted after 48 hours
+    - **No replay history** — once the inbox expires, captured events are gone
+    - **Best for**: quick smoke tests, sharing a reproduction case, or exploring a new provider's payload shape
+  </Tab>
+  <Tab title="Saved inbox">
+    A saved inbox is tied to a free Webhooktrap account and persists until you choose to delete it. Use it for ongoing integrations where you need a stable capture endpoint and a full event history.
+
+    - **Free account required** — sign up at [webhooktrap.dev](https://webhooktrap.dev)
+    - **No expiry** — the inbox stays alive until you delete it
+    - **Named and organized** — give each inbox a descriptive name inside your dashboard workspace
+    - **Full replay history** — every captured event is available for replay at any time
+    - **Best for**: development workflows, staging environments, and long-running integrations
+  </Tab>
+</Tabs>
+
+## Create an inbox
+
+Creating an inbox takes a single POST request. No request body or authentication is required for an anonymous inbox.
+
+```bash
+curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+```
+
+Webhooktrap responds with an inbox ID and its ingest URL:
+
+```json
+{
+  "data": {
+    "inbox": {
+      "id": "xK9m2pQ7nR4a",
+      "ingestUrl": "https://webhooktrap.dev/i/xK9m2pQ7nR4a"
+    }
+  }
+}
+```
+
+Your ingest URL is ready to use immediately:
+
+```text
+https://webhooktrap.dev/i/xK9m2pQ7nR4a
+```
+
+## Use the ingest URL with any provider
+
+Paste the ingest URL wherever a webhook destination is required. Webhooktrap responds with `200 OK` to every inbound request so the provider registers the endpoint as healthy.
+
+<Steps>
+  <Step title="Copy your ingest URL">
+    Copy the full URL from the API response or from the inbox detail page in your dashboard.
+  </Step>
+  <Step title="Paste it into your provider">
+    Navigate to your provider's webhook settings — for example, **Stripe → Developers → Webhooks → Add endpoint** — and paste the URL as the destination.
+  </Step>
+  <Step title="Trigger an event">
+    Send a test event from the provider's dashboard, or perform the action that triggers the webhook in your application.
+  </Step>
+  <Step title="Inspect the capture">
+    Open Webhooktrap's dashboard or call `GET /api/v1/inboxes/:id/events` to see the full request — method, headers, body, and query string — exactly as the provider sent it.
+  </Step>
+</Steps>
+
+<Note>
+  Anonymous inboxes expire **48 hours** after creation. All events captured in that inbox are permanently deleted when the inbox expires. If you need to keep events longer, create a saved inbox with a free account.
+</Note>

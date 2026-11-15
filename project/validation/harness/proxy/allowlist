@@ -1,0 +1,16 @@
+^github\.com$
+^codeload\.github\.com$
+^objects\.githubusercontent\.com$
+^raw\.githubusercontent\.com$
+^api\.github\.com$
+^release-assets\.githubusercontent\.com$
+^repo\.packagist\.org$
+^packagist\.org$
+^getcomposer\.org$
+^registry\.npmjs\.org$
+^registry\.yarnpkg\.com$
+^nodejs\.org$
+^pypi\.org$
+^files\.pythonhosted\.org$
+^proxy\.golang\.org$
+^sum\.golang\.org$

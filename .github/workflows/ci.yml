@@ -1,0 +1,193 @@
+# CI (project/operations/ci-cd.md §2), from the template's ci.yml (decision 43).
+# Actions are pinned to commit SHAs (tag in the comment), re-audited 2026-11-15.
+# Rules (ci-cd.md §1.4): pull_request only (never pull_request_target / workflow_run), no secrets,
+# persist-credentials: false, permissions {} at workflow level.
+name: ci
+
+on:
+  push:
+    branches: [v2] # the default branch; 1.x lives on v1 and is not built here
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  php:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:18-bookworm@sha256:ece55f7868da684e400f82f1030a050718adbdd65c23aa500c486f6e2950dc0f
+        env:
+          POSTGRES_USER: webhooktrap
+          POSTGRES_PASSWORD: webhooktrap-ci # CI-only test value
+          POSTGRES_DB: webhooktrap_testing
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U webhooktrap -d webhooktrap_testing"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      valkey:
+        image: valkey/valkey:8-alpine@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: webhooktrap_testing
+      DB_USERNAME: webhooktrap
+      DB_PASSWORD: webhooktrap-ci
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      # phpunit.xml sets the test drivers (array cache, sync queue, array mail); a real
+      # environment variable would override them, so none is set here.
+      APP_URL: https://webhooktrap.test # the origin the tests and phpunit.xml use
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5'
+          extensions: pdo_pgsql, redis, intl, bcmath, gd, zip, pcntl
+          tools: composer:v2
+          coverage: none
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          version: 12.18.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer audit
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --prod --audit-level high
+      - run: cp .env.example .env && php artisan key:generate
+      - run: pnpm run build
+      - name: Static checks
+        run: |
+          vendor/bin/pint --test
+          vendor/bin/phpstan analyse --no-progress
+          pnpm run check
+          pnpm run types:check
+      - name: Tests (Pest, incl. architecture and config tests)
+        run: php artisan test
+
+  go:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: agent/go.mod
+          check-latest: false
+          cache: false # no third-party modules yet (no go.sum)
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - run: go vet ./...
+      - name: Tests (incl. ADR-010 D-1 architecture test)
+        run: go test -race ./...
+      - uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f # v1.1.0
+        with:
+          work-dir: agent
+          go-version-file: agent/go.mod
+
+  infra:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Workflow rules (CI-3, CI-4)
+        run: |
+          if grep -RInE '^\s*-?\s*(pull_request_target|workflow_run)\s*:' .github/workflows; then
+            echo "forbidden trigger found"; exit 1
+          fi
+          if grep -RInE 'uses: [^ ]+@' .github/workflows | grep -vE '@[0-9a-f]{40}( |$)'; then
+            echo "action not pinned to a full commit SHA"; exit 1
+          fi
+          if grep -RInE '^\s*persist-credentials:\s*true' .github/workflows; then exit 1; fi
+      - name: Compose files resolve
+        env:
+          APP_IMAGE: ghcr.io/${{ github.repository }}
+          APP_DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
+          PG_IMAGE: ghcr.io/${{ github.repository }}-postgres
+          PG_DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
+          APP_PORT: '18480'
+          WEBHOOKTRAP_VERSION: v0.0.0-ci
+        run: |
+          mkdir -p secrets
+          for s in valkey_password postgres_password backup_cipher_pass backup_s3_key backup_s3_secret edge_proxy_secret runner_token agent_pairing_hmac_key db_password \
+            app_key reverb_app_secret mail_password github_client_secret google_client_secret \
+            error_tracker_dsn identity_email_hmac_key identity_recovery_code_key; do
+            : > "secrets/$s"
+          done
+          : > .env.production
+          : > .env
+          : > .env.docker
+          docker compose -f compose.production.yaml config --quiet
+          docker compose -f compose.yaml config --quiet
+          docker compose -f compose.dev.yaml config --quiet
+      - name: Compose policy (TM-T146, ci-cd.md §4.2)
+        run: |
+          d="$RUNNER_TEMP/app"
+          mkdir -p "$d/secrets"
+          for s in valkey_password postgres_password db_password backup_cipher_pass backup_s3_key backup_s3_secret \
+            edge_proxy_secret agent_pairing_hmac_key app_key reverb_app_secret mail_password \
+            github_client_secret google_client_secret error_tracker_dsn identity_email_hmac_key \
+            identity_recovery_code_key; do : > "$d/secrets/$s"; done
+          cp compose.production.yaml "$d/"
+          printf '%s\n' APP_ENV=production APP_URL=https://app.example.test DB_HOST=postgres \
+            DB_DATABASE=webhooktrap DB_USERNAME=webhooktrap REDIS_HOST=valkey POSTGRES_DB=webhooktrap \
+            POSTGRES_USER=webhooktrap POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password \
+            VALKEY_MAXMEMORY=192mb > "$d/.env.production"
+          printf '%s\n' "APP_IMAGE=ghcr.io/$GITHUB_REPOSITORY" "APP_DIGEST=sha256:$(printf 'a%.0s' $(seq 64))" \
+            "PG_IMAGE=ghcr.io/$GITHUB_REPOSITORY-postgres" "PG_DIGEST=sha256:$(printf 'b%.0s' $(seq 64))" \
+            APP_PORT=18480 > "$d/.env.deploy"
+          docker compose --project-directory "$d" --env-file "$d/.env.deploy" -f "$d/compose.production.yaml" \
+            config --format json > "$d/resolved.json"
+          python3 -I -B deploy/policy/test_compose_policy.py "$d/resolved.json" "$d"
+      - name: Caddyfile is valid in every trust mode
+        run: |
+          img=dunglas/frankenphp:1-php8.5-bookworm@sha256:681db339fc7751be886ac69b6daab1ac32c0a78ed8fa255abdacc75391a00480
+          for mode in secret none ip; do
+            for ingest in local proxy; do
+              docker run --rm -e PROXY_TRUST_MODE="$mode" -e INGEST_MODE="$ingest" -e TRUSTED_PROXIES=172.16.0.0/12 \
+                -v "$PWD/docker/Caddyfile:/etc/frankenphp/Caddyfile:ro" \
+                -v "$PWD/docker/caddy:/etc/frankenphp/caddy:ro" \
+                --entrypoint frankenphp "$img" validate --config /etc/frankenphp/Caddyfile --adapter caddyfile
+            done
+          done
+          # The ingest runtime (A09 S3-3, S3-4): always mode secret.
+          docker run --rm -e PROXY_TRUST_MODE=secret \
+            -v "$PWD/docker/Caddyfile.ingest:/etc/frankenphp/Caddyfile.ingest:ro" \
+            -v "$PWD/docker/caddy:/etc/frankenphp/caddy:ro" \
+            --entrypoint frankenphp "$img" validate --config /etc/frankenphp/Caddyfile.ingest --adapter caddyfile
+      - name: HAProxy config is valid
+        run: |
+          openssl rand -hex 32 > "$RUNNER_TEMP/edge_proxy_secret"
+          docker run --rm -v "$PWD/docker/haproxy.cfg:/wt-haproxy/haproxy.cfg:ro" \
+            -v "$PWD/docker/haproxy-received-200.http:/wt-haproxy/received-200.http:ro" \
+            -v "$RUNNER_TEMP/edge_proxy_secret:/run/secrets/edge_proxy_secret:ro" \
+            haproxy:3.4.7-alpine@sha256:b9fe316f718d5015c5cfebd8ca019591f3e44656f61d93cb8b59a1028961e530 \
+            haproxy -c -f /wt-haproxy/haproxy.cfg
+      - name: Shell scripts parse
+        run: for f in docker/*.sh docker/postgres/wt-backup deploy/bin/*; do sh -n "$f"; done

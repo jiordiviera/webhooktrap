@@ -1,0 +1,264 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/observations.request.schema.json",
+    "title": "POST /agent/v1/runs/{runId}/observations (§5.5), idempotent on seq. seq 1 carries plan, plan_hash, delivery_count, probe_entries, label_bits and probe_display_policy as applied.",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "seq": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+        },
+        "plan": {
+            "type": ["object", "null"]
+        },
+        "plan_hash": {
+            "anyOf": [
+                {
+                    "$ref": "common.schema.json#/$defs/sha256"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "delivery_count": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "maximum": 50
+        },
+        "probe_entries": {
+            "type": ["array", "null"],
+            "maxItems": 32,
+            "items": {
+                "$ref": "common.schema.json#/$defs/probeEntry"
+            }
+        },
+        "label_bits": {
+            "enum": [24, 48, null]
+        },
+        "probe_display_policy": {
+            "enum": ["strict", "opt_in_allowed", "opt_in_disabled", null]
+        },
+        "deliveries": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "n": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50
+                    },
+                    "phase": {
+                        "enum": [
+                            "sent",
+                            "responded",
+                            "settled",
+                            "probed",
+                            "judged"
+                        ]
+                    },
+                    "scenario": {
+                        "$ref": "common.schema.json#/$defs/scenario"
+                    },
+                    "event_ref": {
+                        "$ref": "common.schema.json#/$defs/captureId"
+                    },
+                    "mode": {
+                        "$ref": "common.schema.json#/$defs/mode"
+                    },
+                    "offset_ms": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/ms"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "signing": {
+                        "$ref": "common.schema.json#/$defs/signing"
+                    },
+                    "tamper": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/tamper"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "status": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/httpStatus"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "transport": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/transport"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "latency_ms": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/ms"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "over_budget": {
+                        "type": ["boolean", "null"]
+                    },
+                    "response": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/response"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "state": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/state"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "result": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/deliveryResult"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "completed": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "n",
+                    "phase",
+                    "scenario",
+                    "event_ref",
+                    "mode",
+                    "signing",
+                    "completed"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "scenarios": {
+            "type": "array",
+            "maxItems": 9,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "$ref": "common.schema.json#/$defs/scenario"
+                    },
+                    "result": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/scenarioResult"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "reason": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/code"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": ["name", "result", "reason"],
+                "additionalProperties": false
+            }
+        },
+        "findings_provisional": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_.:/-]{1,160}$"
+                    },
+                    "type": {
+                        "$ref": "common.schema.json#/$defs/findingType"
+                    },
+                    "severity": {
+                        "$ref": "common.schema.json#/$defs/severity"
+                    },
+                    "event_type": {
+                        "anyOf": [
+                            {
+                                "$ref": "common.schema.json#/$defs/eventType"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "evidence": {
+                        "type": "array",
+                        "maxItems": 50,
+                        "items": {
+                            "$ref": "common.schema.json#/$defs/evidence"
+                        }
+                    }
+                },
+                "required": [
+                    "key",
+                    "type",
+                    "severity",
+                    "event_type",
+                    "evidence"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "proto",
+        "seq",
+        "deliveries",
+        "scenarios",
+        "findings_provisional"
+    ],
+    "additionalProperties": false
+}

@@ -1,0 +1,30 @@
+[
+    {
+        "id": "u1",
+        "email": "first@example.com",
+        "fullName": "First Fixture",
+        "password": "scrypt$16384$8$1$Zml4dHVyZQ==$bm90LWEtcmVhbC1oYXNo",
+        "createdAt": "2025-03-01T10:00:00.000Z"
+    },
+    {
+        "id": "u2",
+        "email": "Second@Example.com",
+        "fullName": "Second Fixture",
+        "password": "%%% malformed, not a hash \" with quote",
+        "createdAt": "2025-04-01T10:00:00.000Z"
+    },
+    {
+        "id": "u3",
+        "email": "taken@example.com",
+        "fullName": "Taken Fixture",
+        "password": null,
+        "createdAt": "2025-05-01T10:00:00.000Z"
+    },
+    {
+        "id": "u4",
+        "email": "not-an-email",
+        "fullName": "Bad",
+        "password": { "salt": "]", "key": [1, 2] },
+        "createdAt": "nope"
+    }
+]

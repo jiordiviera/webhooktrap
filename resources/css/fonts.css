@@ -1,0 +1,8 @@
+/*
+ * Self-hosted fonts (Timetable DS): the single place fonts are wired.
+ * Variable files carry the wght and wdth axes, so `font-stretch` works
+ * (condensed 75% for display, 87.5% for the wordmark and mono).
+ * font-display is `swap` in the Fontsource files. No third-party requests.
+ */
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/martian-mono/wdth.css';

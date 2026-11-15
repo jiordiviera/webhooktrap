@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/abort.request.schema.json",
+    "title": "POST /agent/v1/jobs/{jobId}/abort (agent connection notes): an accepted run job the agent cannot finish, e.g. a fetched capture failed its SHA-256 check. The run ends Aborted with this reason; 409 if the job was not accepted or is already finished.",
+    "type": "object",
+    "properties": {
+        "proto": { "$ref": "common.schema.json#/$defs/proto" },
+        "reason": {
+            "enum": [
+                "capture_verification_failed",
+                "target_unreachable",
+                "interrupted",
+                "internal_error"
+            ]
+        }
+    },
+    "required": ["proto", "reason"],
+    "additionalProperties": false
+}

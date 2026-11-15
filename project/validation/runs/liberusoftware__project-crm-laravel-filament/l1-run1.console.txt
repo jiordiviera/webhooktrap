@@ -1,0 +1,21 @@
+Webhook Trap | Proving CLI prototype | run_20261114T153527Z-5a64
+  target    http://127.0.0.1:8000/stripe/webhook
+  events    #01 invoice.payment_succeeded | #02 customer.subscription.updated | #03 customer.subscription.deleted
+  checks    Level 1 transport
+  budget    10 000 ms (Webhook Trap default)
+
+    D        +ms  event                      http    latency  state     result
+  Once
+    D1        +0  invoice.payment_succeeded  419      630 ms  -         // Setup, baseline rejected
+
+  Setup: the baseline delivery got 419. That is not a finding. Check the signing secret
+  and the target URL, then run again.
+
+Scenarios  1 | 0 passed | 0 with findings
+  //  Once           Setup  baseline rejected; not a finding
+
+0 findings
+1 scenarios | 1 deliveries | 0.6 s | run_20261114T153527Z-5a64
+  run file  .proving/runs/run_20261114T153527Z-5a64.json
+  next      proto judge   (say which findings are real)
+exit_code: 2

@@ -1,0 +1,100 @@
+---
+title: "Quickstart: Capture and Replay Webhooks in Minutes"
+sidebarTitle: "Quickstart"
+description: "Create your first Webhooktrap inbox, capture a webhook payload, and replay it to your local server in minutes — no account required."
+---
+
+This guide walks you through the full Webhooktrap workflow — from a blank slate to a captured webhook replayed against your local server — using nothing but `curl`. You don't need an account to follow along.
+
+<Steps>
+  <Step title="Create an inbox">
+    Send a `POST` request to the inboxes endpoint. No authentication is required for anonymous inboxes.
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+    ```
+
+    Webhooktrap returns a JSON object containing your inbox ID and the ingest URL to give your webhook provider:
+
+    ```json
+    {
+      "id": "ibx_01hq8xkz2fgr7bt9vpwcn3md6e",
+      "ingestUrl": "https://webhooktrap.dev/i/ibx_01hq8xkz2fgr7bt9vpwcn3md6e",
+      "expiresAt": "2024-06-17T14:32:00Z",
+      "saved": false
+    }
+    ```
+
+    Copy the `ingestUrl` value — you'll use it as the destination in your webhook provider's settings (for example, Stripe's "Endpoint URL" field or GitHub's "Payload URL" field).
+
+    <Tip>
+      You can also create an inbox from the [Webhooktrap dashboard](https://webhooktrap.dev/dashboard) if you prefer a visual interface.
+    </Tip>
+  </Step>
+
+  <Step title="Send a test webhook">
+    With the ingest URL in hand, simulate a webhook by posting a JSON payload directly to it. This is exactly what a real provider would do.
+
+    ```bash
+    curl -X POST https://webhooktrap.dev/i/ibx_01hq8xkz2fgr7bt9vpwcn3md6e \
+      -H "Content-Type: application/json" \
+      -H "Stripe-Signature: t=1718624400,v1=abc123" \
+      -d '{"type": "checkout.session.completed", "data": {"object": {"id": "cs_test_abc123", "amount_total": 4999}}}'
+    ```
+
+    Webhooktrap responds with `200 OK` and stores the full request — method, headers, and body — for you to inspect. Open the dashboard or query the events endpoint to see the captured payload.
+
+    <Note>
+      The `authorization` and `cookie` headers are redacted before storage to protect credentials. All other headers, including provider-specific signature headers like `Stripe-Signature`, are stored and replayed as-is.
+    </Note>
+  </Step>
+
+  <Step title="Replay to localhost">
+    Before replaying, fetch the event ID from your inbox. Replace `ibx_01hq8xkz2fgr7bt9vpwcn3md6e` with your own inbox ID from Step 1:
+
+    ```bash
+    curl https://api.webhooktrap.dev/api/v1/inboxes/ibx_01hq8xkz2fgr7bt9vpwcn3md6e/events
+    ```
+
+    Webhooktrap returns an array of captured events. Copy the `id` of the event you want to replay:
+
+    ```json
+    [
+      {
+        "id": "evt_01hq9yz3aghs4cu0wrxdp5nf7t",
+        "receivedAt": "2024-06-17T14:33:12Z",
+        "method": "POST",
+        "path": "/i/ibx_01hq8xkz2fgr7bt9vpwcn3md6e"
+      }
+    ]
+    ```
+
+    With the event ID in hand and your local server running, send the replay request:
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/events/evt_01hq9yz3aghs4cu0wrxdp5nf7t/replay \
+      -H "Content-Type: application/json" \
+      -d '{"destination": "http://localhost:3000/webhooks"}'
+    ```
+
+    Webhooktrap's servers perform the outbound request and return everything your handler responded with:
+
+    ```json
+    {
+      "statusCode": 200,
+      "latencyMs": 43,
+      "responseBody": "{\"received\": true}"
+    }
+    ```
+
+    A `statusCode` in the `2xx` range confirms your handler received and processed the event correctly. If you see a `4xx` or `5xx`, check the `responseBody` field for error details from your application.
+
+    <Tip>
+      You can replay the same event as many times as you like — useful for iterating on your handler logic without waiting for your provider to re-send the webhook.
+    </Tip>
+  </Step>
+</Steps>
+
+<Tip>
+  Anonymous inboxes expire after **48 hours**. [Create a free account](https://webhooktrap.dev/dashboard) to save your inboxes permanently, retain full replay history, and share events with teammates using read-only links.
+</Tip>

@@ -1,0 +1,482 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/schema/packs/pack-1.json",
+    "title": "Webhook Trap provider pack (format 1)",
+    "description": "Versioned provider data (domain-model §8, scenarios-and-judge D-8), shared by the server and the engine (`agent/pack`). Format 1 holds what capture derivation needs (provider detection, sender name, event type, provider event id, API version, GRP-1..4 grouping) and the response budget. The engine keys (signing, DUP-1 duplicate and retry rules, re-send headers, tamper paths, PRB-4 `objects`, status events, scrub rules, id pattern, citations and finding text) are optional here and read by the engine (`agent/pack`); the server ignores what it doesn't use. Paths are dot paths into the JSON body (`data.object.id`); a numeric segment indexes an array.",
+    "type": "object",
+    "required": [
+        "format",
+        "id",
+        "version",
+        "name",
+        "detect",
+        "event",
+        "grouping"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "format": {
+            "const": 1
+        },
+        "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,31}$"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1
+        },
+        "budget": {
+            "type": "object",
+            "required": ["ms", "source", "label"],
+            "additionalProperties": false,
+            "properties": {
+                "ms": {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 30000
+                },
+                "source": {
+                    "type": "string",
+                    "description": "`default` or `<provider> docs`"
+                },
+                "label": {
+                    "type": "string",
+                    "description": "UI label"
+                },
+                "source_label": {
+                    "type": "string",
+                    "description": "source in text output"
+                },
+                "documented": {
+                    "type": "boolean",
+                    "description": "the provider documents this limit (BUD-2)"
+                }
+            }
+        },
+        "detect": {
+            "description": "Provider detection: every listed header is present (case-insensitive name, non-empty value).",
+            "type": "object",
+            "required": ["headers_all"],
+            "additionalProperties": false,
+            "properties": {
+                "headers_all": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "sender": {
+            "description": "Display name of the sender for scheme packs (Standard Webhooks): the User-Agent product token, minus the listed suffixes. Also the provider part of GRP-4 group keys.",
+            "type": "object",
+            "required": ["from"],
+            "additionalProperties": false,
+            "properties": {
+                "from": {
+                    "const": "user_agent_product"
+                },
+                "strip_suffixes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ignore_products": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Generic HTTP clients that never name a sender (compared lowercase)"
+                }
+            }
+        },
+        "event": {
+            "description": "Where the event type, provider event id and API version live; a header wins over a body path when both are set.",
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+                "type_path": {
+                    "type": "string"
+                },
+                "type_header": {
+                    "type": "string"
+                },
+                "id_path": {
+                    "type": "string"
+                },
+                "id_header": {
+                    "type": "string"
+                },
+                "api_version_path": {
+                    "type": "string"
+                },
+                "api_version_header": {
+                    "type": "string"
+                }
+            },
+            "anyOf": [
+                {
+                    "required": ["type_path"]
+                },
+                {
+                    "required": ["type_header"]
+                }
+            ]
+        },
+        "grouping": {
+            "description": "GRP-1..4. `by_event` is tried in order; the first entry with a matching event pattern yields the capture's object ids. `fallback: data_id` is GRP-4 when nothing is yielded: the first field in `data` named `id` or ending in `_id`.",
+            "type": "object",
+            "required": ["types", "anchors", "by_event", "fallback"],
+            "additionalProperties": false,
+            "properties": {
+                "types": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": ["name"],
+                        "additionalProperties": false,
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Display noun, `Subscription`"
+                            },
+                            "group": {
+                                "type": "boolean",
+                                "description": "false: never links captures (GRP-2 customer-type ids)"
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Group key template after `grp_<provider>_`: `{id}` (default) or `{label}`, with literal text around it"
+                            }
+                        }
+                    }
+                },
+                "anchors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "GRP-3 anchor priority, highest first; unlisted types rank after"
+                },
+                "by_event": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["events", "yield"],
+                        "additionalProperties": false,
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "type": "string",
+                                    "description": "Event type glob, only `*` is special"
+                                }
+                            },
+                            "yield": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["path"],
+                                    "additionalProperties": false,
+                                    "oneOf": [
+                                        {
+                                            "required": ["type"]
+                                        },
+                                        {
+                                            "required": ["type_path"]
+                                        }
+                                    ],
+                                    "properties": {
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "type_path": {
+                                            "type": "string",
+                                            "description": "Read the object type from the body instead"
+                                        },
+                                        "label_path": {
+                                            "type": "string",
+                                            "description": "Display name of the object (GRP-3)"
+                                        },
+                                        "label": {
+                                            "type": "string",
+                                            "description": "Template for the display name, `{value}` = label_path value"
+                                        },
+                                        "search_only": {
+                                            "type": "boolean",
+                                            "description": "Stored for search, never links captures"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "fallback": {
+                    "enum": ["data_id", null]
+                }
+            }
+        },
+        "signing": {
+            "description": "Signature scheme (SIGN-1..4, UNS-1, LATE-1). `scheme` names an algorithm in the engine's signing package.",
+            "type": "object",
+            "required": ["scheme", "headers", "signed_timestamp"],
+            "additionalProperties": false,
+            "properties": {
+                "scheme": {
+                    "enum": [
+                        "stripe_v1",
+                        "github_sha256",
+                        "shopify_hmac_sha256",
+                        "standard_webhooks_v1",
+                        "none"
+                    ]
+                },
+                "headers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "every signature header, removed for Unsigned"
+                },
+                "signed_timestamp": {
+                    "type": "boolean"
+                },
+                "tolerance_s": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "secret_env": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "default environment variable names for the secret (names only, never values)"
+                }
+            }
+        },
+        "duplicate": {
+            "type": "object",
+            "required": ["supported", "verified"],
+            "additionalProperties": false,
+            "properties": {
+                "supported": {
+                    "type": "boolean",
+                    "description": "false: the provider never does it (no automatic retries)"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "description": "false while the rule is 'to verify': the scenario is n/a (DUP-2)"
+                },
+                "keep_headers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "captured headers kept on a duplicate or retry (DUP-1)"
+                },
+                "citation": {
+                    "type": "string"
+                }
+            },
+            "description": "Duplicate delivery rule (DUP-1, Twice and Burst copies)"
+        },
+        "retry": {
+            "type": "object",
+            "required": ["supported", "verified"],
+            "additionalProperties": false,
+            "properties": {
+                "supported": {
+                    "type": "boolean",
+                    "description": "false: the provider never does it (no automatic retries)"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "description": "false while the rule is 'to verify': the scenario is n/a (DUP-2)"
+                },
+                "keep_headers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "captured headers kept on a duplicate or retry (DUP-1)"
+                },
+                "citation": {
+                    "type": "string"
+                }
+            },
+            "description": "Retry rule (DUP-1, Retry after error)"
+        },
+        "resend_headers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Provider event headers re-sent as captured (TM-51 allow-list)"
+        },
+        "tamper_paths": {
+            "description": "TAMP-1 rule 1, in order",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["event_types", "path"],
+                "additionalProperties": false,
+                "properties": {
+                    "event_types": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "description": "replacement JSON value for strings and booleans"
+                    }
+                }
+            }
+        },
+        "objects": {
+            "description": "PRB-4 template resolution: where typed objects sit in a body",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["path", "type_field"],
+                "additionalProperties": false,
+                "properties": {
+                    "path": {
+                        "type": "string"
+                    },
+                    "type_field": {
+                        "type": "string"
+                    },
+                    "id_field": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "status_events": {
+            "description": "PRB-12 status events and their object type",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["event_type", "object_type"],
+                "additionalProperties": false,
+                "properties": {
+                    "event_type": {
+                        "type": "string"
+                    },
+                    "object_type": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "scrub": {
+            "description": "SCR-1, SCR-3",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "paths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "field paths; a trailing .* matches descendants"
+                },
+                "keep_headers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "id_pattern": {
+            "type": "string",
+            "description": "SCR-2 id regex; empty for none"
+        },
+        "citations": {
+            "description": "Citations per finding type (TM-16: the server picks from this list)",
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["label", "url"],
+                    "additionalProperties": false,
+                    "properties": {
+                        "label": {
+                            "type": "string"
+                        },
+                        "url": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "text": {
+            "description": "FND-7a templates. {param} placeholders (FND-11); [[param|text]] keeps text only when param has a value",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "findings": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "title": {
+                                "type": "string"
+                            },
+                            "what": {
+                                "type": "string"
+                            },
+                            "why": {
+                                "type": "string"
+                            },
+                            "fix": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "likely_cause": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "snippets": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "$defs": {}
+}

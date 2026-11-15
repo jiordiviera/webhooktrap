@@ -1,0 +1,21 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/error.response.schema.json",
+    "title": "Every 4xx/5xx JSON answer of /agent/v1",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "error": {
+            "$ref": "common.schema.json#/$defs/code"
+        },
+        "reason": {
+            "$ref": "common.schema.json#/$defs/code"
+        },
+        "min_agent_version": {
+            "$ref": "common.schema.json#/$defs/semver"
+        }
+    },
+    "required": ["error"]
+}

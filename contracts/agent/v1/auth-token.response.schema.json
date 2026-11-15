@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/auth-token.response.schema.json",
+    "title": "200 answer to auth/token",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "access_token": {
+            "type": "string",
+            "pattern": "^wt_agt_[A-Za-z0-9]{40}$"
+        },
+        "expires_at": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "channel": {
+            "type": "string",
+            "pattern": "^private-agent\\.[0-9a-f-]{36}$"
+        },
+        "broadcast": {
+            "type": "object",
+            "properties": {
+                "host": {
+                    "type": ["string", "null"]
+                },
+                "key": {
+                    "type": ["string", "null"]
+                },
+                "auth_endpoint": {
+                    "const": "/agent/v1/broadcasting/auth"
+                }
+            },
+            "required": ["host", "key", "auth_endpoint"],
+            "additionalProperties": false
+        }
+    },
+    "required": ["proto", "access_token", "expires_at", "channel", "broadcast"]
+}

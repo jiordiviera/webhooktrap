@@ -1,0 +1,93 @@
+---
+title: "Debug Webhook Handlers on Localhost with Webhooktrap"
+sidebarTitle: "Debug Locally"
+description: "Use Webhooktrap to capture real provider events and replay them to your local server — see the exact response your handler returns without tunnel setup."
+---
+
+Testing webhook handlers locally is frustrating. Your `localhost` has no public URL, so providers like Stripe or GitHub can't reach it directly. The usual workaround — standing up a tunnel, copying credentials, keeping it running — adds friction and breaks the feedback loop. Webhooktrap takes a different approach: capture the real event from the provider first, then replay it to your local server whenever you're ready. No tunnel required for ingestion, and you see the exact `statusCode`, latency, and response body your handler returns.
+
+<Steps>
+  <Step title="Create an inbox">
+    Create a new inbox with a single API call. Webhooktrap returns an `inboxId` and the ingest URL you'll give to your provider.
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
+    ```
+
+    The response includes your ingest URL in the form `https://webhooktrap.dev/i/:inboxId`. Copy it — you'll need it in the next step.
+  </Step>
+
+  <Step title="Configure your provider">
+    Open your provider's webhook settings (Stripe Dashboard, GitHub repository settings, Shopify Partners, etc.) and set the webhook endpoint to the ingest URL from the previous step.
+
+    ```text
+    https://webhooktrap.dev/i/<your-inbox-id>
+    ```
+
+    No special authentication or header configuration is needed on your side — Webhooktrap accepts any webhook payload over HTTPS and stores the method, headers, body, and query string. Note that `authorization` and `cookie` headers are automatically redacted before storage.
+  </Step>
+
+  <Step title="Trigger an event">
+    Perform the action that fires the webhook. Depending on your provider, this might be:
+
+    - **Stripe** — create a test payment or subscription in the Stripe Dashboard
+    - **GitHub** — push a commit or open a pull request
+    - **Shopify** — create a test order in your development store
+
+    Your provider will POST the event to the ingest URL immediately.
+  </Step>
+
+  <Step title="Inspect the captured event">
+    Open the [Webhooktrap dashboard](https://webhooktrap.dev/dashboard) and select your inbox. You'll see the event listed with its timestamp, HTTP method, and a preview of the body. Click the event to expand the full details — all stored request headers, the raw body, and the query string. Keep in mind that `authorization` and `cookie` headers are redacted before storage, so they won't appear here.
+
+    This is a good moment to verify the payload structure before writing or updating your handler code.
+  </Step>
+
+  <Step title="Start your local server">
+    Make sure your webhook handler is running and listening on a known port. For example, if you're using a Node.js app:
+
+    ```bash
+    npm run dev
+    ```
+
+    Your server should be reachable at something like `http://localhost:3000/webhooks`. Keep it running — Webhooktrap will send the replayed request to it in the next step.
+  </Step>
+
+  <Step title="Replay the event to localhost">
+    Send a replay request with the event ID from the dashboard and your local handler URL as the destination. Replace `EVT_ID` with the actual event ID.
+
+    ```bash
+    curl -X POST https://api.webhooktrap.dev/api/v1/events/EVT_ID/replay \
+      -H "Content-Type: application/json" \
+      -d '{"destination": "http://localhost:3000/webhooks"}'
+    ```
+
+    Webhooktrap's servers will forward the original request — same method, headers, and body — to your local server and collect the response.
+  </Step>
+
+  <Step title="Check the response">
+    The replay response contains three fields that tell you exactly how your handler behaved:
+
+    ```json
+    {
+      "statusCode": 200,
+      "latencyMs": 42,
+      "responseBody": "OK"
+    }
+    ```
+
+    - **`statusCode`** — the HTTP status your handler returned. Providers typically expect `200` or `2xx`.
+    - **`latencyMs`** — round-trip time in milliseconds from Webhooktrap's server to your handler and back.
+    - **`responseBody`** — the raw body your handler sent in the response.
+
+    If the status code is unexpected, update your handler and replay again — the original event is still there waiting.
+  </Step>
+</Steps>
+
+<Note>
+  For the replay to work, your local server must be reachable from Webhooktrap's servers. If your machine is behind a NAT or firewall, you'll need a tunnel just for the **replay destination** — not for ingesting events. Tools like [ngrok](https://ngrok.com) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) work well here. Point the replay `destination` to your tunnel's public URL instead of `localhost`.
+</Note>
+
+<Tip>
+  You can replay the same event as many times as you like. Each replay is independent and always uses the original captured payload. This makes it easy to iterate on your handler — fix a bug, restart your server, replay, check the response — without needing to trigger a new event from the provider each time.
+</Tip>

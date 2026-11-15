@@ -1,0 +1,98 @@
+{
+  "projectType": "saas",
+  "projectName": "Webhooktrap",
+  "projectDescription": "Webhooktrap is a webhook debugger that captures every incoming webhook exactly as it arrives, then lets you replay it to localhost or staging and see the full response.",
+  "theme": "luma",
+  "primaryColor": "#ac754e",
+  "lightColor": "#ccb49c",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "account-setup"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/inboxes",
+              "concepts/capture",
+              "concepts/replay",
+              "concepts/sharing"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/overview",
+              "integrations/stripe",
+              "integrations/github",
+              "integrations/shopify",
+              "integrations/other-providers"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/debug-locally",
+              "guides/team-debugging",
+              "guides/anonymous-vs-saved"
+            ]
+          },
+          {
+            "group": "Security & Privacy",
+            "pages": [
+              "security/overview",
+              "security/data-storage"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/inboxes",
+              "api/events",
+              "api/replay"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Instant anonymous inboxes — no account required to start capturing webhooks",
+    "Faithful payload capture — every method, header, query string, and byte preserved",
+    "One-click replay to localhost or any staging URL",
+    "Full response visibility — see status code, latency, and response body after replay",
+    "Read-only share links — teammates can inspect events without an account",
+    "48-hour anonymous retention; persistent inboxes for signed-in users",
+    "Works with any HTTP webhook provider (Stripe, GitHub, Shopify, Twilio, and more)",
+    "REST API for programmatic inbox creation, event listing, and replay triggering",
+    "Zero tunnel setup required",
+    "HTTPS ingest with redacted authorization/cookie headers"
+  ],
+  "publicApiSurface": [
+    "POST /api/v1/inboxes — create a new inbox",
+    "GET /api/v1/inboxes/:id/events — list captured events for an inbox",
+    "POST /api/v1/events/:id/replay — replay a captured event to a destination URL",
+    "Ingest URL: /i/:inboxId — webhook endpoint that receives payloads from any provider"
+  ]
+}

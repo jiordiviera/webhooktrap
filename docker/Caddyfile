@@ -1,0 +1,157 @@
+# Webhook Trap image Caddyfile, shared by hosted and self-host (compose-profile.md §2.1).
+# Directive order matters: Caddy sorts `handle` before `route`, so the trust snippet and every
+# `handle` live inside ONE outer `route`, which keeps the written order (SV-2).
+# Checked in CI with `caddy validate` and `caddy adapt` (TM-T141).
+
+(trust-global-secret) {
+}
+(trust-global-none) {
+}
+(trust-global-ip) {
+	trusted_proxies static {$TRUSTED_PROXIES}
+	# Right-most untrusted X-Forwarded-For entry, as the app reads it ({client_ip} in ingest-hop-ip).
+	trusted_proxies_strict
+}
+
+# Capture path (A09 S3-3, S3-4). INGEST_MODE=proxy (both Compose profiles, `app` service): hand it to
+# the `ingest` container (docker/Caddyfile.ingest: own PHP thread pool, no form/multipart parsing,
+# 15 s body timeout). INGEST_MODE=local (default; the image run alone): serve it in this process.
+(ingest-local) {
+	request_body {
+		max_size 25MiB
+	}
+	log_skip
+	root * /app/public
+	php_server
+}
+(ingest-proxy) {
+	log_skip
+	# The client address and scheme as this process resolved them under PROXY_TRUST_MODE.
+	import ingest-hop-{$PROXY_TRUST_MODE:secret}
+	# Caddy appends its own `Via` to the upstream request; a capture must show the client's own value
+	# or none, so the two cases are proxied separately (TM-01 fidelity).
+	@hop_via header Via *
+	# Every capture answer has the same headers whoever produced it (PHP, ingest's Caddy, HAProxy).
+	header {
+		-Via
+		-Server
+	}
+	reverse_proxy @hop_via {$INGEST_UPSTREAM:ingest:8080} {
+		import ingest-upstream
+		header_up Via {http.request.header.Via}
+	}
+	reverse_proxy {$INGEST_UPSTREAM:ingest:8080} {
+		import ingest-upstream
+		header_up -Via
+	}
+}
+# 25 MiB, the 413 and the body timeout are enforced by ingest. The hop is re-signed with the edge
+# secret, so ingest always runs in mode `secret` and trusts only this front (SV-2). Host and target
+# are passed unchanged; Caddy's own X-Forwarded-Host and the response `Via` and `Server` are removed.
+(ingest-upstream) {
+	header_up X-WT-Edge {file./run/secrets/edge_proxy_secret}
+	header_up X-Forwarded-For {http.request.header.X-Forwarded-For}
+	header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+	header_up -X-Forwarded-Host
+	header_up -X-WT-Verified
+	# Go's transport would add `Accept-Encoding: gzip` to a request that has none: it would land in
+	# the capture. Off: the client's own value, or none, reaches ingest.
+	transport http {
+		compression off
+	}
+	# Hold requests while ingest restarts (a deploy) instead of answering 502 (ADR-005: no 5xx).
+	lb_try_duration 10s
+	lb_try_interval 250ms
+}
+# Mode secret: verified requests keep the host proxy's values; the rest get this hop's peer.
+(ingest-hop-secret) {
+	@hop_unverified not header X-WT-Verified 1
+	request_header @hop_unverified X-Forwarded-For {remote_host}
+	request_header @hop_unverified X-Forwarded-Proto {scheme}
+}
+# Mode none: this process terminates TLS; the peer is the client.
+(ingest-hop-none) {
+	request_header X-Forwarded-For {remote_host}
+	request_header X-Forwarded-Proto {scheme}
+}
+# Mode ip: Caddy's client address under trusted_proxies (strict); the scheme from a trusted proxy only.
+(ingest-hop-ip) {
+	@hop_direct vars {http.vars.trusted_proxy} false
+	request_header X-Forwarded-For {client_ip}
+	request_header @hop_direct X-Forwarded-Proto {scheme}
+}
+
+import /etc/frankenphp/caddy/trust-site-*.caddy
+
+{
+	frankenphp {
+		# The app front's PHP pool. LONGPOLL_HTTP_WORKERS must equal it (Compose sets both from
+		# APP_NUM_THREADS), so the long-poll slots always leave free workers (compose-profile §3.2).
+		num_threads {$APP_NUM_THREADS:8}
+	}
+	http_port {$CADDY_HTTP_PORT:8080}
+	https_port {$CADDY_HTTPS_PORT:8443}
+	auto_https {$CADDY_AUTO_HTTPS:off}
+	servers {
+		import trust-global-{$PROXY_TRUST_MODE:secret}
+		timeouts {
+			read_body 30s
+			read_header 10s
+		}
+	}
+	# Error lines must not carry share tokens, capture keys or the proxy secret (RD-1).
+	log {
+		output stderr
+		format filter {
+			wrap console
+			fields {
+				request>uri regexp "^/s/[^/?#]+" "/s/REDACTED"
+				request>uri regexp "(?s)^.*$" "/REDACTED"
+				request>headers>Referer delete
+				request>headers>X-Wt-Edge delete
+				request>headers>X_Wt-Edge delete
+				request>headers>X-Wt_Edge delete
+				request>headers>X_Wt_Edge delete
+			}
+		}
+	}
+}
+
+{$SERVER_NAME::8080} {
+	route {
+		# FIRST statement of the route: who may set forwarded headers (SV-2, SV-2a).
+		import trust-site-{$PROXY_TRUST_MODE:secret}
+
+		# RN-1a: no route uses .php/ path info; refuse it so /index.php/runner/v1/x cannot slip past a
+		# host-proxy path matcher.
+		@phpinfo path_regexp (?i)\.php/
+		respond @phpinfo 404
+
+		@capture host {$CAPTURE_HOST:capture.invalid}
+		@capture_path path /c /c/*
+		@ws host {$WS_HOST:ws.invalid}
+		@share path /s/*
+
+		handle @ws {
+			reverse_proxy reverb:8080
+		}
+		handle @capture {
+			import ingest-{$INGEST_MODE:local}
+		}
+		handle @capture_path {
+			import ingest-{$INGEST_MODE:local}
+		}
+		handle {
+			request_body {
+				max_size {$APP_MAX_BODY:10MiB}
+			}
+			log_skip @share
+			root * /app/public
+			encode zstd gzip
+			php_server
+		}
+	}
+	handle_errors 413 {
+		respond "Request body too large" 413
+	}
+}

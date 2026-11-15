@@ -1,0 +1,73 @@
+proving.yml asks proto to run these shell commands:
+  probe: sh /wt/probe.sh
+  reset: sh /wt/reset.sh
+Webhook Trap | Proving CLI prototype | run_20261114T153945Z-5177
+  target    http://127.0.0.1:4510/webhooks/stripe
+  events    #01 invoice.paid | #02 payment_intent.succeeded | #03 charge.refunded
+  checks    Level 1 transport | Level 2 probe | reset
+  budget    10 000 ms (Webhook Trap default)
+
+    D        +ms  event                      http    latency  state     result
+  Once
+    D1       +98  invoice.paid               200        0 ms  0 -> 1    [-] pass
+    D2      +147  payment_intent.succeeded   200        0 ms  1 -> 1    [-] pass
+    D3      +205  charge.refunded            200   12 006 ms  1 -> 1    [-] pass
+  Twice
+    D4   +12 393  invoice.paid               200        0 ms  0 -> 1    [-] pass
+    D5   +12 942  invoice.paid = D4'         200        0 ms  1 -> 2    [H] High, state changed
+          new finding  [H] High | Duplicate delivery changed state
+  Shuffled
+    D6   +13 120  charge.refunded            200   12 006 ms  0 -> 0    [-] pass
+    D7   +25 181  payment_intent.succeeded   500        0 ms  0 -> 0    [H] High, HTTP 500
+    D8   +25 231  invoice.paid               200        0 ms  0 -> 1    [-] pass
+          new finding  [H] High | Out-of-order delivery broke the handler
+  Late
+    D9   +25 411  invoice.paid t - 360 s     400        0 ms  0 -> 0    [-] pass (rejected)
+  Tampered
+    D10  +25 590  invoice.paid body changed  400        0 ms  0 -> 0    [-] pass (rejected)
+  Slow budget
+    D3      +205  charge.refunded            200   12 006 ms  1 -> 1    [M] Medium, +2 006 over
+    D6   +13 120  charge.refunded            200   12 006 ms  0 -> 0    [M] Medium, +2 006 over
+          new finding  [M] Medium | Slow response | 10 s budget | Webhook Trap default
+
+Scenarios  6 | 3 passed | 3 with findings
+  [-] Once           pass       200 x 3 | 0-12 006 ms | probe 0 -> 1
+  [H] Twice          F1 High    200, 200 in 0 ms | probe 0 -> 2
+  [H] Shuffled       F2 High    200, 500, 200 | 0-12 006 ms | probe 0 -> 1
+  [-] Late           pass       400 in 0 ms | probe 0 -> 0 | rejected as expected
+  [-] Tampered       pass       400 in 0 ms | probe 0 -> 0 | rejected as expected
+  [M] Slow budget    F3 Medium  2 over the budget | slowest 12 006 ms
+
+[H] F1 High | Duplicate delivery changed state                                             D4 D5
+  What happened   D5 delivered the same event as D4, 500 ms later. Responses: HTTP 200, then
+                  HTTP 200. The probe went 1 -> 2 on the duplicate: expected no change.
+  Why it matters  Providers can deliver the same event more than once, and retry failed
+                  deliveries. Each duplicate repeats the side effect.
+                  Stripe docs > Webhooks > Handle duplicate events
+  Fix             Record the event ID before doing the work and return 2xx early when it was
+                  already handled. After the fix, the duplicate should leave the probe value
+                  unchanged.
+
+[H] F2 High | Out-of-order delivery broke the handler                                         D7
+  What happened   Related events arrived in reverse order. D7 (payment_intent.succeeded) got
+                  HTTP 500.
+  Why it matters  Providers don't guarantee that events arrive in the order they happened.
+                  Stripe docs > Webhooks > Event ordering
+  Fix             Make each handler cope with an event that arrives before the one it depends
+                  on: check for missing records, or fetch the current object from the provider
+                  instead of trusting arrival order.
+
+[M] F3 Medium | Slow response | 10 s budget | Webhook Trap default                         D3 D6
+  What happened   D3 took 12 006 ms (+2 006 over); D6 took 12 006 ms (+2 006 over). The median
+                  delivery in this run took 0 ms.
+  Why it matters  Stripe expects a quick 2xx and doesn't publish its timeout. Webhook Trap
+                  applies a 10 s default budget.
+                  Stripe docs > Webhooks > Quickly return a 2xx response
+  Fix             Acknowledge with a 2xx first, then do the slow work in a background job. After
+                  the fix these deliveries should respond within the budget.
+
+3 findings | 2 High | 1 Medium
+6 scenarios | 10 deliveries | 25.7 s | run_20261114T153945Z-5177
+  run file  .proving/runs/run_20261114T153945Z-5177.json
+  next      proto judge   (say which findings are real)
+exit_code: 1

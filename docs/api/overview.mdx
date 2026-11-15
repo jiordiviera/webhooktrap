@@ -1,0 +1,72 @@
+---
+title: "Webhooktrap REST API Overview: Endpoints and Format"
+sidebarTitle: "Overview"
+description: "Explore the Webhooktrap REST API. Create inboxes, list captured events, and trigger replays programmatically from any HTTP client."
+---
+
+The Webhooktrap REST API lets you integrate webhook capture and replay directly into your development workflow, CI pipeline, or automated test suite. Use it to spin up inboxes on demand, inspect every captured event in full detail, and forward those events to any destination — all without touching the dashboard.
+
+## Base URL
+
+All API requests are made to the following base URL:
+
+```text
+https://api.webhooktrap.dev/api/v1
+```
+
+## Response format
+
+Every response from the API is JSON. Successful responses wrap the returned resource in a `data` envelope:
+
+```json
+{
+  "data": {
+    "<resource>": { ... }
+  }
+}
+```
+
+Errors use a separate `error` envelope and are accompanied by an appropriate HTTP status code:
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Inbox not found"
+  }
+}
+```
+
+## HTTP status codes
+
+| Status code | Meaning |
+|---|---|
+| `200 OK` | The request succeeded. |
+| `201 Created` | A new resource was successfully created. |
+| `400 Bad Request` | The request was malformed or contained invalid input. |
+| `401 Unauthorized` | The `Authorization` header is missing or the token is invalid. |
+| `404 Not Found` | The requested resource does not exist. |
+| `422 Unprocessable Entity` | The request was well-formed but failed validation. |
+| `429 Too Many Requests` | You have exceeded the rate limit. Back off and retry. |
+| `500 Internal Server Error` | Something went wrong on Webhooktrap's side. |
+
+## Authentication
+
+Authenticated endpoints require a Bearer token passed in the `Authorization` header. Anonymous endpoints — such as creating an inbox — work without a token. See the [Authentication](/api/authentication) page for full details on obtaining and using your API token.
+
+## Explore the API
+
+<CardGroup cols={2}>
+  <Card title="Inboxes" icon="inbox" href="/api/inboxes">
+    Create a new webhook inbox and get an instant ingest URL.
+  </Card>
+  <Card title="Events" icon="list" href="/api/events">
+    List all captured events for an inbox with full headers and body.
+  </Card>
+  <Card title="Replay" icon="rotate-right" href="/api/replay">
+    Forward any captured event to a destination URL and inspect the response.
+  </Card>
+  <Card title="Authentication" icon="key" href="/api/authentication">
+    Learn how to obtain and use your API token.
+  </Card>
+</CardGroup>

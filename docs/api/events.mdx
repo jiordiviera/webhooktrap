@@ -1,0 +1,109 @@
+---
+title: "Events API: List and Inspect Captured Webhook Events"
+sidebarTitle: "Events"
+description: "GET /api/v1/inboxes/:id/events returns a paginated list of captured webhook events with full headers, body, query string, and metadata."
+---
+
+Every HTTP request that reaches an inbox is stored as an event. Events contain the complete, unmodified request — method, path, all headers, the raw body, and query string — along with a timestamp. Use the Events API to retrieve those records programmatically and feed them into your tests, logging pipelines, or debugging tools.
+
+---
+
+## List events for an inbox
+
+<api-endpoint method="GET" url="https://api.webhooktrap.dev/api/v1/inboxes/:id/events" />
+
+Returns captured events for the specified inbox, ordered newest first. Results are paginated; use `limit` and `offset` to page through large sets.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The unique ID of the inbox whose events you want to retrieve. You receive this value when you [create an inbox](/api/inboxes).
+</ParamField>
+
+### Query parameters
+
+<ParamField query="limit" type="number">
+  Maximum number of events to return. Defaults to `20`. Cannot exceed `100`.
+</ParamField>
+
+<ParamField query="offset" type="number">
+  Number of events to skip before returning results. Defaults to `0`. Use this to implement pagination alongside `limit`.
+</ParamField>
+
+### Authentication
+
+Authentication is required for saved inboxes. Pass your Bearer token in the `Authorization` header. Anonymous inboxes can be read without a token while they are still active.
+
+### Request
+
+```bash
+curl -X GET "https://api.webhooktrap.dev/api/v1/inboxes/xK9m2pQ7nR4a/events?limit=20&offset=0" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "events": [
+      {
+        "id": "evt_abc123",
+        "inboxId": "xK9m2pQ7nR4a",
+        "method": "POST",
+        "path": "/i/xK9m2pQ7nR4a",
+        "headers": {
+          "content-type": "application/json",
+          "stripe-signature": "t=...,v1=..."
+        },
+        "body": "{\"type\":\"checkout.session.completed\"}",
+        "queryString": "",
+        "receivedAt": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+<ResponseField name="events" type="array">
+  An array of event objects, ordered newest first.
+
+  <Expandable title="Event object fields">
+    <ResponseField name="id" type="string">
+      The unique identifier for this event. Use it as the `:eventId` path parameter when calling the [Replay API](/api/replay).
+    </ResponseField>
+
+    <ResponseField name="inboxId" type="string">
+      The ID of the inbox that received this event.
+    </ResponseField>
+
+    <ResponseField name="method" type="string">
+      The HTTP method of the original request — for example, `POST`, `GET`, or `PUT`.
+    </ResponseField>
+
+    <ResponseField name="path" type="string">
+      The request path, including the inbox segment — for example, `/i/xK9m2pQ7nR4a`.
+    </ResponseField>
+
+    <ResponseField name="headers" type="object">
+      All HTTP headers from the original request, as a key-value object with lowercase header names. This includes any signature headers added by your webhook provider.
+    </ResponseField>
+
+    <ResponseField name="body" type="string">
+      The raw request body as a string. If the sender posted JSON, you will receive it here as a JSON-encoded string that you can parse further.
+    </ResponseField>
+
+    <ResponseField name="queryString" type="string">
+      The raw query string from the request URL, not including the leading `?`. Empty string if no query parameters were present.
+    </ResponseField>
+
+    <ResponseField name="receivedAt" type="string">
+      ISO 8601 timestamp indicating when Webhooktrap received the event — for example, `2024-01-15T10:30:00Z`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  The total number of events stored for this inbox, regardless of the current `limit` and `offset`. Use this value to calculate how many pages of results are available.
+</ResponseField>

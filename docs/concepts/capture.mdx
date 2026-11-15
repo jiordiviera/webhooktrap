@@ -1,0 +1,61 @@
+---
+title: "Webhook Payload Capture: Headers, Body, and Method"
+sidebarTitle: "Capture"
+description: "Webhooktrap records every byte of an incoming webhook — HTTP method, headers, query string, and raw body — with zero normalization before inspection."
+---
+
+When a provider sends a webhook to your inbox, Webhooktrap records every detail of that HTTP request exactly as it arrived — no field renaming, no body parsing, no header rewriting. What you see in the dashboard or the API is a faithful mirror of what the provider sent, down to the byte.
+
+## What Webhooktrap captures
+
+Every captured event includes the following fields:
+
+<CardGroup cols={2}>
+  <Card title="HTTP method" icon="arrow-right-arrow-left">
+    The request method used by the provider — `POST`, `GET`, `PUT`, `PATCH`, or `DELETE`. Most webhook providers use `POST`, but Webhooktrap accepts any method.
+  </Card>
+  <Card title="Request headers" icon="list">
+    All headers sent with the request, preserving original casing and order. Security-sensitive headers are redacted (see below).
+  </Card>
+  <Card title="URL and query string" icon="link">
+    The full path and any query parameters appended to the ingest URL, useful when providers embed identifiers or event types in the URL.
+  </Card>
+  <Card title="Raw request body" icon="code">
+    The unmodified request body as a string. JSON bodies are not parsed or pretty-printed; form-encoded and binary bodies are stored as-is.
+  </Card>
+</CardGroup>
+
+## Why full fidelity matters
+
+Many webhook providers sign their payloads using an HMAC digest computed over the **exact raw bytes** of the body and specific headers. Any transformation — trimming whitespace, re-serializing JSON, or lowercasing header names — will change the digest and cause your signature verification to fail.
+
+Because Webhooktrap stores the raw, untouched payload, you can replay a captured event to your handler and run the same signature check your production code runs, with confidence that the bytes match what the provider originally sent.
+
+## Example captured event
+
+The API returns captured events in the following shape:
+
+```json
+{
+  "id": "EVT_4rTx9wBnLp2k",
+  "method": "POST",
+  "path": "/i/xK9m2pQ7nR4a",
+  "headers": {
+    "content-type": "application/json",
+    "stripe-signature": "t=1714000000,v1=abc123...",
+    "user-agent": "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+  },
+  "body": "{\"id\":\"evt_1Abc\",\"type\":\"checkout.session.completed\",\"data\":{}}",
+  "receivedAt": "2024-04-25T10:00:00.000Z"
+}
+```
+
+Notice that `stripe-signature` is preserved exactly as sent. Your verification logic can read it directly from the captured event without any transformation.
+
+<Warning>
+  The `authorization` and `cookie` request headers are **always redacted** before storage. Their values are replaced with `[REDACTED]` and are not recoverable. This protects credentials that a provider might accidentally include in a webhook request. All other headers are stored verbatim.
+</Warning>
+
+## Provider signature headers are preserved
+
+Provider-specific signature headers — such as `Stripe-Signature`, `X-Hub-Signature-256` (GitHub), `X-Shopify-Hmac-Sha256`, and others — are ordinary headers from Webhooktrap's perspective. They are stored faithfully alongside the rest of the request, so you can verify the signature locally or in your staging environment when you replay the event.

@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/ack.response.schema.json",
+    "title": "Plain acknowledgement: confirm, accept, decline, DELETE agent",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        }
+    },
+    "required": ["proto"]
+}

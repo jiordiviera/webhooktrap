@@ -1,0 +1,6 @@
+secured: true
+workers:
+  - horizon
+  - reverb
+  - schedule
+  - vite

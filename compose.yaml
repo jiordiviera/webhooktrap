@@ -1,0 +1,334 @@
+# Webhook Trap 2.0 — self-host profile (project/operations/compose-profile.md §4).
+# The single self-host profile (decision 32): `docker compose up -d`. A Redis-compatible store is
+# required; the bundled Valkey stays in this file, REDIS_HOST may point at your own Redis or Valkey.
+#
+# TLS:
+#   TLS_MODE=auto (default)  FrankenPHP gets certificates itself: set SERVER_NAME to your three
+#                            host names, CADDY_AUTO_HTTPS=on, PROXY_TRUST_MODE=none.
+#   TLS_MODE=off             behind your own proxy: BIND_ADDRESS=127.0.0.1, HTTP_PORT=<port>,
+#                            CADDY_AUTO_HTTPS=off, PROXY_TRUST_MODE=secret (or ip, weaker).
+# Secrets live as files in ./secrets (see .env.example). Images use a release tag, never `latest`.
+# Every secret is a file in ./secrets, read by the entrypoint (never a plain value in .env):
+#   app_key (`echo base64:$(openssl rand -base64 32)`), postgres_password and db_password (the
+#   same value: one file readable by postgres, uid 999, one by the app, uid 33), valkey_password,
+#   reverb_app_secret, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key
+#   (each `openssl rand -hex 32`), backup_cipher_pass, edge_proxy_secret (below), runner_token.
+#   Optional, may be empty files: mail_password, github_client_secret, google_client_secret,
+#   error_tracker_dsn. Owners: postgres_password, backup_* root:999 0440; the rest root:33 0440.
+# secrets/edge_proxy_secret is needed in every TLS mode (`openssl rand -hex 32`): `app` signs the
+# internal hop to `ingest` with it, and gives it to your proxy only in mode secret.
+
+name: ${COMPOSE_PROJECT_NAME:-webhooktrap}
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+x-hardening: &hardening
+  restart: unless-stopped
+  init: true
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: [ALL]
+  logging: *logging
+
+x-app: &app
+  <<: *hardening
+  image: ghcr.io/jiordiviera/webhooktrap:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+  env_file: [.env]
+  environment:
+    PROXY_TRUST_MODE: ${PROXY_TRUST_MODE:-none} # set it in .env: none (built-in TLS) or secret (behind your proxy)
+  read_only: true
+  tmpfs: ["/tmp:size=64m", "/app/storage/framework/cache:size=64m"]
+  volumes:
+    - storage:/app/storage/app
+    - backup_status:/status:ro
+  networks: [internal]
+  depends_on:
+    postgres: { condition: service_healthy }
+    valkey: { condition: service_healthy }
+    migrate: { condition: service_completed_successfully }
+
+services:
+  migrate: # one-shot, after an optional pre-migrate backup (BACKUP_BEFORE_MIGRATE)
+    <<: *hardening
+    image: ghcr.io/jiordiviera/webhooktrap:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+    env_file: [.env]
+    read_only: true
+    tmpfs: ["/tmp:size=64m"]
+    restart: "no"
+    command: ["php", "artisan", "migrate", "--force", "--no-interaction"]
+    secrets: [app_key, db_password, error_tracker_dsn]
+    environment:
+      PROXY_TRUST_MODE: ${PROXY_TRUST_MODE:-none}
+    volumes: [backup_status:/status:ro]
+    networks: [internal]
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+    mem_limit: 256m
+    pids_limit: 128
+
+  app:
+    <<: *app
+    networks: [edge, internal, egress, runner]
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${HTTP_PORT:-80}:8080"
+      - "${BIND_ADDRESS:-0.0.0.0}:${HTTPS_PORT:-443}:8443"
+      - "${BIND_ADDRESS:-0.0.0.0}:${HTTPS_PORT:-443}:8443/udp" # HTTP/3
+    environment:
+      PROXY_TRUST_MODE: ${PROXY_TRUST_MODE:-none}
+      WT_ROLE: app
+      INGEST_MODE: proxy # capture path handed to `haproxy` then `ingest`; nothing to set for self-host
+      INGEST_UPSTREAM: haproxy:8080
+      APP_NUM_THREADS: ${APP_NUM_THREADS:-8}
+      LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-8} # always the app's thread count
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
+    volumes: [storage:/app/storage/app, engine_sock:/run/engine, backup_status:/status:ro, caddy_data:/data]
+    group_add: ["10001"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+      reverb: { condition: service_healthy }
+      engine: { condition: service_healthy }
+      haproxy: { condition: service_healthy }
+    mem_limit: 768m
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  ingest: # webhook capture on its own PHP pool (A09 S3-3, S3-4); reached through `app` only, nothing to configure
+    <<: *app
+    command: ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile.ingest", "--adapter", "caddyfile"]
+    environment:
+      PROXY_TRUST_MODE: secret # always, whatever .env says: its only caller is `app`, which signs with the edge secret
+      WT_ROLE: ingest # explicit: the entrypoint and the app's identity check both read it
+    secrets: [app_key, db_password, valkey_password, error_tracker_dsn, edge_proxy_secret]
+    networks: [internal]
+    mem_limit: 384m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  haproxy: # per-address limits on webhook capture (decision 61); defaults: 20 in flight, 1200/min, 2 partial bodies per address
+    <<: *hardening
+    image: haproxy:3.4.7-alpine@sha256:b9fe316f718d5015c5cfebd8ca019591f3e44656f61d93cb8b59a1028961e530
+    command: ["haproxy", "-f", "/wt-haproxy/haproxy.cfg"]
+    labels: { webhooktrap.config-from: "${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}" } # recreated on upgrade: reloads the config
+    environment: # Compose's :- also covers an empty value, which HAProxy's own default does not (S3-24)
+      WT_CAPTURE_MAX_CONN: ${WT_CAPTURE_MAX_CONN:-20}
+      WT_CAPTURE_MAX_RATE: ${WT_CAPTURE_MAX_RATE:-1200}
+      WT_CAPTURE_MAX_STREAM: ${WT_CAPTURE_MAX_STREAM:-2}
+      WT_CAPTURE_STREAM_SLOTS: ${WT_CAPTURE_STREAM_SLOTS:-6} # INGEST_NUM_THREADS - 2 (S3-17)
+    secrets: [edge_proxy_secret]
+    group_add: ["33"]
+    read_only: true
+    volumes: [haproxy_config:/wt-haproxy:ro]
+    networks: [internal]
+    depends_on:
+      haproxy-config: { condition: service_completed_successfully }
+      ingest: { condition: service_healthy }
+    mem_limit: 128m
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8405/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  haproxy-config: # one-shot: copies the HAProxy config out of the app image
+    <<: *hardening
+    image: ghcr.io/jiordiviera/webhooktrap:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+    entrypoint: ["cp", "/etc/webhooktrap/haproxy.cfg", "/etc/webhooktrap/received-200.http", "/wt-haproxy/"]
+    user: "0:0"
+    restart: "no"
+    network_mode: none
+    read_only: true
+    volumes: [haproxy_config:/wt-haproxy]
+    mem_limit: 32m
+    pids_limit: 16
+
+  reverb:
+    <<: *app
+    command: ["/usr/local/bin/reverb-boot"]
+    secrets: [app_key, valkey_password, reverb_app_secret, error_tracker_dsn]
+    networks: [edge, internal]
+    ulimits: { nofile: { soft: 10000, hard: 10000 } }
+    mem_limit: 256m
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 8080) ? 0 : 1);"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  horizon:
+    <<: *app
+    command: ["php", "artisan", "horizon"]
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, mail_password, error_tracker_dsn]
+    volumes: [storage:/app/storage/app, backup_status:/status:ro, ledger:/ledger]
+    networks: [internal, egress]
+    stop_grace_period: 60s
+    mem_limit: 448m # Horizon: default, broadcasts and maintenance queues (compose-profile §3.4)
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "php", "artisan", "horizon:status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+    secrets: [app_key, db_password, valkey_password, error_tracker_dsn]
+    mem_limit: 128m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "php", "artisan", "app:heartbeat-check", "--max-age=120"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  engine: # ENG-1, same as hosted
+    <<: *hardening
+    image: ghcr.io/jiordiviera/webhooktrap:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+    entrypoint: ["webhooktrap"]
+    command: ["serve-sandbox", "--socket=/run/engine/engine.sock"]
+    network_mode: none
+    read_only: true
+    tmpfs: ["/tmp:size=32m"]
+    user: "10001:10001"
+    volumes: [engine_sock:/run/engine]
+    mem_limit: 128m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "webhooktrap", "sandbox-ping", "--socket=/run/engine/engine.sock"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  runner: # server runs (ADR-010 §12); idle while server runs are off. Never joins `internal` (S-11).
+    <<: *hardening
+    image: ghcr.io/jiordiviera/webhooktrap-runner:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+    command: ["serve-run"]
+    environment: [RUNNER_SERVER_ORIGIN, RUNNER_CONCURRENCY, RUNNER_TOKEN_FILE]
+    secrets: [runner_token] # created by `php artisan runner:token` on first start
+    read_only: true
+    networks: [runner]
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 256
+
+  valkey:
+    <<: *hardening
+    image: valkey/valkey:8-alpine@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a
+    command: ["sh", "-c", "exec valkey-server --requirepass \"$$(cat /run/secrets/valkey_password)\" --appendonly yes --appendfsync everysec --maxmemory $${VALKEY_MAXMEMORY:-288mb} --maxmemory-policy noeviction"]
+    environment: [VALKEY_MAXMEMORY]
+    secrets: [valkey_password]
+    cap_add: [SETUID, SETGID]
+    volumes: [valkeydata:/data]
+    networks: [internal]
+    mem_limit: 384m
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$(cat /run/secrets/valkey_password)\" valkey-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    <<: *hardening
+    image: ghcr.io/jiordiviera/webhooktrap-postgres:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+    environment: [POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD_FILE]
+    secrets: [postgres_password]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID]
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-384MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-1GB}
+      - -c
+      - default_toast_compression=lz4
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=pgbackrest-queue %p %f # queues the segment on the spool volume; `backup` pushes it (wt-backup)
+      - -c
+      - log_min_duration_statement=500ms
+      - -c
+      - log_parameter_max_length=0
+    shm_size: 256m
+    volumes: [pgdata:/var/lib/postgresql, pgsocket:/var/run/postgresql, pgbackrest_spool:/var/spool/pgbackrest]
+    networks: [internal]
+    stop_grace_period: 60s
+    mem_limit: 1536m
+    pids_limit: 200
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backup: # default repository is posix on the same disk: NOT a disaster backup. Use s3 or sftp for that.
+    <<: *hardening
+    image: ghcr.io/jiordiviera/webhooktrap-postgres:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+    command: ["backup-loop"]
+    environment: [POSTGRES_USER, POSTGRES_DB, BACKUP_REPO_TYPE, BACKUP_S3_ENDPOINT, BACKUP_S3_REGION, BACKUP_S3_BUCKET, BACKUP_RETENTION_FULL, BACKUP_FULL_SCHEDULE, LEDGER_AGE_RECIPIENT, LEDGER_RETENTION_DAYS, LEDGER_SHIP_INTERVAL_SECONDS, LEDGER_S3_PREFIX]
+    secrets: [backup_cipher_pass]
+    user: postgres
+    volumes: [pgdata:/var/lib/postgresql:ro, pgsocket:/var/run/postgresql, pgbackrest_spool:/var/spool/pgbackrest, pgbackrest_repo:/var/lib/pgbackrest, backup_status:/status, ledger:/ledger:ro]
+    networks: [internal, backup_egress]
+    depends_on: { postgres: { condition: service_healthy } }
+    mem_limit: 256m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "backup-status", "--max-full-age=26h", "--max-archive-lag=15m"]
+      interval: 5m
+      timeout: 30s
+      retries: 1
+
+secrets:
+  valkey_password: { file: ./secrets/valkey_password }
+  postgres_password: { file: ./secrets/postgres_password }
+  backup_cipher_pass: { file: ./secrets/backup_cipher_pass }
+  edge_proxy_secret: { file: ./secrets/edge_proxy_secret }
+  db_password: { file: ./secrets/db_password } # DB_PASSWORD for the app family: same value as postgres_password, root:<runtime gid> 0440
+  app_key: { file: ./secrets/app_key } # APP_KEY (base64:…), root:<runtime gid> 0440 like every file the app reads
+  reverb_app_secret: { file: ./secrets/reverb_app_secret } # REVERB_APP_SECRET
+  mail_password: { file: ./secrets/mail_password } # MAIL_PASSWORD (may be empty)
+  github_client_secret: { file: ./secrets/github_client_secret } # GITHUB_CLIENT_SECRET (may be empty: GitHub sign-in off)
+  google_client_secret: { file: ./secrets/google_client_secret } # GOOGLE_CLIENT_SECRET (may be empty)
+  error_tracker_dsn: { file: ./secrets/error_tracker_dsn } # ERROR_TRACKER_DSN (may be empty)
+  identity_email_hmac_key: { file: ./secrets/identity_email_hmac_key } # IDENTITY_EMAIL_HMAC_KEY, 32+ bytes, never changes
+  identity_recovery_code_key: { file: ./secrets/identity_recovery_code_key } # IDENTITY_RECOVERY_CODE_KEY, 32+ bytes
+  agent_pairing_hmac_key: { file: ./secrets/agent_pairing_hmac_key } # `openssl rand -hex 32`
+  runner_token: { file: ./secrets/runner_token }
+
+networks:
+  edge: {}
+  internal: { internal: true }
+  egress: {}
+  backup_egress: {}
+  runner: {}
+
+volumes:
+  storage:
+  haproxy_config:
+  caddy_data:
+  valkeydata:
+  pgdata:
+  pgsocket:
+  pgbackrest_spool:
+  pgbackrest_repo:
+  backup_status:
+  ledger:
+  engine_sock:

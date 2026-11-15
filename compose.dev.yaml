@@ -1,0 +1,57 @@
+# Contributors without lerd: builds the image locally, with Postgres and Valkey included
+# (compose-profile.md §1, the template's compose.yaml renamed). Not used in production.
+#   cp .env.example .env.docker   # then fill the values
+#   docker compose -f compose.dev.yaml up --build
+name: webhooktrap-dev
+
+x-app: &app
+  build:
+    context: .
+    target: runtime
+  image: webhooktrap:local
+  env_file: [.env.docker]
+  environment:
+    PROXY_TRUST_MODE: none
+    DB_HOST: postgres
+    REDIS_HOST: valkey
+  restart: unless-stopped
+  volumes: [storage:/app/storage/app]
+  depends_on:
+    postgres: { condition: service_healthy }
+    valkey: { condition: service_healthy }
+
+services:
+  app:
+    <<: *app
+    ports: ["127.0.0.1:${APP_PORT:-8080}:8080"]
+  reverb:
+    <<: *app
+    command: ["/usr/local/bin/reverb-boot"]
+    ulimits: { nofile: { soft: 10000, hard: 10000 } }
+  horizon:
+    <<: *app
+    command: ["php", "artisan", "horizon"]
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+  postgres:
+    image: postgres:18-bookworm@sha256:ece55f7868da684e400f82f1030a050718adbdd65c23aa500c486f6e2950dc0f
+    environment:
+      POSTGRES_DB: webhooktrap
+      POSTGRES_USER: webhooktrap
+      POSTGRES_PASSWORD: webhooktrap # local only
+    volumes: [pgdata:/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webhooktrap -d webhooktrap"]
+      interval: 5s
+      retries: 10
+  valkey:
+    image: valkey/valkey:8-alpine@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  storage:
+  pgdata:

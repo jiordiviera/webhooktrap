@@ -1,0 +1,15 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/observations.response.schema.json",
+    "title": "202 answer to observations",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "seq": {
+            "type": "integer"
+        }
+    },
+    "required": ["proto", "seq"]
+}

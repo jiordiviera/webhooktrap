@@ -1,0 +1,557 @@
+/*
+ * Landing only (S-01), decision 57 "terminal" direction. Dark only, on purpose.
+ * Every token here is scoped to the `.landing` root and prefixed `lp-`, so the
+ * app's shared tokens in app.css are untouched.
+ *
+ * Contrast (WCAG 2.x, computed for the pairs the landing uses; AA needs 4.5):
+ *   ink/bg 15.04 · muted/bg 7.47 · dim/bg 5.27 · dim/win 5.59 · dim/raise 4.81
+ *   muted/raise 6.83 · green/win 8.97 · red/win 6.30 · amber/win 11.14
+ *   orange/win 8.47 · info/win 8.84 · mag/win 7.29 · mag/bg 6.87
+ *   mag-ink/mag 7.09 · bg/green (PASS) 8.46 · bg/red (FAIL) 5.93
+ *   bg/ink (button) 15.04 · mag-ink/mag (button hover) 7.09
+ *   green/green-line 7.46 · red/red-line 5.56 · ink/red-line 14.08
+ *   dim/green-line 4.64 · dim/red-line 4.93 · red/raise 5.42
+ */
+@theme inline {
+    --color-lp-bg: var(--lp-bg);
+    --color-lp-win: var(--lp-win);
+    --color-lp-raise: var(--lp-raise);
+    --color-lp-rule: var(--lp-rule);
+    --color-lp-rule-soft: var(--lp-rule-soft);
+    --color-lp-ink: var(--lp-ink);
+    --color-lp-muted: var(--lp-muted);
+    --color-lp-dim: var(--lp-dim);
+    --color-lp-red: var(--lp-red);
+    --color-lp-red-line: var(--lp-red-line);
+    --color-lp-green: var(--lp-green);
+    --color-lp-green-line: var(--lp-green-line);
+    --color-lp-amber: var(--lp-amber);
+    --color-lp-orange: var(--lp-orange);
+    --color-lp-info: var(--lp-info);
+    --color-lp-mag: var(--lp-mag);
+    --color-lp-mag-ink: var(--lp-mag-ink);
+}
+
+@layer components {
+    /*
+     * Aliases of the shared app tokens (app.css). The landing root carries
+     * data-theme="dark", so there they resolve to the dark values;
+     * `.lp-tokens` lets an app screen (auth run pane) reuse the landing
+     * terminal components in the active theme.
+     */
+    .landing,
+    .lp-tokens {
+        /*
+         * Only --lp-red-line / --lp-green-line / --lp-mag-ink differ in name.
+         */
+        --lp-bg: var(--ground);
+        --lp-win: var(--win);
+        --lp-raise: var(--surface);
+        --lp-rule: var(--rule);
+        --lp-rule-soft: var(--rule-soft);
+        --lp-ink: var(--ink);
+        --lp-muted: var(--ink-muted);
+        --lp-dim: var(--ink-dim);
+        --lp-red: var(--conflict);
+        --lp-red-line: var(--conflict-wash);
+        --lp-green: var(--pass);
+        --lp-green-line: var(--pass-wash);
+        --lp-amber: var(--sev-medium);
+        --lp-orange: var(--sev-high);
+        --lp-info: var(--sev-info);
+        --lp-mag: var(--now);
+        --lp-mag-ink: var(--on-now);
+    }
+
+    .landing {
+        color-scheme: dark;
+        background: var(--lp-bg);
+        color: var(--lp-ink);
+        font-family: var(--font-mono);
+        font-stretch: 87.5%;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    /* Overscroll and the page behind the landing stay dark too. */
+    html:has(.landing) {
+        background: #141411;
+        color-scheme: dark;
+    }
+
+    .landing :focus-visible {
+        outline: 2px solid var(--lp-mag);
+        outline-offset: 3px;
+    }
+
+    @keyframes lp-blink {
+        50% {
+            opacity: 0;
+        }
+    }
+
+    /* h1 caret: blinks a few times, then stays solid (no endless blinking). */
+    .lp-caret {
+        display: inline-block;
+        width: 0.5em;
+        height: 0.82em;
+        margin-left: 0.12em;
+        vertical-align: -0.06em;
+        background: var(--lp-mag);
+        animation: lp-blink 1.1s steps(1) 4;
+    }
+
+    /* Terminal cursor: blinks while the run plays; the pause control stops it. */
+    .lp-cursor {
+        display: inline-block;
+        width: 0.6em;
+        height: 1.15em;
+        vertical-align: -0.2em;
+        background: var(--lp-ink);
+    }
+    .lp-cursor[data-blink='true'] {
+        animation: lp-blink 1s steps(1) infinite;
+    }
+
+    /* Diff gutter: line numbers come from data-n so they are not copied. */
+    .lp-diff-line::before {
+        content: attr(data-n);
+        display: inline-block;
+        width: 46px;
+        padding-right: 14px;
+        text-align: right;
+        color: var(--lp-dim);
+    }
+
+    .lp-scn summary {
+        list-style: none;
+    }
+    .lp-scn summary::-webkit-details-marker {
+        display: none;
+    }
+    .lp-scn details[open] .lp-chevron {
+        transform: rotate(90deg);
+    }
+
+    /* ------------------------------------------------------------------
+     * Motion (decision 59). Transform and opacity only. Sequences that wait
+     * for the viewport key off data-motion (motion.ts): absent = static and
+     * complete, 'armed' = start state, 'play' = runs once. Nothing here
+     * flashes: the fastest repeat is the 1.6 s "running" breath.
+     * ---------------------------------------------------------------- */
+
+    @keyframes lp-rise {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+    @keyframes lp-slide {
+        from {
+            opacity: 0;
+            transform: translateX(-12px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+    @keyframes lp-wash {
+        from {
+            transform: scaleX(0);
+        }
+        to {
+            transform: scaleX(1);
+        }
+    }
+    @keyframes lp-wipe {
+        from {
+            transform: scaleX(1);
+        }
+        to {
+            transform: scaleX(0);
+        }
+    }
+    @keyframes lp-caret-run {
+        0% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        92% {
+            opacity: 1;
+            transform: translateX(100%);
+        }
+        100% {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+    @keyframes lp-ping {
+        from {
+            opacity: 0.95;
+            transform: scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: scale(1.45, 1.9);
+        }
+    }
+    @keyframes lp-pop {
+        from {
+            opacity: 0;
+            transform: scale(0.4);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+    @keyframes lp-roll {
+        from {
+            transform: translateY(0);
+        }
+        to {
+            transform: translateY(-1lh);
+        }
+    }
+    @keyframes lp-jolt {
+        0%,
+        100% {
+            transform: none;
+        }
+        20% {
+            transform: translateX(-4px);
+        }
+        45% {
+            transform: translateX(3px);
+        }
+        70% {
+            transform: translateX(-1.5px);
+        }
+    }
+    @keyframes lp-glitch {
+        0% {
+            transform: translateY(100%);
+        }
+        35% {
+            transform: translate(-3px, 0);
+        }
+        65% {
+            transform: translate(2px, 0);
+        }
+        100% {
+            transform: none;
+        }
+    }
+    @keyframes lp-breathe {
+        50% {
+            opacity: 0.25;
+        }
+    }
+    @keyframes lp-grow {
+        from {
+            transform: scaleY(0);
+        }
+        to {
+            transform: scaleY(1);
+        }
+    }
+    @keyframes lp-travel {
+        0% {
+            opacity: 0;
+            transform: translateY(0);
+        }
+        12%,
+        88% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+    }
+    @keyframes lp-dim-in {
+        from {
+            opacity: 0.38;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* A FAIL badge pulses once: a red ring grows out of it and fades. */
+    .lp-badge[data-badge='fail']::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border: 1px solid var(--lp-red);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Rolling counter: a one-line window over a column of values. */
+    .lp-flip {
+        display: inline-block;
+        height: 1lh;
+        overflow: hidden;
+        vertical-align: top;
+    }
+    .lp-flip-col {
+        display: block;
+    }
+    .lp-flip-col > span {
+        display: block;
+        height: 1lh;
+    }
+
+    /* ---- Hero terminal --------------------------------------------- */
+
+    /* Faint scanlines: static, under the text. */
+    .lp-screen {
+        background-image: repeating-linear-gradient(
+            to bottom,
+            transparent 0 2px,
+            rgb(255 255 255 / 0.022) 2px 3px
+        );
+    }
+
+    .lp-term .lp-flip-col {
+        animation: lp-roll 420ms cubic-bezier(0.2, 0.7, 0.2, 1) 380ms both;
+    }
+    /* Run over: the frame jolts, every FAIL pulses once, exit 1 drops in. */
+    .lp-term[data-state='exit'] {
+        animation: lp-jolt 380ms cubic-bezier(0.3, 0.7, 0.4, 1) 1;
+    }
+    .lp-term[data-state='exit'] .lp-badge[data-badge='fail']::after {
+        animation: lp-ping 720ms ease-out 180ms 1 both;
+    }
+    .lp-exit {
+        animation: lp-glitch 300ms steps(3, end) 1 both;
+    }
+    .lp-live {
+        animation: lp-breathe 1.6s ease-in-out infinite;
+    }
+    /* The pause control (and leaving the viewport) freezes all of it. */
+    .lp-term[data-paused],
+    .lp-term[data-paused] *,
+    .lp-term[data-paused] *::after {
+        animation-play-state: paused !important;
+    }
+
+    /* ---- Findings: the test types in, then the diff ---------------- */
+
+    .lp-type {
+        position: relative;
+    }
+    /* The caret travels its own width: clip it so it adds no scroll. */
+    .lp-finding[data-motion] .lp-type {
+        overflow-x: clip;
+    }
+    .lp-finding[data-motion] .lp-type::after {
+        content: '';
+        position: absolute;
+        inset: -2px -4px;
+        background: var(--lp-bg);
+        transform-origin: right;
+        transform: scaleX(0);
+    }
+    .lp-finding[data-motion] .lp-type::before {
+        content: '';
+        position: absolute;
+        z-index: 1;
+        top: 0.1em;
+        left: 0;
+        width: calc(100% - 0.55em);
+        height: 1.15em;
+        background: linear-gradient(var(--lp-mag), var(--lp-mag)) left / 0.55em
+            100% no-repeat;
+        opacity: 0;
+    }
+    .lp-finding[data-motion='armed'] .lp-type::after {
+        transform: scaleX(1);
+    }
+    .lp-finding[data-motion='armed'] :is(.lp-rv, .lp-diff-line) {
+        opacity: 0;
+    }
+    .lp-finding[data-motion='play'] .lp-badge[data-badge='fail']::after {
+        animation: lp-ping 720ms ease-out 1 both;
+    }
+    .lp-finding[data-motion='play'] .lp-type::after {
+        animation: lp-wipe 820ms steps(28, end) 160ms both;
+    }
+    .lp-finding[data-motion='play'] .lp-type::before {
+        animation: lp-caret-run 820ms steps(28, end) 160ms both;
+    }
+    .lp-finding[data-motion='play'] .lp-rv {
+        animation: lp-rise 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        animation-delay: calc(1000ms + var(--i, 0) * 90ms);
+    }
+
+    .lp-diff-line {
+        position: relative;
+        isolation: isolate;
+    }
+    .lp-diff-line:is([data-kind='add'], [data-kind='del'])::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        transform-origin: left;
+    }
+    .lp-diff-line[data-kind='add']::after {
+        background: var(--lp-green-line);
+    }
+    .lp-diff-line[data-kind='del']::after {
+        background: var(--lp-red-line);
+    }
+    .lp-finding[data-motion='play'] .lp-diff-line {
+        animation: lp-slide 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        animation-delay: calc(950ms + var(--i, 0) * 45ms);
+    }
+    .lp-finding[data-motion='play'] .lp-diff-line::after {
+        animation: lp-wash 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        animation-delay: calc(1100ms + var(--i, 0) * 45ms);
+    }
+
+    /* ---- Scenarios ------------------------------------------------- */
+
+    .lp-scn[data-motion='armed'] .lp-glyph {
+        opacity: 0;
+    }
+    .lp-scn[data-motion='play'] .lp-glyph {
+        animation: lp-pop 380ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+        animation-delay: calc(120ms + var(--i, 0) * 70ms);
+    }
+    /* The row the lane is playing: a magenta tick in the gutter. */
+    .lp-scn details::before {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: -12px;
+        width: 2px;
+        height: 20px;
+        background: var(--lp-mag);
+        opacity: 0;
+        transform: scaleY(0.3);
+        transition:
+            opacity 200ms ease,
+            transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .lp-scn details[data-active]::before {
+        opacity: 1;
+        transform: none;
+    }
+    .lp-chevron {
+        transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .lp-scn details[open] .lp-scn-body {
+        animation: lp-rise 300ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+
+    .lp-lane-name {
+        display: inline-block;
+        animation: lp-rise 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    /* Wide and tall screens: the lane stays in view while the rows scroll. */
+    @media (min-width: 1001px) and (min-height: 760px) {
+        .lp-lane-sticky {
+            position: sticky;
+            top: 16px;
+            z-index: 5;
+            box-shadow: 0 -17px 0 0 var(--lp-bg);
+        }
+    }
+
+    /* ---- Pipeline: capture → scrub → commit → CI ------------------- */
+
+    .lp-step:not(:last-child) {
+        margin-bottom: 1lh;
+    }
+    .lp-node {
+        position: absolute;
+        top: calc(0.5lh - 4px);
+        left: -23px;
+        width: 8px;
+        height: 8px;
+        border: 1px solid var(--lp-dim);
+    }
+    .lp-node::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        background: var(--lp-mag);
+    }
+    .lp-seg,
+    .lp-seg-dot {
+        position: absolute;
+        top: calc(0.5lh + 6px);
+        left: -19.5px;
+        width: 1px;
+        height: calc(100% + 1lh - 12px);
+    }
+    .lp-seg {
+        background: var(--lp-rule);
+    }
+    .lp-seg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--lp-mag);
+        transform-origin: top;
+    }
+    .lp-seg-dot {
+        opacity: 0;
+    }
+    .lp-seg-dot::before {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: -2.5px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--lp-mag);
+    }
+    .lp-pipe[data-motion='armed'] .lp-step {
+        opacity: 0.38;
+    }
+    .lp-pipe[data-motion='armed'] .lp-node::after {
+        opacity: 0;
+    }
+    .lp-pipe[data-motion='armed'] .lp-seg::after {
+        transform: scaleY(0);
+    }
+    .lp-pipe[data-motion='play'] .lp-step {
+        animation: lp-dim-in 300ms ease-out both;
+        animation-delay: calc(var(--i, 0) * 800ms);
+    }
+    .lp-pipe[data-motion='play'] .lp-node::after {
+        animation: lp-pop 300ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+        animation-delay: calc(var(--i, 0) * 800ms);
+    }
+    .lp-pipe[data-motion='play'] .lp-seg::after {
+        animation: lp-grow 620ms cubic-bezier(0.45, 0.05, 0.35, 1) both;
+        animation-delay: calc(var(--i, 0) * 800ms + 200ms);
+    }
+    .lp-pipe[data-motion='play'] .lp-seg-dot {
+        animation: lp-travel 620ms cubic-bezier(0.45, 0.05, 0.35, 1) both;
+        animation-delay: calc(var(--i, 0) * 800ms + 200ms);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .landing *,
+        .landing *::before,
+        .landing *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+        /* Static final frame: counters show their end value. */
+        .lp-term .lp-flip-col {
+            transform: translateY(-1lh);
+        }
+    }
+}

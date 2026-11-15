@@ -1,0 +1,19 @@
+{
+  "provider": "stripe",
+  "event_type": "payment_intent.succeeded",
+  "capture_order": 2,
+  "source": "#03",
+  "headers": [
+    [
+      "User-Agent",
+      "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+    ],
+    [
+      "Content-Type",
+      "application/json; charset=utf-8"
+    ]
+  ],
+  "signature": "resign",
+  "body_sha256": "0642fa6750ebd7dfaa6455ebaef9a806dad47b893eadd9a87ab2e0c274e25bd0",
+  "body": "{\n  \"id\": \"evt_1QKJfXfXlhXK6gvKcqAYSoq2\",\n  \"object\": \"event\",\n  \"api_version\": \"2024-06-20\",\n  \"created\": 1794405482,\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_3QK4RAqNlKszZLwoglztTHYj\",\n      \"object\": \"payment_intent\",\n      \"amount\": 2400,\n      \"amount_received\": 2400,\n      \"capture_method\": \"automatic\",\n      \"created\": 1794405482,\n      \"currency\": \"usd\",\n      \"customer\": \"cus_RLwECeeQJ3SXHr\",\n      \"description\": \"Subscription update\",\n      \"invoice\": \"in_1QKImRcZJ8HR9BZYostEV4ui\",\n      \"latest_charge\": \"ch_3QKQSfbDEoGWoz5h9BH30pt1\",\n      \"livemode\": false,\n      \"metadata\": {},\n      \"payment_method\": \"pm_1PZRGz52LdKhQ8E5ocq7L2Yi\",\n      \"payment_method_types\": [\n        \"card\"\n      ],\n      \"status\": \"succeeded\"\n    }\n  },\n  \"livemode\": false,\n  \"pending_webhooks\": 1,\n  \"request\": {\n    \"id\": null,\n    \"idempotency_key\": \"in_auto_HN133gxEnt\"\n  },\n  \"type\": \"payment_intent.succeeded\"\n}"
+}

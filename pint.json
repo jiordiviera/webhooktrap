@@ -1,0 +1,16 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "spikes",
+        "project",
+        "docs",
+        ".docs",
+        "agent",
+        ".worktrees",
+        "storage",
+        "bootstrap/cache"
+    ],
+    "rules": {
+        "declare_strict_types": true
+    }
+}

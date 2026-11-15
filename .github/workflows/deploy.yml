@@ -1,0 +1,132 @@
+# Deploy to the shared VPS (project/operations/ci-cd.md §4), from the template's deploy.yml
+# (decision 43). Manual dispatch only, behind the `production` environment (PO approval).
+# The runner only fast-fails; the box re-verifies signatures and the Compose policy itself
+# (deploy.sh, forced-command key). One argument grammar:
+#   deploy <commit-sha> <app-digest> <pg-digest>
+#   rollback
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: deploy or rollback
+        type: choice
+        options: [deploy, rollback]
+        default: deploy
+      sha:
+        description: Commit SHA to deploy (default - the dispatched commit)
+        type: string
+        required: false
+
+permissions: {}
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: production
+    permissions:
+      contents: read
+      actions: read # find the container run and its digests artifact
+      packages: read
+    env:
+      APP_REPO: ghcr.io/${{ github.repository }}
+      PG_REPO: ghcr.io/${{ github.repository }}-postgres
+      # The images must come from container.yml on the branch this deploy is dispatched from.
+      CERT_ID: https://github.com/${{ github.repository }}/.github/workflows/container.yml@${{ github.ref }}
+      OIDC_ISSUER: https://token.actions.githubusercontent.com
+    steps:
+      - name: Resolve commit
+        id: commit
+        env:
+          INPUT_SHA: ${{ inputs.sha }}
+          DEFAULT_SHA: ${{ github.sha }}
+        run: |
+          sha="${INPUT_SHA:-$DEFAULT_SHA}"
+          echo "$sha" | grep -Eq '^[0-9a-f]{40}$' || { echo "sha must be 40 lowercase hex"; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Container workflow succeeded for this commit
+        if: inputs.action == 'deploy'
+        id: run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow container.yml --commit "$SHA" \
+            --branch "$GITHUB_REF_NAME" --event push --status success --json databaseId --jq '.[0].databaseId')
+          test -n "$run_id" && test "$run_id" != null || { echo "no successful container run for $SHA"; exit 1; }
+          echo "id=$run_id" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: inputs.action == 'deploy'
+        with:
+          name: digests
+          run-id: ${{ steps.run.outputs.id }}
+          github-token: ${{ github.token }}
+
+      - name: Read digests
+        if: inputs.action == 'deploy'
+        id: digests
+        env:
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          test "$(jq -r .sha digests.json)" = "$SHA"
+          app=$(jq -r .app digests.json)
+          pg=$(jq -r .postgres digests.json)
+          echo "$app" | grep -Eq '^sha256:[0-9a-f]{64}$'
+          echo "$pg" | grep -Eq '^sha256:[0-9a-f]{64}$'
+          { echo "app=$app"; echo "pg=$pg"; } >> "$GITHUB_OUTPUT"
+
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+        if: inputs.action == 'deploy'
+      - name: Verify signatures and provenance (fast-fail only)
+        if: inputs.action == 'deploy'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.commit.outputs.sha }}
+          APP_DIGEST: ${{ steps.digests.outputs.app }}
+          PG_DIGEST: ${{ steps.digests.outputs.pg }}
+          REPO_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          for ref in "$APP_REPO@$APP_DIGEST" "$PG_REPO@$PG_DIGEST"; do
+            cosign verify --certificate-identity "$CERT_ID" --certificate-oidc-issuer "$OIDC_ISSUER" \
+              --certificate-github-workflow-sha "$SHA" "$ref" > /dev/null
+            # GitHub attestations exist only once the repo is public (container.yml); until then the
+            # signature above covers the BuildKit provenance and SBOM inside the image index.
+            if [ "$REPO_PRIVATE" = false ]; then
+              gh attestation verify "oci://$ref" --repo "$GITHUB_REPOSITORY" \
+                --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/container.yml" > /dev/null
+            fi
+          done
+
+      - name: Run the forced command on the VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          ACTION: ${{ inputs.action }}
+          SHA: ${{ steps.commit.outputs.sha }}
+          APP_DIGEST: ${{ steps.digests.outputs.app }}
+          PG_DIGEST: ${{ steps.digests.outputs.pg }}
+        run: |
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          if [ "$ACTION" = rollback ]; then
+            cmd="rollback"
+          else
+            cmd="deploy $SHA $APP_DIGEST $PG_DIGEST"
+          fi
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" -o BatchMode=yes \
+            "$SERVER_USER@$SERVER_HOST" "$cmd"
+      - name: Remove the key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

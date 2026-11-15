@@ -1,0 +1,70 @@
+Webhook Trap · webhooktrap test · Stripe invoice.paid
+  target    http://127.0.0.1:3000/webhooks/stripe
+  handler   Express (detected from X-Powered-By)
+  events    #1 invoice.paid · #2 payment_intent.succeeded · #3 customer.subscription.updated
+  checks    Level 1 transport · Level 2 probe orders.count · reset between scenarios
+  budget    10 000 ms (Webhook Trap default)
+  warning   This run sends the same events several times. If your handler sends emails or
+            charges cards, honour the Webhooktrap-Dry-Run header first.
+
+    D    +ms      event                          http   latency  state  result
+  Once
+    D1      +650  invoice.paid                   200     184 ms  0 → 1  ▬ pass
+    D2      +984  payment_intent.succeeded       200     121 ms  1 → 1  ▬ pass
+    D3    +1 255  customer.subscription.updated  200     143 ms  1 → 1  ▬ pass
+  Twice
+    D4    +2 548  invoice.paid                   200     212 ms  0 → 1  ▬ pass
+    D5    +3 260  invoice.paid = D4′             200     196 ms  1 → 1  ▬ pass
+  Shuffled
+    D6    +4 606  customer.subscription.updated  200     138 ms  0 → 0  ▬ pass
+    D7    +4 894  payment_intent.succeeded       200     117 ms  0 → 0  ▬ pass
+    D8    +5 161  invoice.paid                   200     199 ms  0 → 1  ▬ pass
+          new finding  ○ Info · Probe doesn't see subscription state
+  Late
+    D9    +6 510  invoice.paid  t − 360 s        400      41 ms  0 → 0  ▬ pass (rejected)
+  Retry after error
+    D10   +7 701  invoice.paid                   200     250 ms  0 → 1  ▬ pass
+    D11   +9 951  invoice.paid = D10′ (retry)    200     205 ms  1 → 1  ▬ pass
+  Tampered
+    D12  +11 306  invoice.paid  body changed     400      41 ms  0 → 0  ▬ pass (rejected)
+  Unsigned
+    D13  +12 497  invoice.paid  no signature     400      41 ms  0 → 0  ▬ pass (rejected)
+  Burst
+    D14  +13 688  invoice.paid                   200     250 ms  —      ▬ pass
+    D15  +13 688  payment_intent.succeeded       200     250 ms  —      ▬ pass
+    D16  +13 688  customer.subscription.updated  200     250 ms  —      ▬ pass
+          final state  0 → 1 after the burst, expected 1 · released within 0 ms  ▬ pass
+  Slow budget
+    D17  +14 838  invoice.paid                   200     150 ms  0 → 1  ▬ pass
+
+ PASS Once                D1 D2 D3      200 × 3 · orders.count 0 → 1
+ PASS Twice               D4 D5         200, 200 · orders.count 0 → 1
+ PASS Shuffled            D6 D7 D8      reversed · orders.count 0 → 1
+ PASS Late                D9            400 in 41 ms · rejected as expected
+ PASS Retry after error   D10 D11       250 ms → retry → orders.count 0 → 1
+ PASS Tampered            D12           400 in 41 ms · rejected as expected
+ PASS Unsigned            D13           400 in 41 ms · rejected as expected
+ PASS Burst               D14 D15 D16   200 × 3 · 250 ms · orders.count 0 → 1 (final)
+ PASS Slow budget         D17           200 in 150 ms · within budget
+
+ ○ F1  Info     Probe doesn't see subscription state  D6 D16
+
+○ F1 Info · Probe doesn't see subscription state                                        D6 · D16
+  What happened   customer.subscription.updated was delivered in Shuffled and Burst (D6 and
+                  D16), and no probe reads subscription state.
+  Why it matters  Out-of-order delivery usually breaks status fields, not counts.
+                  Stripe docs › Webhooks › Event ordering
+  Fix             Add a subscription entry to the probe in webhooktrap.yml. The next run then
+                  checks both.
+                  Snippet (webhooktrap.yml):
+                    probe:
+                      # keep your existing entries, then add:
+                      - as: subscriptions.status
+                        cmd: psql "$DATABASE_URL" -Atc "select status from subscriptions where stripe_id = '{{subscription.id}}'"
+
+Passed · 1 Info
+9 of 9 scenarios passed at Level 1 + Level 2 (orders.count). Not checked: subscription state,
+which no probe reads · side effects outside your database, such as emails.
+9 scenarios · 17 deliveries · 16.0 s · run_01M75F1M56FYBB83XR91MMF2WJ
+  run file  run.json
+exit 0 --fail-on high

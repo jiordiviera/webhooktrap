@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/decline.request.schema.json",
+    "title": "POST /agent/v1/jobs/{jobId}/decline (§5.4)",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "reason": {
+            "enum": [
+                "target_not_allowed",
+                "needs_confirmation",
+                "needs_reconfirm",
+                "busy",
+                "agent_too_old"
+            ]
+        }
+    },
+    "required": ["proto", "reason"],
+    "additionalProperties": false
+}

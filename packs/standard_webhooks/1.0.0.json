@@ -1,0 +1,95 @@
+{
+    "$schema": "../_schema/pack.schema.json",
+    "format": 1,
+    "id": "standard_webhooks",
+    "version": "1.0.0",
+    "name": "Standard Webhooks",
+    "budget": {
+        "ms": 10000,
+        "source": "default",
+        "label": "10 s budget · Webhook Trap default",
+        "source_label": "Webhook Trap default",
+        "documented": false
+    },
+    "detect": {
+        "headers_all": ["webhook-id", "webhook-signature"]
+    },
+    "sender": {
+        "from": "user_agent_product",
+        "strip_suffixes": ["-webhooks", "-webhook", " webhooks"],
+        "ignore_products": [
+            "mozilla",
+            "curl",
+            "wget",
+            "httpie",
+            "go-http-client",
+            "python-requests",
+            "python-urllib",
+            "python-httpx",
+            "aiohttp",
+            "axios",
+            "node",
+            "node-fetch",
+            "undici",
+            "okhttp",
+            "java",
+            "apache-httpclient",
+            "ruby",
+            "faraday",
+            "php",
+            "guzzlehttp",
+            "postmanruntime",
+            "insomnia"
+        ]
+    },
+    "event": {
+        "type_path": "type",
+        "id_header": "webhook-id"
+    },
+    "grouping": {
+        "types": {},
+        "anchors": [],
+        "by_event": [],
+        "fallback": "data_id"
+    },
+    "signing": {
+        "scheme": "standard_webhooks_v1",
+        "headers": ["webhook-signature"],
+        "signed_timestamp": true,
+        "tolerance_s": 300,
+        "secret_env": ["WEBHOOK_SECRET"]
+    },
+    "duplicate": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": ["webhook-id"],
+        "citation": "https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md"
+    },
+    "retry": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": ["webhook-id"],
+        "citation": "https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md"
+    },
+    "resend_headers": ["User-Agent", "webhook-id", "webhook-timestamp"],
+    "tamper_paths": [],
+    "objects": [
+        {
+            "path": "data",
+            "type_field": "object",
+            "id_field": "id"
+        }
+    ],
+    "status_events": [],
+    "scrub": {
+        "paths": [],
+        "keep_headers": ["Content-Type", "User-Agent", "webhook-id"]
+    },
+    "id_pattern": "",
+    "citations": {},
+    "text": {
+        "findings": {},
+        "likely_cause": {},
+        "snippets": {}
+    }
+}

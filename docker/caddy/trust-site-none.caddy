@@ -1,0 +1,36 @@
+# PROXY_TRUST_MODE=none (self-host, FrankenPHP terminates TLS, nothing in front): always strip.
+(trust-site-none) {
+	# 1. Strip every spelling of the proof header before anything is decided.
+	request_header -X-WT-Verified
+	request_header -X_WT-Verified
+	request_header -X-WT_Verified
+	request_header -X_WT_Verified
+	# 3. The secret never reaches PHP, Reverb or a capture.
+	request_header -X-WT-Edge
+	request_header -X_WT-Edge
+	request_header -X-WT_Edge
+	request_header -X_WT_Edge
+	# 4. Every request: drop underscore spellings of forwarded headers, Forwarded, X-Real-IP, X-Forwarded-Port.
+	request_header -X_Forwarded-For
+	request_header -X-Forwarded_For
+	request_header -X_Forwarded_For
+	request_header -X_Forwarded-Proto
+	request_header -X-Forwarded_Proto
+	request_header -X_Forwarded_Proto
+	request_header -X_Forwarded-Host
+	request_header -X-Forwarded_Host
+	request_header -X_Forwarded_Host
+	request_header -X-Forwarded-Port
+	request_header -X_Forwarded-Port
+	request_header -X-Forwarded_Port
+	request_header -X_Forwarded_Port
+	request_header -Forwarded
+	request_header -X-Real-IP
+	request_header -X_Real-IP
+	request_header -X-Real_IP
+	request_header -X_Real_IP
+	# 5. Nothing is in front: the hyphen forms are always dropped.
+	request_header -X-Forwarded-For
+	request_header -X-Forwarded-Proto
+	request_header -X-Forwarded-Host
+}

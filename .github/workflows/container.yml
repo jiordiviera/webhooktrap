@@ -1,0 +1,203 @@
+# Container images (project/operations/ci-cd.md §3), from the template's container.yml (decision 43).
+# Pull requests: build and gate only, no push, no secrets. Push to v2: build, gate, push, sign
+# (cosign keyless) and attest SLSA provenance; output digests.json for deploy.yml.
+# No caches in this workflow (CI-4): no actions/cache, no buildx cache-from/cache-to.
+name: container
+
+on:
+  push:
+    branches: [v2] # the default branch; 1.x lives on v1 and is not built here
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: container-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write # push to GHCR (only used on push)
+      id-token: write # cosign keyless and attestations
+      attestations: write
+    env:
+      APP_REPO: ghcr.io/${{ github.repository }}
+      RUNNER_REPO: ghcr.io/${{ github.repository }}-runner
+      PG_REPO: ghcr.io/${{ github.repository }}-postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # Build the runtime image locally first so the gates run before anything is pushed.
+      - name: Build runtime image (local, for the gates)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: runtime
+          load: true
+          push: false
+          tags: webhooktrap:gate
+          build-args: |
+            ENGINE_VERSION=${{ github.sha }}
+            ENGINE_COMMIT=${{ github.sha }}
+
+      # Realtime extension gate (decision 50, proposed TM-T159).
+      - name: Gate - event-loop extension and argon2id are present
+        run: |
+          docker run --rm --entrypoint php webhooktrap:gate -r 'exit(extension_loaded("uv") || extension_loaded("event") ? 0 : 1);'
+          docker run --rm --entrypoint php webhooktrap:gate -r 'exit(defined("PASSWORD_ARGON2ID") ? 0 : 1);'
+          docker run --rm --entrypoint webhooktrap webhooktrap:gate version --json | grep -q '"protocol":"v1"'
+      - name: Gate - reverb-boot refuses a low nofile limit
+        run: |
+          set +e
+          out=$(docker run --rm --ulimit nofile=1024:1024 --entrypoint /usr/local/bin/reverb-boot webhooktrap:gate 2>&1)
+          code=$?
+          set -e
+          echo "$out"
+          test "$code" -ne 0
+          echo "$out" | grep -q 'nofile'
+      - name: Gate - reverb-boot refuses a PHP without uv/event
+        run: |
+          set +e
+          out=$(docker run --rm --ulimit nofile=10000:10000 -e PHP_INI_SCAN_DIR=/nonexistent \
+            --entrypoint /usr/local/bin/reverb-boot webhooktrap:gate 2>&1)
+          code=$?
+          set -e
+          echo "$out"
+          test "$code" -ne 0
+          echo "$out" | grep -q 'ext-uv'
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push runtime
+        id: app
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: runtime
+          push: ${{ github.event_name == 'push' }}
+          provenance: mode=max
+          sbom: true
+          tags: |
+            ${{ env.APP_REPO }}:${{ github.sha }}
+            ${{ env.APP_REPO }}:${{ github.ref_name }}
+          build-args: |
+            ENGINE_VERSION=${{ github.sha }}
+            ENGINE_COMMIT=${{ github.sha }}
+      - name: Build and push runner
+        id: runner
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: runner
+          push: ${{ github.event_name == 'push' }}
+          provenance: mode=max
+          sbom: true
+          tags: |
+            ${{ env.RUNNER_REPO }}:${{ github.sha }}
+            ${{ env.RUNNER_REPO }}:${{ github.ref_name }}
+          build-args: |
+            ENGINE_VERSION=${{ github.sha }}
+            ENGINE_COMMIT=${{ github.sha }}
+      - name: Build and push postgres
+        id: pg
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: docker/postgres
+          push: ${{ github.event_name == 'push' }}
+          provenance: mode=max
+          sbom: true
+          tags: |
+            ${{ env.PG_REPO }}:${{ github.sha }}
+            ${{ env.PG_REPO }}:${{ github.ref_name }}
+
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+        if: github.event_name == 'push'
+      - name: Sign images (keyless)
+        if: github.event_name == 'push'
+        env:
+          APP_DIGEST: ${{ steps.app.outputs.digest }}
+          RUNNER_DIGEST: ${{ steps.runner.outputs.digest }}
+          PG_DIGEST: ${{ steps.pg.outputs.digest }}
+        run: |
+          cosign sign --yes "$APP_REPO@$APP_DIGEST"
+          cosign sign --yes "$RUNNER_REPO@$RUNNER_DIGEST"
+          cosign sign --yes "$PG_REPO@$PG_DIGEST"
+      - name: Attest provenance (runtime)
+        # GitHub artifact attestations are refused on user-owned private repositories: they run
+        # once the repo is public (launch). Until then the BuildKit provenance and SBOM inside the
+        # signed image index (checked below) are the record.
+        if: github.event_name == 'push' && !github.event.repository.private
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.APP_REPO }}
+          subject-digest: ${{ steps.app.outputs.digest }}
+          push-to-registry: true
+      - name: Attest provenance (runner)
+        # GitHub artifact attestations are refused on user-owned private repositories: they run
+        # once the repo is public (launch). Until then the BuildKit provenance and SBOM inside the
+        # signed image index (checked below) are the record.
+        if: github.event_name == 'push' && !github.event.repository.private
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.RUNNER_REPO }}
+          subject-digest: ${{ steps.runner.outputs.digest }}
+          push-to-registry: true
+      - name: Attest provenance (postgres)
+        # GitHub artifact attestations are refused on user-owned private repositories: they run
+        # once the repo is public (launch). Until then the BuildKit provenance and SBOM inside the
+        # signed image index (checked below) are the record.
+        if: github.event_name == 'push' && !github.event.repository.private
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.PG_REPO }}
+          subject-digest: ${{ steps.pg.outputs.digest }}
+          push-to-registry: true
+
+      - name: Verify signatures and the provenance and SBOM in each signed index
+        if: github.event_name == 'push'
+        env:
+          APP_DIGEST: ${{ steps.app.outputs.digest }}
+          RUNNER_DIGEST: ${{ steps.runner.outputs.digest }}
+          PG_DIGEST: ${{ steps.pg.outputs.digest }}
+          CERT_ID: https://github.com/${{ github.repository }}/.github/workflows/container.yml@${{ github.ref }}
+        run: |
+          for ref in "$APP_REPO@$APP_DIGEST" "$RUNNER_REPO@$RUNNER_DIGEST" "$PG_REPO@$PG_DIGEST"; do
+            cosign verify --certificate-identity "$CERT_ID" \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              --certificate-github-workflow-sha "$GITHUB_SHA" "$ref" > /dev/null
+            docker buildx imagetools inspect "$ref" --format '{{json .Provenance}}' | grep -q '"SLSA"'
+            docker buildx imagetools inspect "$ref" --format '{{json .SBOM}}' | grep -q '"SPDX"'
+          done
+      - name: Record digests
+        if: github.event_name == 'push'
+        env:
+          APP_DIGEST: ${{ steps.app.outputs.digest }}
+          RUNNER_DIGEST: ${{ steps.runner.outputs.digest }}
+          PG_DIGEST: ${{ steps.pg.outputs.digest }}
+          SHA: ${{ github.sha }}
+        run: |
+          printf '{"sha":"%s","app":"%s","runner":"%s","postgres":"%s"}\n' "$SHA" "$APP_DIGEST" "$RUNNER_DIGEST" "$PG_DIGEST" > digests.json
+          {
+            echo '### Image digests'
+            echo "- app: \`$APP_REPO@$APP_DIGEST\`"
+            echo "- runner: \`$RUNNER_REPO@$RUNNER_DIGEST\`"
+            echo "- postgres: \`$PG_REPO@$PG_DIGEST\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: github.event_name == 'push'
+        with:
+          name: digests
+          path: digests.json
+          retention-days: 90

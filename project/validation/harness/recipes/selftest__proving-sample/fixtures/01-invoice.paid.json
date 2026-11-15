@@ -1,0 +1,1 @@
+{"id":"evt_1WtSelfTest0001","object":"event","created":1794659000,"livemode":false,"type":"invoice.paid","data":{"object":{"id":"in_1WtSelfTest0001","object":"invoice","amount_paid":2900,"total":2900,"currency":"usd"}}}

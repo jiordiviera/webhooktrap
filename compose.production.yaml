@@ -1,0 +1,316 @@
+# Webhook Trap 2.0 — hosted profile (project/operations/compose-profile.md §2).
+# Derived from the template's compose.production.yaml (decision 43). Used on the shared VPS only;
+# deploy.sh extracts it from the signed image and checks it against the on-box policy
+# (deploy/policy/compose-policy.py, ci-cd.md §4.2) before `up`.
+# Values in ${...} come from .env.deploy (image, digest, port) or .env.production (names only here).
+# Limits: the 23 GiB box (VPS audit, decision 65): compose-profile §3, slice MemoryMax 6 GiB, CPUQuota 300%.
+
+name: webhooktrap # pinned: --remove-orphans can never touch another project
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+x-hardening: &hardening
+  restart: unless-stopped
+  init: true
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: [ALL]
+  cgroup_parent: webhooktrap.slice # aggregate ceiling (contabo plan §6.1); policy variant if Docker uses cgroupfs
+  logging: *logging
+
+x-app: &app
+  <<: *hardening
+  image: ${APP_IMAGE:?Set APP_IMAGE}@${APP_DIGEST:?Set APP_DIGEST}
+  env_file: [.env.production]
+  environment:
+    PROXY_TRUST_MODE: secret # hosted is always behind the host proxy (SV-2); the app default is none (A09 S3-5)
+  read_only: true
+  tmpfs: ["/tmp:size=64m", "/app/storage/framework/cache:size=64m", "/data:size=16m,uid=33,gid=33"] # /data: Caddy locks only (TLS is at the host proxy)
+  volumes:
+    - storage:/app/storage/app
+    - backup_status:/status:ro # DL-3c: the entrypoint refuses to start while /status/restore.pending exists
+  networks: [internal]
+  depends_on:
+    postgres: { condition: service_healthy }
+    valkey: { condition: service_healthy }
+  oom_score_adj: 500
+
+services:
+  app:
+    <<: *app
+    networks: [edge, internal, egress] # egress: mail, OAuth
+    ports: ["127.0.0.1:${APP_PORT:?Set APP_PORT}:8080"] # hosted: 18480; loopback only (P-6)
+    environment:
+      PROXY_TRUST_MODE: secret
+      WT_ROLE: app # the entrypoint checks the edge secret in app and ingest only (A09 S3-22)
+      INGEST_MODE: proxy # capture path (in. host, /c/…) handed on, re-signed with the edge secret
+      INGEST_UPSTREAM: haproxy:8080 # decision 61: per-address limits before ingest
+      APP_NUM_THREADS: ${APP_NUM_THREADS:-12} # FrankenPHP pool of the front (23 GiB box: 12, compose-profile §3)
+      LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-12} # always the same value: long-poll slots leave 2 workers free
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
+    mem_limit: 1200m
+    memswap_limit: 1200m
+    cpus: 1.5
+    pids_limit: 256
+    volumes: [storage:/app/storage/app, engine_sock:/run/engine, backup_status:/status:ro]
+    group_add: ["10001"] # may use the engine's socket
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+      reverb: { condition: service_healthy }
+      engine: { condition: service_healthy }
+      haproxy: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  ingest: # A09 S3-3, S3-4: the capture path on its own PHP thread pool, without form or multipart parsing (compose-profile §2.3)
+    <<: *app
+    command: ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile.ingest", "--adapter", "caddyfile"]
+    environment:
+      PROXY_TRUST_MODE: secret # always: its only caller is the app front, which signs with the edge secret
+      WT_ROLE: ingest # explicit (policy P-17): the entrypoint and the app's identity check both read it
+    secrets: [app_key, db_password, valkey_password, error_tracker_dsn, edge_proxy_secret] # no identity keys: the app skips that check under WT_ROLE=ingest (9224c67)
+    networks: [internal] # reached by `app` only; not published, no internet
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 0.75
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  haproxy: # decision 61 (A09 S3-4, decision 2): per-address connection cap and backstop rate limit before ingest (compose-profile §2.4)
+    <<: *hardening
+    image: haproxy:3.4.7-alpine@sha256:b9fe316f718d5015c5cfebd8ca019591f3e44656f61d93cb8b59a1028961e530
+    command: ["haproxy", "-f", "/wt-haproxy/haproxy.cfg"]
+    labels: { webhooktrap.config-from: "${APP_DIGEST:?Set APP_DIGEST}" } # a new app image recreates haproxy, so it loads the new config
+    environment: # Compose's :- also covers an empty value, which HAProxy's own default does not (S3-24)
+      WT_CAPTURE_MAX_CONN: ${WT_CAPTURE_MAX_CONN:-20}
+      WT_CAPTURE_MAX_RATE: ${WT_CAPTURE_MAX_RATE:-1200}
+      WT_CAPTURE_MAX_STREAM: ${WT_CAPTURE_MAX_STREAM:-2}
+      WT_CAPTURE_STREAM_SLOTS: ${WT_CAPTURE_STREAM_SLOTS:-6} # INGEST_NUM_THREADS - 2 (S3-17)
+    secrets: [edge_proxy_secret] # keys on X-Forwarded-For only for hops signed by `app`
+    group_add: ["33"] # the secret file is root:www-data 0440
+    read_only: true
+    volumes: [haproxy_config:/wt-haproxy:ro]
+    networks: [internal] # reached by `app` only; not published, no internet
+    depends_on:
+      haproxy-config: { condition: service_completed_successfully }
+      ingest: { condition: service_healthy }
+    mem_limit: 128m # measured: 79 MiB peak with 1,000 full buffers and 25k addresses (S3-24)
+    memswap_limit: 128m
+    cpus: 0.25
+    pids_limit: 64
+    oom_score_adj: 500
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8405/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  haproxy-config: # one-shot: copies docker/haproxy.cfg out of the signed app image for `haproxy`
+    <<: *hardening
+    image: ${APP_IMAGE:?Set APP_IMAGE}@${APP_DIGEST:?Set APP_DIGEST}
+    entrypoint: ["cp", "/etc/webhooktrap/haproxy.cfg", "/etc/webhooktrap/received-200.http", "/wt-haproxy/"]
+    user: "0:0" # owner of the fresh volume; no capability, no network
+    restart: "no"
+    network_mode: none
+    read_only: true
+    volumes: [haproxy_config:/wt-haproxy]
+    mem_limit: 32m
+    memswap_limit: 32m
+    cpus: 0.1
+    pids_limit: 16
+    oom_score_adj: 500
+
+  reverb:
+    <<: *app
+    command: ["/usr/local/bin/reverb-boot"] # boot checks, then reverb:start (compose-profile §3.2)
+    secrets: [app_key, valkey_password, reverb_app_secret, error_tracker_dsn]
+    networks: [edge, internal]
+    ulimits: { nofile: { soft: 10000, hard: 10000 } }
+    mem_limit: 384m
+    memswap_limit: 384m
+    cpus: 0.5
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 8080) ? 0 : 1);"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  horizon:
+    <<: *app
+    command: ["php", "artisan", "horizon"]
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, mail_password, error_tracker_dsn]
+    volumes: [storage:/app/storage/app, backup_status:/status:ro, ledger:/ledger] # DL-3a: only writer of the deletion ledger
+    networks: [internal, egress] # sends mail
+    stop_grace_period: 60s
+    mem_limit: 512m # 3 supervisors (default 1-2, broadcasts 1, maintenance 1): measured 304 MiB scaled (compose-profile §3.4)
+    memswap_limit: 512m
+    cpus: 1.0
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "php", "artisan", "horizon:status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+    secrets: [app_key, db_password, valkey_password, error_tracker_dsn]
+    mem_limit: 128m
+    memswap_limit: 128m
+    cpus: 0.25
+    pids_limit: 128
+    healthcheck: # heartbeat written by a scheduled task every minute (command lands with Retention/Instance)
+      test: ["CMD", "php", "artisan", "app:heartbeat-check", "--max-age=120"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  engine: # ENG-1: network-free sandbox for `plan` and `verify` (ADR-010 §1)
+    <<: *hardening
+    image: ${APP_IMAGE:?Set APP_IMAGE}@${APP_DIGEST:?Set APP_DIGEST}
+    entrypoint: ["webhooktrap"]
+    command: ["serve-sandbox", "--socket=/run/engine/engine.sock"]
+    network_mode: none
+    read_only: true
+    tmpfs: ["/tmp:size=32m"]
+    user: "10001:10001"
+    # no env_file, no secrets, no DB or Valkey variables, no storage volume
+    volumes: [engine_sock:/run/engine]
+    mem_limit: 192m
+    memswap_limit: 192m
+    cpus: 0.25
+    pids_limit: 128
+    oom_score_adj: 500
+    healthcheck:
+      test: ["CMD", "webhooktrap", "sandbox-ping", "--socket=/run/engine/engine.sock"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  valkey: # HD-8
+    <<: *hardening
+    image: valkey/valkey:8-alpine@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a
+    command: ["sh", "-c", "exec valkey-server --requirepass \"$$(cat /run/secrets/valkey_password)\" --appendonly yes --appendfsync everysec --maxmemory $${VALKEY_MAXMEMORY} --maxmemory-policy noeviction"]
+    environment: [VALKEY_MAXMEMORY]
+    secrets: [valkey_password]
+    cap_add: [SETUID, SETGID]
+    volumes: [valkeydata:/data]
+    networks: [internal]
+    mem_limit: 384m
+    memswap_limit: 384m
+    cpus: 0.5
+    pids_limit: 64
+    oom_score_adj: 300
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$(cat /run/secrets/valkey_password)\" valkey-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    <<: *hardening
+    image: ${PG_IMAGE:?Set PG_IMAGE}@${PG_DIGEST:?Set PG_DIGEST} # postgres:18 + pgbackrest (docker/postgres)
+    environment: [POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD_FILE]
+    secrets: [postgres_password] # no backup secret: postgres has no network to the repository; `backup` pushes the WAL
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID]
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-1GB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-3GB}
+      - -c
+      - default_toast_compression=lz4
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=pgbackrest-queue %p %f # queues the segment on the spool volume; `backup` pushes it (wt-backup)
+      - -c
+      - log_min_duration_statement=500ms
+      - -c
+      - log_parameter_max_length=0
+    shm_size: 256m
+    volumes: [pgdata:/var/lib/postgresql, pgsocket:/var/run/postgresql, pgbackrest_spool:/var/spool/pgbackrest]
+    networks: [internal]
+    stop_grace_period: 60s
+    mem_limit: 2048m
+    memswap_limit: 2048m
+    cpus: 1.5
+    pids_limit: 200
+    oom_score_adj: 0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backup:
+    <<: *hardening
+    image: ${PG_IMAGE:?Set PG_IMAGE}@${PG_DIGEST:?Set PG_DIGEST}
+    command: ["backup-loop"]
+    environment: [POSTGRES_USER, POSTGRES_DB, BACKUP_REPO_TYPE, BACKUP_S3_ENDPOINT, BACKUP_S3_REGION, BACKUP_S3_BUCKET, BACKUP_RETENTION_FULL, BACKUP_FULL_SCHEDULE, LEDGER_AGE_RECIPIENT, LEDGER_RETENTION_DAYS, LEDGER_SHIP_INTERVAL_SECONDS, LEDGER_S3_PREFIX]
+    secrets: [backup_cipher_pass, backup_s3_key, backup_s3_secret]
+    user: postgres
+    volumes: [pgdata:/var/lib/postgresql:ro, pgsocket:/var/run/postgresql, pgbackrest_spool:/var/spool/pgbackrest, backup_status:/status, ledger:/ledger:ro]
+    networks: [internal, backup_egress]
+    depends_on: { postgres: { condition: service_healthy } }
+    mem_limit: 384m
+    memswap_limit: 384m
+    cpus: 0.5
+    pids_limit: 128
+    oom_score_adj: 300
+    healthcheck:
+      test: ["CMD", "backup-status", "--max-full-age=26h", "--max-archive-lag=15m"]
+      interval: 5m
+      timeout: 30s
+      retries: 1
+
+# No top-level `configs:` and no `driver`/`driver_opts` on any volume (policy P-5, CI-2).
+secrets: # files under /opt/apps/webhooktrap/secrets, root:<runtime gid> 0440
+  valkey_password: { file: ./secrets/valkey_password }
+  postgres_password: { file: ./secrets/postgres_password }
+  backup_cipher_pass: { file: ./secrets/backup_cipher_pass }
+  backup_s3_key: { file: ./secrets/backup_s3_key }
+  backup_s3_secret: { file: ./secrets/backup_s3_secret }
+  edge_proxy_secret: { file: ./secrets/edge_proxy_secret } # shared with the host proxy vhost
+  db_password: { file: ./secrets/db_password } # DB_PASSWORD for the app family: same value as postgres_password, root:<runtime gid> 0440
+  app_key: { file: ./secrets/app_key } # APP_KEY (base64:…), root:<runtime gid> 0440 like every file the app reads
+  reverb_app_secret: { file: ./secrets/reverb_app_secret } # REVERB_APP_SECRET
+  mail_password: { file: ./secrets/mail_password } # MAIL_PASSWORD (may be empty)
+  github_client_secret: { file: ./secrets/github_client_secret } # GITHUB_CLIENT_SECRET (may be empty: GitHub sign-in off)
+  google_client_secret: { file: ./secrets/google_client_secret } # GOOGLE_CLIENT_SECRET (may be empty)
+  error_tracker_dsn: { file: ./secrets/error_tracker_dsn } # ERROR_TRACKER_DSN (may be empty)
+  identity_email_hmac_key: { file: ./secrets/identity_email_hmac_key } # IDENTITY_EMAIL_HMAC_KEY, 32+ bytes, never changes
+  identity_recovery_code_key: { file: ./secrets/identity_recovery_code_key } # IDENTITY_RECOVERY_CODE_KEY, 32+ bytes
+  agent_pairing_hmac_key: { file: ./secrets/agent_pairing_hmac_key } # 32+ random bytes, never APP_KEY; root:33 0440
+
+networks:
+  # Subnets are placeholders until F-5 (contabo plan §1.2) is answered; no IP-based trust anyway (SV-2).
+  edge: { ipam: { config: [{ subnet: "172.31.248.0/24" }] } }
+  internal: { internal: true, ipam: { config: [{ subnet: "172.31.249.0/24" }] } }
+  egress: {}
+  backup_egress: {}
+
+volumes: # plain named volumes only
+  storage:
+  haproxy_config: # docker/haproxy.cfg, rewritten by `haproxy-config` on every up
+  valkeydata:
+  pgdata:
+  pgsocket:
+  pgbackrest_spool:
+  backup_status:
+  ledger:
+  engine_sock:

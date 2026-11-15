@@ -1,0 +1,111 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/hello.request.schema.json",
+    "title": "POST /agent/v1/hello (§5.3), on connect then every 20 s. Closed: hint_last4 and every other unknown field are refused (S-8, PO-D).",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "version": {
+            "$ref": "common.schema.json#/$defs/semver"
+        },
+        "proto_min": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+        },
+        "proto_max": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+        },
+        "secrets": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "$ref": "common.schema.json#/$defs/providerId"
+                    },
+                    "env_name": {
+                        "$ref": "common.schema.json#/$defs/envName"
+                    }
+                },
+                "required": ["provider", "env_name"],
+                "additionalProperties": false
+            }
+        },
+        "targets": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "scheme": {
+                        "enum": ["http", "https"]
+                    },
+                    "host": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9.:_\\[\\]-]{1,253}$"
+                    },
+                    "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535
+                    },
+                    "kind": {
+                        "enum": ["local", "allowed"]
+                    },
+                    "declared": {
+                        "type": "boolean"
+                    },
+                    "approved": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "scheme",
+                    "host",
+                    "port",
+                    "kind",
+                    "declared",
+                    "approved"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "probe_config_hash": {
+            "anyOf": [
+                {
+                    "$ref": "common.schema.json#/$defs/sha256"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "busy_run_id": {
+            "anyOf": [
+                {
+                    "$ref": "common.schema.json#/$defs/runId"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        }
+    },
+    "required": [
+        "proto",
+        "version",
+        "proto_min",
+        "proto_max",
+        "secrets",
+        "targets",
+        "probe_config_hash",
+        "busy_run_id"
+    ],
+    "additionalProperties": false
+}

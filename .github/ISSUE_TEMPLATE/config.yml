@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/jiordiviera/webhooktrap/discussions
+    about: Ask questions or discuss ideas in Discussions instead of Issues
+  - name: Security Issue
+    url: mailto:security@jiordiviera.me
+    about: Report security vulnerabilities privately, don't open public issues

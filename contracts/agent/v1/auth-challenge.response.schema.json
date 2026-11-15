@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://webhooktrap.dev/contracts/agent/v1/auth-challenge.response.schema.json",
+    "title": "200 answer to auth/challenge",
+    "type": "object",
+    "properties": {
+        "proto": {
+            "$ref": "common.schema.json#/$defs/proto"
+        },
+        "nonce": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9+/]{43}=$"
+        },
+        "expires_at": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+        }
+    },
+    "required": ["proto", "nonce", "expires_at"]
+}

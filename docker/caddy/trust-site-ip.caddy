@@ -1,0 +1,4 @@
+# PROXY_TRUST_MODE=ip (self-host behind a proxy that cannot send X-WT-Edge; weaker, documented).
+# Trust comes from trusted_proxies in the global options (trust-global-ip).
+(trust-site-ip) {
+}

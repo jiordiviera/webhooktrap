@@ -1,0 +1,180 @@
+{
+  "run_id": "run_20261114T153945Z-5177",
+  "started_at": "2026-11-14T15:39:45.920970986Z",
+  "duration_ms": 25678,
+  "aborted": false,
+  "exit_code": 1,
+  "provider": "stripe",
+  "levels": "L1+probe",
+  "events": 3,
+  "first_run_in_folder": true,
+  "minutes_to_first_run": 0.48055537801666665,
+  "time_to_first_finding_ms": 12993,
+  "budget_ms": 10000,
+  "budget_source": "Webhook Trap default",
+  "environment": {
+    "os": "linux",
+    "arch": "amd64",
+    "binary_version": "0.1.0-spike",
+    "install_method": "binary"
+  },
+  "scenarios": [
+    {
+      "name": "Once",
+      "status": "pass"
+    },
+    {
+      "name": "Twice",
+      "status": "finding"
+    },
+    {
+      "name": "Shuffled",
+      "status": "finding"
+    },
+    {
+      "name": "Late",
+      "status": "pass"
+    },
+    {
+      "name": "Tampered",
+      "status": "pass"
+    },
+    {
+      "name": "Slow budget",
+      "status": "finding"
+    }
+  ],
+  "deliveries": [
+    {
+      "n": 1,
+      "scenario": "Once",
+      "event": "invoice.paid",
+      "offset_ms": 98,
+      "status": 200,
+      "latency_ms": 0,
+      "digest_changed": true,
+      "result": "pass"
+    },
+    {
+      "n": 2,
+      "scenario": "Once",
+      "event": "payment_intent.succeeded",
+      "offset_ms": 147,
+      "status": 200,
+      "latency_ms": 0,
+      "digest_changed": false,
+      "result": "pass"
+    },
+    {
+      "n": 3,
+      "scenario": "Once",
+      "event": "charge.refunded",
+      "offset_ms": 205,
+      "status": 200,
+      "latency_ms": 12006,
+      "digest_changed": false,
+      "result": "Medium, +2 006 over"
+    },
+    {
+      "n": 4,
+      "scenario": "Twice",
+      "event": "invoice.paid",
+      "offset_ms": 12393,
+      "status": 200,
+      "latency_ms": 0,
+      "digest_changed": true,
+      "result": "pass"
+    },
+    {
+      "n": 5,
+      "scenario": "Twice",
+      "event": "invoice.paid",
+      "offset_ms": 12942,
+      "status": 200,
+      "latency_ms": 0,
+      "digest_changed": true,
+      "result": "High, state changed"
+    },
+    {
+      "n": 6,
+      "scenario": "Shuffled",
+      "event": "charge.refunded",
+      "offset_ms": 13120,
+      "status": 200,
+      "latency_ms": 12006,
+      "digest_changed": false,
+      "result": "Medium, +2 006 over"
+    },
+    {
+      "n": 7,
+      "scenario": "Shuffled",
+      "event": "payment_intent.succeeded",
+      "offset_ms": 25181,
+      "status": 500,
+      "latency_ms": 0,
+      "digest_changed": false,
+      "result": "High, HTTP 500"
+    },
+    {
+      "n": 8,
+      "scenario": "Shuffled",
+      "event": "invoice.paid",
+      "offset_ms": 25231,
+      "status": 200,
+      "latency_ms": 0,
+      "digest_changed": true,
+      "result": "pass"
+    },
+    {
+      "n": 9,
+      "scenario": "Late",
+      "event": "invoice.paid",
+      "offset_ms": 25411,
+      "status": 400,
+      "latency_ms": 0,
+      "digest_changed": false,
+      "result": "pass (rejected)"
+    },
+    {
+      "n": 10,
+      "scenario": "Tampered",
+      "event": "invoice.paid",
+      "offset_ms": 25590,
+      "status": 400,
+      "latency_ms": 0,
+      "digest_changed": false,
+      "result": "pass (rejected)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "High",
+      "scenario": "Twice",
+      "title": "Duplicate delivery changed state",
+      "deliveries": [
+        4,
+        5
+      ]
+    },
+    {
+      "id": "F2",
+      "severity": "High",
+      "scenario": "Shuffled",
+      "title": "Out-of-order delivery broke the handler",
+      "deliveries": [
+        7
+      ]
+    },
+    {
+      "id": "F3",
+      "severity": "Medium",
+      "scenario": "Slow budget",
+      "title": "Slow response · 10 s budget · Webhook Trap default",
+      "deliveries": [
+        3,
+        6
+      ]
+    }
+  ]
+}

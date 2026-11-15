@@ -1,0 +1,128 @@
+Webhook Trap · webhooktrap test · Stripe invoice.paid
+  target    http://127.0.0.1:3000/webhooks/stripe
+  handler   Express (detected from X-Powered-By)
+  events    #1 invoice.paid · #2 payment_intent.succeeded · #3 customer.subscription.updated
+  checks    Level 1 transport · Level 2 probe orders.count · reset between scenarios
+  budget    10 000 ms (Webhook Trap default)
+  warning   This run sends the same events several times. If your handler sends emails or
+            charges cards, honour the Webhooktrap-Dry-Run header first.
+
+    D    +ms      event                          http   latency  state  result
+  Once
+    D1      +650  invoice.paid                   200     184 ms  0 → 1  ▬ pass
+    D2      +984  payment_intent.succeeded       200     121 ms  1 → 1  ▬ pass
+    D3    +1 255  customer.subscription.updated  200     143 ms  1 → 1  ▬ pass
+  Twice
+    D4    +2 548  invoice.paid                   200     212 ms  0 → 1  ▬ pass
+    D5    +3 260  invoice.paid = D4′             200     196 ms  1 → 2  ▲ High, expected 1
+          new finding  ▲ High · Duplicate delivery changed orders.count again
+  Shuffled
+    D6    +4 606  customer.subscription.updated  200     138 ms  0 → 0  ▬ pass
+    D7    +4 894  payment_intent.succeeded       200     117 ms  0 → 0  ▬ pass
+    D8    +5 161  invoice.paid                   200     199 ms  0 → 1  ▬ pass
+          new finding  ○ Info · Probe doesn't see subscription state
+  Late
+    D9    +6 510  invoice.paid  t − 360 s        400      41 ms  0 → 0  ▬ pass (rejected)
+  Retry after error
+    D10   +7 701  invoice.paid                   200  11 840 ms  0 → 1  △ Medium, +1 840 over
+          new finding  △ Medium · Over the 10 s budget for Stripe
+    D11  +21 541  invoice.paid = D10′ (retry)    200     205 ms  1 → 2  ▲ High, expected 1
+  Tampered
+    D12  +22 896  invoice.paid  body changed     200     167 ms  0 → 1  ■ Critical, expected 0
+          new finding  ■ Critical · Accepts tampered payload
+  Burst
+    D13  +24 213  invoice.paid                   200     601 ms  —      ▬ pass
+    D14  +24 213  payment_intent.succeeded       200     312 ms  —      ▬ pass
+    D15  +24 213  customer.subscription.updated  200     448 ms  —      ▬ pass
+          final state  0 → 1 after the burst, expected 1 · released within 0 ms  ▬ pass
+  Slow budget
+    D16  +25 363  invoice.paid                   200  10 420 ms  0 → 1  △ Medium, +420 over
+
+ PASS Once                D1 D2 D3      200 × 3 · orders.count 0 → 1
+ FAIL Twice               D4 D5         orders.count 1 → 2 on D5, expected 1
+ PASS Shuffled            D6 D7 D8      reversed · orders.count 0 → 1
+ PASS Late                D9            400 in 41 ms · rejected as expected
+ FAIL Retry after error   D10 D11       11 840 ms → retry → orders.count 1 → 2 on D11, expected 1
+ FAIL Tampered            D12           expected 4xx · got 200 in 167 ms · orders.count 0 → 1
+ PASS Burst               D13 D14 D15   200 × 3 · 312–601 ms · orders.count 0 → 1 (final)
+ FAIL Slow budget         D16           10 420 ms · 420 ms over budget
+
+ ■ F1  Critical Accepts tampered payload                       D12
+ ▲ F2  High     Duplicate delivery changed orders.count again  D5 D11
+ △ F3  Medium   Over the 10 s budget for Stripe                D10 D16
+ ○ F4  Info     Probe doesn't see subscription state           D6 D15
+
+■ F1 Critical · Accepts tampered payload                                                     D12
+  What happened   D12 changed amount_paid from 2400 to 0 and was signed for the original body.
+                  Your handler returned 200 in 167 ms: orders.count 0 → 1, expected a 4xx and no
+                  change. Likely cause: Late (D9) was rejected, so the timestamp check runs; the
+                  signature check probably fails into a log line instead of stopping the
+                  request.
+  Why it matters  Stripe signs the exact bytes it sends. If a failed check doesn't stop the
+                  request, anyone who can reach this URL can make your handler act on content
+                  Stripe never sent.
+                  Stripe docs › Webhooks › Verify signatures
+  Fix             Return 400 as soon as signature verification fails, before any write. After
+                  the fix, D12 should get 400 and leave orders.count at 0.
+                  Snippet (Express):
+                    app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), (req, res) => {
+                      let event;
+                      try {
+                        event = stripe.webhooks.constructEvent(req.body, req.get('stripe-signature'), endpointSecret);
+                      } catch (err) {
+                        return res.status(400).send('Invalid signature'); // stop here, don't log and continue
+                      }
+                      // ...handle event
+                    });
+
+▲ F2 High · Duplicate delivery changed orders.count again                        D4 D5 · D10 D11
+  What happened   The same invoice.paid event was delivered again and every response was a 2xx,
+                  but orders.count went 1 → 2 on D5 and 1 → 2 on D11, expected 1. Only the probe
+                  could see this. Likely cause: The handler doesn't record the event id before
+                  it writes.
+  Why it matters  Stripe may deliver the same event more than once, and retries failed or
+                  timed-out deliveries with backoff for up to 3 days in live mode. Each
+                  duplicate repeats the write.
+                  Stripe docs › Webhooks › Handle duplicate events · Retry behavior
+  Fix             Record event.id before the write and return 200 early when it is already
+                  recorded. After the fix, D5 and D11 should leave orders.count at 1.
+                  Snippet (Express):
+                    // before the write
+                    const { rowCount } = await db.query(
+                      'INSERT INTO processed_events (id) VALUES ($1) ON CONFLICT DO NOTHING',
+                      [event.id]
+                    );
+                    if (rowCount === 0) return res.sendStatus(200); // already handled
+
+△ F3 Medium · Over the 10 s budget for Stripe                                          D10 · D16
+  What happened   2 of 8 valid invoice.paid deliveries took longer than the 10 s budget (Webhook
+                  Trap default): D10 (11 840 ms) and D16 (10 420 ms). Stripe doesn't publish its
+                  timeout, so these are over our default budget, not proven failures at Stripe.
+                  Likely cause: Only some deliveries of invoice.paid were slow, so the slow step
+                  is intermittent: usually an external call or a lock wait before the response.
+  Why it matters  If Stripe times out waiting, the delivery counts as failed and is retried.
+                  Stripe doesn't publish the timeout.
+                  Stripe docs › Webhooks › Quickly return a 2xx response
+  Fix             Acknowledge with 200 first, then queue the slow work. After the fix, D10 and
+                  D16 should respond within the budget.
+                  Snippet (Express):
+                    res.sendStatus(200);            // acknowledge first
+                    await queue.add('handle-event', { eventId: event.id });
+
+○ F4 Info · Probe doesn't see subscription state                                        D6 · D15
+  What happened   customer.subscription.updated was delivered in Shuffled and Burst (D6 and
+                  D15), and no probe reads subscription state.
+  Why it matters  Out-of-order delivery usually breaks status fields, not counts.
+                  Stripe docs › Webhooks › Event ordering
+  Fix             Add a subscription entry to the probe in webhooktrap.yml. The next run then
+                  checks both.
+                  Snippet (webhooktrap.yml):
+                    probe:
+                      # keep your existing entries, then add:
+                      - as: subscriptions.status
+                        cmd: psql "$DATABASE_URL" -Atc "select status from subscriptions where stripe_id = '{{subscription.id}}'"
+
+3 findings · 1 Critical · 1 High · 1 Medium · 1 Info
+8 scenarios · 16 deliveries · 36.8 s · run_01M75F1M56FYBB83XR91MMF2WJ
+  run file  run.json
+exit 1 --fail-on high

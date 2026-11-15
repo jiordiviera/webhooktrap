@@ -1,0 +1,546 @@
+{
+    "$schema": "../_schema/pack.schema.json",
+    "format": 1,
+    "id": "stripe",
+    "version": "1.0.0",
+    "name": "Stripe",
+    "budget": {
+        "ms": 10000,
+        "source": "default",
+        "label": "10 s budget · Webhook Trap default",
+        "source_label": "Webhook Trap default",
+        "documented": false
+    },
+    "detect": {
+        "headers_all": ["Stripe-Signature"]
+    },
+    "event": {
+        "type_path": "type",
+        "id_path": "id",
+        "api_version_path": "api_version"
+    },
+    "grouping": {
+        "types": {
+            "subscription": {
+                "name": "Subscription"
+            },
+            "invoice": {
+                "name": "Invoice"
+            },
+            "payment_intent": {
+                "name": "Payment intent"
+            },
+            "checkout_session": {
+                "name": "Checkout session"
+            },
+            "charge": {
+                "name": "Charge"
+            },
+            "dispute": {
+                "name": "Dispute"
+            },
+            "refund": {
+                "name": "Refund"
+            },
+            "setup_intent": {
+                "name": "Setup intent"
+            },
+            "payment_method": {
+                "name": "Payment method"
+            },
+            "subscription_schedule": {
+                "name": "Subscription schedule"
+            },
+            "customer": {
+                "name": "Customer",
+                "group": false
+            }
+        },
+        "anchors": [
+            "subscription",
+            "invoice",
+            "payment_intent",
+            "checkout_session"
+        ],
+        "by_event": [
+            {
+                "events": ["invoice.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "invoice"
+                    },
+                    {
+                        "path": "data.object.subscription",
+                        "type": "subscription"
+                    },
+                    {
+                        "path": "data.object.payment_intent",
+                        "type": "payment_intent"
+                    },
+                    {
+                        "path": "data.object.customer",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["payment_intent.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "payment_intent"
+                    },
+                    {
+                        "path": "data.object.invoice",
+                        "type": "invoice"
+                    }
+                ]
+            },
+            {
+                "events": ["customer.subscription.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "subscription"
+                    },
+                    {
+                        "path": "data.object.customer",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["checkout.session.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "checkout_session"
+                    },
+                    {
+                        "path": "data.object.subscription",
+                        "type": "subscription"
+                    },
+                    {
+                        "path": "data.object.payment_intent",
+                        "type": "payment_intent"
+                    },
+                    {
+                        "path": "data.object.invoice",
+                        "type": "invoice"
+                    },
+                    {
+                        "path": "data.object.customer",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["charge.dispute.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "dispute"
+                    },
+                    {
+                        "path": "data.object.charge",
+                        "type": "charge"
+                    },
+                    {
+                        "path": "data.object.payment_intent",
+                        "type": "payment_intent"
+                    }
+                ]
+            },
+            {
+                "events": ["charge.refund.*", "refund.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "refund"
+                    },
+                    {
+                        "path": "data.object.charge",
+                        "type": "charge"
+                    },
+                    {
+                        "path": "data.object.payment_intent",
+                        "type": "payment_intent"
+                    }
+                ]
+            },
+            {
+                "events": ["charge.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "charge"
+                    },
+                    {
+                        "path": "data.object.payment_intent",
+                        "type": "payment_intent"
+                    },
+                    {
+                        "path": "data.object.invoice",
+                        "type": "invoice"
+                    },
+                    {
+                        "path": "data.object.customer",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["subscription_schedule.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "subscription_schedule"
+                    },
+                    {
+                        "path": "data.object.subscription",
+                        "type": "subscription"
+                    },
+                    {
+                        "path": "data.object.customer",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["setup_intent.*", "payment_method.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type_path": "data.object.object"
+                    },
+                    {
+                        "path": "data.object.customer",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["customer.*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["*"],
+                "yield": [
+                    {
+                        "path": "data.object.id",
+                        "type_path": "data.object.object"
+                    }
+                ]
+            }
+        ],
+        "fallback": null
+    },
+    "signing": {
+        "scheme": "stripe_v1",
+        "headers": ["Stripe-Signature"],
+        "signed_timestamp": true,
+        "tolerance_s": 300,
+        "secret_env": ["STRIPE_WEBHOOK_SECRET"]
+    },
+    "duplicate": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": [],
+        "citation": "https://docs.stripe.com/webhooks#handle-duplicate-events"
+    },
+    "retry": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": [],
+        "citation": "https://docs.stripe.com/webhooks#automatic-retries"
+    },
+    "resend_headers": ["User-Agent"],
+    "tamper_paths": [
+        {
+            "event_types": ["invoice.*"],
+            "path": "data.object.amount_paid"
+        },
+        {
+            "event_types": ["invoice.*"],
+            "path": "data.object.total"
+        },
+        {
+            "event_types": ["payment_intent.*"],
+            "path": "data.object.amount_received"
+        },
+        {
+            "event_types": ["payment_intent.*", "charge.*"],
+            "path": "data.object.amount"
+        },
+        {
+            "event_types": ["checkout.session.*"],
+            "path": "data.object.amount_total"
+        }
+    ],
+    "objects": [
+        {
+            "path": "data.object",
+            "type_field": "object",
+            "id_field": "id"
+        }
+    ],
+    "status_events": [
+        {
+            "event_type": "customer.subscription.created",
+            "object_type": "subscription"
+        },
+        {
+            "event_type": "customer.subscription.updated",
+            "object_type": "subscription"
+        },
+        {
+            "event_type": "customer.subscription.deleted",
+            "object_type": "subscription"
+        },
+        {
+            "event_type": "invoice.payment_failed",
+            "object_type": "invoice"
+        },
+        {
+            "event_type": "invoice.marked_uncollectible",
+            "object_type": "invoice"
+        }
+    ],
+    "scrub": {
+        "paths": [
+            "customer_email",
+            "customer_name",
+            "customer_phone",
+            "customer_address.*",
+            "customer_shipping.*",
+            "hosted_invoice_url",
+            "invoice_pdf",
+            "receipt_url",
+            "receipt_email",
+            "billing_details.*",
+            "shipping.*",
+            "card.fingerprint",
+            "card.last4"
+        ],
+        "keep_headers": ["Content-Type", "User-Agent"]
+    },
+    "id_pattern": "^(evt|in|pi|sub|cus|ch|pm|price|il|si|prod|cs|acct|txn|re|py|seti|src|card)_[A-Za-z0-9]+$",
+    "citations": {
+        "accepts_tampered": [
+            {
+                "label": "Stripe docs › Webhooks › Verify signatures",
+                "url": "https://docs.stripe.com/webhooks#verify-official-libraries"
+            }
+        ],
+        "accepts_unsigned": [
+            {
+                "label": "Stripe docs › Webhooks › Verify signatures",
+                "url": "https://docs.stripe.com/webhooks#verify-official-libraries"
+            }
+        ],
+        "accepts_stale": [
+            {
+                "label": "Stripe docs › Webhooks › Prevent replay attacks",
+                "url": "https://docs.stripe.com/webhooks#replay-attacks"
+            }
+        ],
+        "duplicate_changed_state": [
+            {
+                "label": "Stripe docs › Webhooks › Handle duplicate events · Retry behavior",
+                "url": "https://docs.stripe.com/webhooks#handle-duplicate-events"
+            }
+        ],
+        "order_changed_state": [
+            {
+                "label": "Stripe docs › Webhooks › Event ordering",
+                "url": "https://docs.stripe.com/webhooks#event-ordering"
+            }
+        ],
+        "concurrent_changed_state": [
+            {
+                "label": "Stripe docs › Webhooks › Event ordering",
+                "url": "https://docs.stripe.com/webhooks#event-ordering"
+            }
+        ],
+        "partial_side_effect": [
+            {
+                "label": "Stripe docs › Webhooks › Retry behavior",
+                "url": "https://docs.stripe.com/webhooks#automatic-retries"
+            }
+        ],
+        "retry_diverged": [
+            {
+                "label": "Stripe docs › Webhooks › Retry behavior",
+                "url": "https://docs.stripe.com/webhooks#automatic-retries"
+            }
+        ],
+        "server_error": [
+            {
+                "label": "Stripe docs › Webhooks › Retry behavior",
+                "url": "https://docs.stripe.com/webhooks#automatic-retries"
+            }
+        ],
+        "non_2xx_on_valid": [
+            {
+                "label": "Stripe docs › Webhooks › Quickly return a 2xx response",
+                "url": "https://docs.stripe.com/webhooks#acknowledge-events-immediately"
+            }
+        ],
+        "error_on_invalid": [
+            {
+                "label": "Stripe docs › Webhooks › Verify signatures",
+                "url": "https://docs.stripe.com/webhooks#verify-official-libraries"
+            }
+        ],
+        "over_budget": [
+            {
+                "label": "Stripe docs › Webhooks › Quickly return a 2xx response",
+                "url": "https://docs.stripe.com/webhooks#acknowledge-events-immediately"
+            }
+        ],
+        "probe_gap": [
+            {
+                "label": "Stripe docs › Webhooks › Event ordering",
+                "url": "https://docs.stripe.com/webhooks#event-ordering"
+            }
+        ]
+    },
+    "text": {
+        "findings": {
+            "accepts_tampered": {
+                "title": "Accepts tampered payload",
+                "what": "{d} changed {tamper.path} from {tamper.from} to {tamper.to} and was signed for the original body. Your handler returned {status} in {latency_ms} ms[[probe|: {probe} {before} → {after}]], expected a 4xx and no change.",
+                "why": "Stripe signs the exact bytes it sends. If a failed check doesn't stop the request, anyone who can reach this URL can make your handler act on content Stripe never sent.",
+                "fix": "Return 400 as soon as signature verification fails, before any write. After the fix, {d} should get 400[[probe| and leave {probe} at {before}]]."
+            },
+            "accepts_unsigned": {
+                "title": "Accepts a delivery without a signature",
+                "what": "{d} had no Stripe-Signature header. Your handler returned {status} in {latency_ms} ms[[probe|: {probe} {before} → {after}]], expected a 4xx and no change.",
+                "why": "Anyone who can reach this URL can send events Stripe never sent.",
+                "fix": "Reject a request without a signature header with 400, before any write. After the fix, {d} should get 400."
+            },
+            "accepts_stale": {
+                "title": "Accepts a stale signature",
+                "what": "{d} was signed for a timestamp {timestamp_age_s} s old (tolerance {tolerance_s} s). Your handler returned {status} in {latency_ms} ms[[probe|: {probe} {before} → {after}]], expected a 4xx and no change.",
+                "why": "Replay protection relies on the timestamp tolerance: without it, a captured request can be sent again at any time.",
+                "fix": "Check the signed timestamp against the tolerance and return 400 when it is outside. After the fix, {d} should get 400."
+            },
+            "duplicate_changed_state": {
+                "title": "Duplicate delivery changed {probe} again",
+                "what": "The same {event_type} event was delivered again and every response was a 2xx, but {state_list}. Only the probe could see this.",
+                "why": "Stripe may deliver the same event more than once, and retries failed or timed-out deliveries with backoff for up to 3 days in live mode. Each duplicate repeats the write.",
+                "fix": "Record event.id before the write and return 200 early when it is already recorded. After the fix, {offending} should leave {probe} at {expected}."
+            },
+            "order_changed_state": {
+                "title": "Out-of-order delivery left a different state",
+                "what": "After the events arrived in reverse order, {probe} was {after}; in capture order it was {expected}.",
+                "why": "Stripe doesn't guarantee delivery order.",
+                "fix": "Make each event's write depend on the event's own data or the current object, not on arrival order. After the fix, {d} should leave {probe} at {expected}."
+            },
+            "concurrent_changed_state": {
+                "title": "Concurrent deliveries left a different state",
+                "what": "After the burst ({offending}), {probe} was {after}, expected {expected}.",
+                "why": "Stripe sends related events close together, often concurrently.",
+                "fix": "Put a unique constraint or a lock around the check-then-insert. After the fix, the burst should leave {probe} at {expected}."
+            },
+            "partial_side_effect": {
+                "title": "Failed delivery kept its write",
+                "what": "{d} got {status_text}, but {probe} went {before} → {after}.",
+                "why": "Stripe retries a failed delivery, so the write happens again.",
+                "fix": "Run the work in a transaction and roll back when it fails. After the fix, {d} should leave {probe} at {before}."
+            },
+            "retry_diverged": {
+                "title": "Retry didn't do the work",
+                "what": "{d} retried {d_ref}, which failed, and left {probe} at {after}, expected {expected}.",
+                "why": "Stripe retries failed deliveries; the retry must do the work the failed attempt didn't.",
+                "fix": "Record the event id only after the work commits. After the fix, {d} should leave {probe} at {expected}."
+            },
+            "server_error": {
+                "title": "Server error on a valid {event_type} delivery",
+                "what": "{d} got {status_text} for a correctly signed {event_type} event.",
+                "why": "Stripe counts the delivery as failed and retries it. An endpoint that keeps failing for several days is disabled.",
+                "fix": "Find the error for {d} in your handler logs and return a 2xx for valid events. After the fix, {offending} should get a 2xx."
+            },
+            "non_2xx_on_valid": {
+                "title": "Rejects a valid {event_type} delivery",
+                "what": "{d} got {status} for a correctly signed {event_type} event.",
+                "why": "Stripe counts a 3xx or 4xx as a failed delivery and retries it. An endpoint that keeps failing for several days is disabled.",
+                "fix": "Return 200 for event types you don't handle, and a 2xx once the event is accepted. After the fix, {offending} should get a 2xx."
+            },
+            "error_on_invalid": {
+                "title": "Server error on an invalid delivery",
+                "what": "{d} was built to fail verification and got {status_text}, not a 4xx.",
+                "why": "A 5xx makes Stripe retry and counts toward disabling the endpoint. A failed signature check should be a 400.",
+                "fix": "Return 400 when verification fails, before any other work. After the fix, {d} should get 400."
+            },
+            "over_budget": {
+                "title": "Over the {budget_s} s budget for Stripe",
+                "what": "{slow_count} of {valid_count} valid {event_type} deliveries took longer than the {budget_s} s budget ({budget_source}): {latency_list}. Stripe doesn't publish its timeout, so these are over our default budget, not proven failures at Stripe.",
+                "why": "If Stripe times out waiting, the delivery counts as failed and is retried. Stripe doesn't publish the timeout.",
+                "fix": "Acknowledge with 200 first, then queue the slow work. After the fix, {offending} should respond within the budget."
+            },
+            "needs_probe": {
+                "title": "State not checked",
+                "what": "Responses were checked, but without a probe the run can't see duplicate or out-of-order side effects.",
+                "why": "Most webhook bugs change state, not the response.",
+                "fix": "Add a probe to webhooktrap.yml. The next run then checks state."
+            },
+            "order_dependent": {
+                "title": "No reset between scenarios",
+                "what": "Without a reset hook each scenario starts from the previous one's state, so comparisons with the baseline can't be judged.",
+                "why": "Order, retry and burst checks compare against the state one clean delivery leaves.",
+                "fix": "Add reset: to webhooktrap.yml with a command that empties the tables your handler writes."
+            },
+            "probe_gap": {
+                "title": "Probe doesn't see {object_type} state",
+                "what": "{event_type} was delivered in {scenario_list} ({offending}), and no probe reads {object_type} state.",
+                "why": "Out-of-order delivery usually breaks status fields, not counts.",
+                "fix": "Add a {object_type} entry to the probe in webhooktrap.yml. The next run then checks both."
+            },
+            "cold_start": {
+                "title": "Slow first delivery",
+                "what": "D1 took {latency_ms} ms, later deliveries ≤ {max_other_ms} ms. Likely a cold start, such as a dev server compiling the route. Not counted.",
+                "why": "Development servers compile the route on the first request.",
+                "fix": "Nothing to fix if your production server is warm."
+            },
+            "async_write": {
+                "title": "State changed after the response",
+                "what": "{probe} changed 1 s after the last response. Your handler probably writes in a background job.",
+                "why": "A reading taken right after the response can miss a background write.",
+                "fix": "Set settle: 2s in webhooktrap.yml."
+            }
+        },
+        "likely_cause": {
+            "LC-1": "Late ({d_ref}) was rejected, so the timestamp check runs; the signature check probably fails into a log line instead of stopping the request.",
+            "LC-2": "Neither the signature nor the timestamp stops the request: verification is probably missing, or its result is ignored.",
+            "LC-3": "The signature is checked but the timestamp isn't. This happens when the HMAC is verified by hand, or the tolerance is set very high.",
+            "LC-4": "Only some deliveries of {event_type} were slow, so the slow step is intermittent: usually an external call or a lock wait before the response.",
+            "LC-5": "Most deliveries of {event_type} were slow, so the slow work runs before the response on every request.",
+            "LC-6": "The handler rejects an event that arrives before the record it updates.",
+            "LC-7": "The same event succeeded in order, so the crash depends on arrival order or concurrency, not on the payload.",
+            "LC-8": "The handler doesn't record the event id before it writes.",
+            "LC-9": "Order alone is fine, so concurrent requests race: a check-then-insert without a unique constraint or a lock.",
+            "LC-10": "The handler writes before the step that fails, and doesn't roll back."
+        },
+        "snippets": {
+            "accepts_tampered": {
+                "express": "app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), (req, res) => {\n  let event;\n  try {\n    event = stripe.webhooks.constructEvent(req.body, req.get('stripe-signature'), endpointSecret);\n  } catch (err) {\n    return res.status(400).send('Invalid signature'); // stop here, don't log and continue\n  }\n  // ...handle event\n});"
+            },
+            "duplicate_changed_state": {
+                "express": "// before the write\nconst { rowCount } = await db.query(\n  'INSERT INTO processed_events (id) VALUES ($1) ON CONFLICT DO NOTHING',\n  [event.id]\n);\nif (rowCount === 0) return res.sendStatus(200); // already handled"
+            },
+            "over_budget": {
+                "express": "res.sendStatus(200);            // acknowledge first\nawait queue.add('handle-event', { eventId: event.id });"
+            },
+            "probe_gap": {
+                "webhooktrap.yml": "probe:\n  # keep your existing entries, then add:\n  - as: subscriptions.status\n    cmd: psql \"$DATABASE_URL\" -Atc \"select status from subscriptions where stripe_id = '{{subscription.id}}'\""
+            }
+        }
+    }
+}
