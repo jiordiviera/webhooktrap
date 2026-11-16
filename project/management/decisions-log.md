@@ -712,3 +712,10 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
   - runner contracts (executor `server`, a decline/abort route, the secrets response);
   - the self-host runner origin under TLS_MODE=auto;
   - R2 and the ledger age recipient (they block the second deploy), mail and OAuth.
+
+## 71. 2.0 live on app., in. and ws. (2026-11-16)
+
+- **First deploy** of 40f2348 succeeded (PO approval in GitHub). All services are healthy. `backup` restarts until R2 is set.
+- **Host Caddy (C7, PO GO):** the provisional blocks are replaced by the Webhook Trap site file (private ops note). Certificates are issued, and the post-reload checks pass. The other apps answer.
+- **OAuth:** the GitHub OAuth app and the Google client "Webhook Trap" exist (the Google client in an existing GCP project, because the project quota is reached). Client ids are in `.env.production`, and the PO wrote the secrets on the box. The Google consent screen is in production, with no logo, so no verification is needed. The home, privacy and terms links point to app.
+- **Next deploy is blocked by R2:** the pre-migrate backup needs it. The OAuth settings and the new /privacy and /terms pages wait for that deploy.
