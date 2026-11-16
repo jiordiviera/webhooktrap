@@ -73,11 +73,15 @@ compose() { docker compose -p "$PROJECT" --project-directory "$APP_DIR" --env-fi
 installed() { compose --env-file .env.deploy -f compose.production.yaml "$@"; }
 
 # Step 8: /up answers and every long-running service is healthy (the one-shot is excluded).
+# Up to 180 s: longer than the scheduler's start_period (150 s, first heartbeat at a minute
+# boundary), so a first deploy is not judged while a service is still "starting".
+# `backup` is left out: its check (5 min interval) is about backup freshness, which step 4
+# already gated; it is watched through /health and its own alert, not by the deploy.
 healthy() {
     i=0
-    while [ $i -lt 30 ]; do
+    while [ $i -lt 90 ]; do
         if curl -fsS -o /dev/null "http://127.0.0.1:$APP_PORT/up" \
-            && ! installed ps --format '{{.Service}} {{.Health}}' | grep -v ' healthy$' | grep -q .; then
+            && ! installed ps --format '{{.Service}} {{.Health}}' | grep -v '^backup ' | grep -v ' healthy$' | grep -q .; then
             return 0
         fi
         i=$((i + 1)); sleep 2

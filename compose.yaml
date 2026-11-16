@@ -15,6 +15,10 @@
 #   (each `openssl rand -hex 32`), backup_cipher_pass, edge_proxy_secret (below), runner_token.
 #   Optional, may be empty files: mail_password, github_client_secret, google_client_secret,
 #   error_tracker_dsn. Owners: postgres_password, backup_* root:999 0440; the rest root:33 0440.
+# runner_token is issued by the app once it is up (start with an empty file, then):
+#   docker compose run --rm -T app php artisan runner:token runner > secrets/runner_token
+#   (-T keeps stderr out of the file; `--list`, `--revoke=<name>`; rerun to rotate), then
+#   `docker compose up -d runner`. The hosted profile has no runner; a hosted token needs --cidr.
 # secrets/edge_proxy_secret is needed in every TLS mode (`openssl rand -hex 32`): `app` signs the
 # internal hop to `ingest` with it, and gives it to your proxy only in mode secret.
 
@@ -196,6 +200,10 @@ services:
       interval: 60s
       timeout: 10s
       retries: 3
+      # The first heartbeat lands at the first minute boundary after start: probe every 5 s for
+      # up to 150 s so a fresh scheduler turns healthy within deploy.sh's wait (step 8).
+      start_period: 150s
+      start_interval: 5s
 
   engine: # ENG-1, same as hosted
     <<: *hardening
@@ -220,7 +228,7 @@ services:
     image: ghcr.io/jiordiviera/webhooktrap-runner:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
     command: ["serve-run"]
     environment: [RUNNER_SERVER_ORIGIN, RUNNER_CONCURRENCY, RUNNER_TOKEN_FILE]
-    secrets: [runner_token] # created by `php artisan runner:token` on first start
+    secrets: [runner_token] # issued with `runner:token` (header above)
     read_only: true
     networks: [runner]
     mem_limit: 256m

@@ -454,3 +454,4 @@ The template has **no licence** (`gh api` reports `license: null`; its README as
 | §4.3 | Rollback | swap only | re-verifies signatures and policy first | §4.3 |
 | §4 | Compose env files | `.env.deploy` only (postgres, valkey, backup got no values) | `.env.production` then `.env.deploy` in every call; CI resolves with the hosted template | §4, §4.3 |
 | CI | cosign version | installer default | `cosign-release: v3.1.4` explicit, same pin as the box | §4.3 |
+| Step 8 | Health wait | 30 × 2 s, every service | 90 × 2 s; `backup` left out (5 min check about backup freshness, gated by step 4); scheduler `start_period: 150s`, `start_interval: 5s` | §4 |

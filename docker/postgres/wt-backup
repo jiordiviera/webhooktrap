@@ -8,8 +8,10 @@
 #   backup-now [--type=T]  one backup now (deploy.sh step 4: --type=incr)
 #   backup-status [--max-full-age=26h] [--max-archive-lag=15m]   healthcheck
 #   restore [--target-time=T]  restore into an empty, stopped pgdata; writes /status/restore.pending
-#   ledger-fetch           copy the newest shipped ledger (still age-encrypted) to /status/ledger-fetched.age
-#   restore-finish         remove /status/restore.pending once the ledger is re-applied (DL-3c)
+#   ledger-fetch [--identity=FILE|-]  fetch the newest shipped ledger, decrypt it with the PO's age
+#                          identity (default: standard input) and merge it with the local ledger into
+#                          /status/ledger-merged.jsonl for accounts:apply-ledger --file=
+#   restore-finish         remove /status/restore.pending and the merged ledger (DL-3c)
 #
 # pgBackRest options come from the environment; the cipher pass and the S3 key and secret are
 # read from the Compose secret files inside this process only, never from the container
@@ -98,7 +100,7 @@ status_set() {
     {
         printf '{'
         first=1
-        for key in last_full_at last_full_ok last_backup_at last_backup_ok ledger_last_ship_at ledger_verify_at ledger_verify_ok; do
+        for key in last_full_at last_full_ok last_backup_at last_backup_ok ledger_last_ship_at ledger_verify_at ledger_verify_ok archive_lag_seconds archive_lag_at; do
             if [ "$key" = "$1" ]; then value=$2; else value=$(status_get "$key"); fi
             [ -n "$value" ] || continue
             [ $first -eq 1 ] || printf ', '
@@ -128,6 +130,14 @@ archive_drain() {
         rm -f "$QUEUE/$f"
     done
 }
+# Archive lag in seconds: age of the oldest WAL segment not yet in the repository (still .ready
+# in pg_wal, or queued on the spool volume); 0 when nothing is waiting.
+archive_lag() {
+    oldest=$({ find "$PG_DATA/pg_wal/archive_status" -name '*.ready' -printf '%T@\n' 2>/dev/null
+               find "$QUEUE" -type f -printf '%T@\n' 2>/dev/null; } | sort -n | head -n 1 | cut -d. -f1)
+    if [ -n "$oldest" ]; then echo $(( $(now) - oldest )); else echo 0; fi
+}
+
 # Run a command while draining the queue in the background (backup and check wait for the WAL
 # they produce to reach the repository).
 with_drain() {
@@ -267,6 +277,7 @@ case "$NAME" in
         [ -n "$(status_get last_full_at)" ] || run_backup full || true
         last_verify=$(status_get ledger_verify_at); last_verify=${last_verify:-0}
         last_ship=0
+        last_lag=0
         while :; do
             today_due=$(date -u -d "$(date -u +%Y-%m-%d) $schedule" +%s)
             last_full=$(status_get last_full_at); last_full=${last_full:-0}
@@ -276,6 +287,11 @@ case "$NAME" in
             archive_drain || echo "$NAME: WAL push failed, retrying" >&2
             if [ $(( $(now) - last_ship )) -ge "$interval" ]; then ledger_ship || true; last_ship=$(now); fi
             if [ $(( $(now) - last_verify )) -ge 604800 ]; then ledger_verify || true; last_verify=$(now); fi
+            # For /health (archive_lag_seconds, measured at archive_lag_at), once a minute.
+            if [ $(( $(now) - last_lag )) -ge 60 ]; then
+                lag=$(archive_lag); last_lag=$(now)
+                status_set archive_lag_seconds "$lag"; status_set archive_lag_at "$last_lag"
+            fi
             sleep 10
         done
         ;;
@@ -293,13 +309,7 @@ case "$NAME" in
         [ -n "$last_full" ] || fail "no full backup yet"
         [ "$(status_get last_full_ok)" = true ] || fail "the last full backup failed"
         [ $(( $(now) - last_full )) -le "$(seconds "$max_full")" ] || fail "last full backup is older than $max_full"
-        # Archive lag: the oldest WAL segment not yet in the repository (still .ready in pg_wal,
-        # or queued on the spool volume).
-        oldest=$({ find "$PG_DATA/pg_wal/archive_status" -name '*.ready' -printf '%T@\n' 2>/dev/null
-                   find "$QUEUE" -type f -printf '%T@\n' 2>/dev/null; } | sort -n | head -n 1 | cut -d. -f1)
-        if [ -n "$oldest" ] && [ $(( $(now) - oldest )) -gt "$(seconds "$max_lag")" ]; then
-            fail "WAL archiving is behind by more than $max_lag"
-        fi
+        [ "$(archive_lag)" -le "$(seconds "$max_lag")" ] || fail "WAL archiving is behind by more than $max_lag"
         if [ -n "${LEDGER_AGE_RECIPIENT:-}" ] && [ -f "$LEDGER" ]; then
             shipped=$(status_get ledger_last_ship_at)
             [ -n "$shipped" ] && [ $(( $(now) - shipped )) -le 900 ] || fail "deletion ledger not shipped for 15 min"
@@ -325,24 +335,48 @@ case "$NAME" in
         else
             pgbr restore "$@" --type=default
         fi
-        note "restored; next: recovery in a backup container, then ledger-fetch, accounts:apply-ledger, restore-finish"
+        note "restored; next: recovery in a backup container, then ledger-fetch, accounts:apply-ledger (horizon), restore-finish"
         ;;
 
     ledger-fetch)
+        identity=-
+        for arg in "$@"; do
+            case "$arg" in --identity=*) identity=${arg#*=} ;; *) fail "unknown argument" 64 ;; esac
+        done
+        [ "$identity" = - ] || [ -r "$identity" ] || fail "cannot read the identity file"
         newest=$(ledger_list | tail -n 1)
         [ -n "$newest" ] || fail "no shipped ledger found"
+        mkdir -p "$STATUS_DIR"
+        work=$(mktemp -d "$STATUS_DIR/.ledger.XXXXXX")   # the plaintext stays on the status volume
+        chmod 0700 "$work"
+        trap 'rm -rf "$work"' EXIT
         if [ "${BACKUP_REPO_TYPE:-posix}" = s3 ]; then
             rclone_env
-            rclone copyto --quiet "repo:$BACKUP_S3_BUCKET/$(ledger_dir)/$newest" "$STATUS_DIR/ledger-fetched.age"
+            rclone copyto --quiet "repo:$BACKUP_S3_BUCKET/$(ledger_dir)/$newest" "$work/fetched.age"
         else
-            cp "/var/lib/pgbackrest/$(ledger_dir)/$newest" "$STATUS_DIR/ledger-fetched.age"
+            cp "/var/lib/pgbackrest/$(ledger_dir)/$newest" "$work/fetched.age"
         fi
-        note "copied $newest to $STATUS_DIR/ledger-fetched.age (decrypt with the PO's age identity, off-box)"
+        # The identity comes from standard input (or a file mounted for this run only) and is
+        # never written. Nothing below prints ledger content, only line counts.
+        age -d -i "$identity" -o "$work/fetched.jsonl" "$work/fetched.age" 2>/dev/null \
+            || fail "age could not decrypt $newest with that identity"
+        # Merge: the local ledger first (it may hold lines newer than the last copy, or be gone
+        # with the server), then the copy; each identical line once, order kept.
+        { [ ! -f "$LEDGER" ] || cat "$LEDGER"; cat "$work/fetched.jsonl"; } | awk 'NF && !seen[$0]++' > "$work/merged.jsonl"
+        bad=$(grep -cv '^{.*}$' "$work/merged.jsonl" || true)
+        [ "$bad" = 0 ] || fail "$bad merged line(s) are not JSON objects; nothing written"
+        fetched_n=$(grep -c . "$work/fetched.jsonl" || true)
+        local_n=0; [ ! -f "$LEDGER" ] || local_n=$(grep -c . "$LEDGER" || true)
+        merged_n=$(grep -c . "$work/merged.jsonl" || true)
+        chmod 0644 "$work/merged.jsonl"   # read by `horizon` (uid 33) through backup_status:ro
+        mv "$work/merged.jsonl" "$STATUS_DIR/ledger-merged.jsonl"
+        note "$newest: $fetched_n line(s), local $local_n, merged $merged_n into $STATUS_DIR/ledger-merged.jsonl"
+        note "next: accounts:apply-ledger --file=$STATUS_DIR/ledger-merged.jsonl in horizon, then restore-finish"
         ;;
 
     restore-finish)
-        rm -f "$STATUS_DIR/restore.pending"
-        note "restore.pending removed"
+        rm -f "$STATUS_DIR/restore.pending" "$STATUS_DIR/ledger-merged.jsonl"
+        note "restore.pending and the merged ledger removed"
         ;;
 
     *) fail "unknown command" 64 ;;

@@ -177,6 +177,10 @@ services:
       interval: 60s
       timeout: 10s
       retries: 3
+      # The first heartbeat lands at the first minute boundary after start: probe every 5 s for
+      # up to 150 s so a fresh scheduler turns healthy within deploy.sh's wait (step 8).
+      start_period: 150s
+      start_interval: 5s
 
   engine: # ENG-1: network-free sandbox for `plan` and `verify` (ADR-010 §1)
     <<: *hardening
