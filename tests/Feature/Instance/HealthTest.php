@@ -130,3 +130,38 @@ it('reports the age of the most recent runner poll', function (): void {
     $response = $this->getJson('/health')->assertOk()->assertJsonPath('runner_last_poll_age', 42);
     expect($response->getContent())->not->toContain($issued['token']);
 });
+
+it('exposes the WAL archive lag and fails on a lag over 15 min or a stale measurement', function (): void {
+    app(Heartbeats::class)->beat(Heartbeats::SCHEDULER);
+    $now = now()->getTimestamp();
+    $base = ['last_full_at' => $now - 3600, 'last_full_ok' => true];
+
+    $path = backupStatusFile($base + ['archive_lag_seconds' => 0, 'archive_lag_at' => $now - 30]);
+    $this->getJson('/health')->assertOk()
+        ->assertJsonPath('archive_lag_seconds', 0)
+        ->assertJsonPath('archive_lag_age', 30)
+        ->assertJsonPath('checks.backup', true);
+
+    backupStatusFile($base + ['archive_lag_seconds' => 900, 'archive_lag_at' => $now - 30]);
+    $this->getJson('/health')->assertOk()->assertJsonPath('archive_lag_seconds', 900);
+
+    backupStatusFile($base + ['archive_lag_seconds' => 901, 'archive_lag_at' => $now - 30]);
+    $this->getJson('/health')->assertStatus(503)
+        ->assertJsonPath('archive_lag_seconds', 901)
+        ->assertJsonPath('checks.backup', false);
+
+    backupStatusFile($base + ['archive_lag_seconds' => 0, 'archive_lag_at' => $now - 301]);
+    $this->getJson('/health')->assertStatus(503)->assertJsonPath('checks.backup', false);
+
+    @unlink($path);
+});
+
+it('treats a missing archive lag (an older backup image) as unknown, not failed', function (): void {
+    app(Heartbeats::class)->beat(Heartbeats::SCHEDULER);
+    backupStatusFile(['last_full_at' => now()->getTimestamp() - 3600, 'last_full_ok' => true]);
+
+    $this->getJson('/health')->assertOk()
+        ->assertJsonPath('archive_lag_seconds', null)
+        ->assertJsonPath('archive_lag_age', null)
+        ->assertJsonPath('checks.backup', true);
+});

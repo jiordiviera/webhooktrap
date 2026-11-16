@@ -13,6 +13,10 @@ return [
         'scheduler_max_age' => 120,
         'backup_max_full_age' => 26 * 3600,
         'ledger_max_ship_age' => 900,
+        // WAL archive lag alert (hosted plan §5); `archive_lag_at` is written
+        // once a minute, so a measurement older than 5 min is stale.
+        'archive_max_lag' => 900,
+        'archive_lag_max_age' => 300,
     ],
 
 ];

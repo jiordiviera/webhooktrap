@@ -8,15 +8,16 @@ use App\Infrastructure\Clock\Clock;
 
 /**
  * The `backup` service's status file (`/status/backup.json`, written by
- * `wt-backup`: unix timestamps and booleans only) as ages for `/health`.
- * Missing or unreadable file: every field null.
+ * `wt-backup`: unix timestamps, booleans and the WAL archive lag in seconds)
+ * as ages for `/health`. Missing or unreadable file, or a field an older
+ * backup image does not write: null (unknown).
  */
 final readonly class BackupStatus
 {
     public function __construct(private Clock $clock) {}
 
     /**
-     * @return array{backup_last_full_age: int|null, backup_last_full_ok: bool|null, backup_last_age: int|null, backup_last_ok: bool|null, ledger_last_ship_age: int|null, ledger_verify: bool|null}
+     * @return array{backup_last_full_age: int|null, backup_last_full_ok: bool|null, backup_last_age: int|null, backup_last_ok: bool|null, ledger_last_ship_age: int|null, ledger_verify: bool|null, archive_lag_seconds: int|null, archive_lag_age: int|null}
      */
     public function read(): array
     {
@@ -29,6 +30,8 @@ final readonly class BackupStatus
             'backup_last_ok' => $this->flag($data['last_backup_ok'] ?? null),
             'ledger_last_ship_age' => $this->age($data['ledger_last_ship_at'] ?? null),
             'ledger_verify' => $this->flag($data['ledger_verify_ok'] ?? null),
+            'archive_lag_seconds' => is_int($lag = $data['archive_lag_seconds'] ?? null) && $lag >= 0 ? $lag : null,
+            'archive_lag_age' => $this->age($data['archive_lag_at'] ?? null),
         ];
     }
 
