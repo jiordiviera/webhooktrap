@@ -9,6 +9,8 @@ use App\Modules\Identity\Application\RecentAuthentication;
 use App\Modules\Identity\Domain\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The two ends of the app → admin handoff (decision 74).
@@ -22,7 +24,7 @@ use Illuminate\Http\Request;
  */
 final readonly class OperatorHandoffController
 {
-    public function issue(Request $request, OperatorHandoff $handoff, RecentAuthentication $recent): RedirectResponse
+    public function issue(Request $request, OperatorHandoff $handoff, RecentAuthentication $recent): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->isEligibleOperator(), 403);
@@ -36,7 +38,15 @@ final readonly class OperatorHandoffController
         $token = $handoff->issue($request, $user);
         abort_if($token === null, 403);
 
-        return self::noReferrer(redirect()->away(self::adminOrigin().'/handoff/'.$token));
+        $target = self::adminOrigin().'/handoff/'.$token;
+        // Reached from the confirm-auth form, this request is an Inertia XHR: a plain redirect
+        // to another origin is followed by XHR and blocked by CORS (the token is then spent for
+        // nothing). Inertia::location makes the browser navigate for real.
+        if ($request->header('X-Inertia') !== null) {
+            return self::noReferrer(Inertia::location($target));
+        }
+
+        return self::noReferrer(redirect()->away($target));
     }
 
     public function redeem(Request $request, string $token, OperatorHandoff $handoff): RedirectResponse
@@ -54,7 +64,13 @@ final readonly class OperatorHandoffController
         return (is_string($scheme) ? $scheme : 'https').'://'.config('admin.host');
     }
 
-    private static function noReferrer(RedirectResponse $response): RedirectResponse
+    /**
+     * @template T of Response
+     *
+     * @param  T  $response
+     * @return T
+     */
+    private static function noReferrer(Response $response): Response
     {
         $response->headers->set('Referrer-Policy', 'no-referrer');
         $response->headers->set('Cache-Control', 'no-store, private');

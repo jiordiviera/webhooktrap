@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Modules\Identity\Domain\SessionRevoker;
 use App\Modules\Identity\Domain\User;
 use App\Modules\Identity\Domain\UserSession;
@@ -48,6 +49,14 @@ it('refuses a password confirmation for the operator action', function (): void 
         ->assertInertia(fn ($page) => $page->where('secondFactorRequired', true)->where('methods', ['webauthn']));
     test()->post('https://webhooktrap.test/confirm-auth', ['action' => 'operator', 'password' => FIXTURE_PASSWORD, 'next' => '/operator/handoff'])
         ->assertSessionHasErrors('form');
+});
+
+it('answers an Inertia request with a full-page location, never a cross-origin XHR redirect', function (): void {
+    actAs(handoffOperator(), 'passkey');
+
+    $response = test()->get('https://webhooktrap.test/operator/handoff', ['X-Inertia' => 'true', 'X-Requested-With' => 'XMLHttpRequest', 'X-Inertia-Version' => (string) app(HandleInertiaRequests::class)->version(request())])
+        ->assertStatus(409)->assertHeader('Referrer-Policy', 'no-referrer');
+    expect((string) $response->headers->get('X-Inertia-Location'))->toStartWith('https://admin.webhooktrap.test/handoff/');
 });
 
 it('signs the operator in on the admin host with a fresh token', function (): void {
