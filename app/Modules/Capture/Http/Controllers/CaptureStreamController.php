@@ -144,6 +144,7 @@ final readonly class CaptureStreamController
             'Cache-Control' => 'no-store, private',
             'Referrer-Policy' => 'no-referrer',
             'Cross-Origin-Resource-Policy' => 'same-origin',
+            'X-Robots-Tag' => 'noindex, nofollow',
         ]);
     }
 

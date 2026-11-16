@@ -406,6 +406,7 @@ it('downloads the exact raw bytes with safe headers, never inline (ADR-005 am. 1
         ->and($response->headers->get('Content-Security-Policy'))->toStartWith('sandbox')
         ->and($response->headers->get('Content-Security-Policy'))->toContain("default-src 'none'")
         ->and($response->headers->get('Cache-Control'))->toContain('no-store')
+        ->and($response->headers->get('X-Robots-Tag'))->toBe('noindex, nofollow')
         ->and($response->headers->get('Content-Length'))->toBe((string) strlen($body));
 });
 

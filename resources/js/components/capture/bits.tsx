@@ -6,7 +6,7 @@ import {
 } from '@/components/brand/provider-logos';
 import { StatusBadge } from '@/components/identity/form';
 import { captureCopy, signatureCopy, splitEscapes } from '@/lib/capture/format';
-import { useLiveStatus } from '@/lib/realtime/echo';
+import { useLiveStatus } from '@/lib/realtime/status';
 import type { SignatureChip } from '@/types/capture';
 
 /** Untrusted text: always text nodes; server escapes styled when flagged. */

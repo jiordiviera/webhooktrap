@@ -37,6 +37,7 @@
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="manifest" href="/manifest.webmanifest">
 
         {{-- Link previews (Open Graph, X). No SSR, so crawlers only see these server-rendered tags.
              Images are exports of the "Webhook Trap — OG images" Claude Design canvas. --}}
@@ -50,6 +51,9 @@
             $ogBase = rtrim((string) config('app.url'), '/');
         @endphp
         <meta name="description" content="{{ $ogDescription }}">
+        {{-- Allow-list (App\Http\PublicPages): every page not named there is noindex. --}}
+        <meta name="robots" content="{{ \App\Http\PublicPages::indexable($page) ? 'index,follow' : 'noindex,nofollow' }}">
+        <link rel="canonical" href="{{ \App\Http\PublicPages::canonical($page, request()->path()) }}">
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="Webhook Trap">
         <meta property="og:title" content="{{ $ogTitle }}">
@@ -63,6 +67,49 @@
         <meta name="twitter:title" content="{{ $ogTitle }}">
         <meta name="twitter:description" content="{{ $ogDescription }}">
         <meta name="twitter:image" content="{{ $ogBase.'/'.$ogImage }}">
+
+        @if ($page['component'] === 'welcome')
+            {{-- Fonts of the landing's first paint (H1, terminal), latin only; font-display is swap. --}}
+            @foreach (\App\Http\PublicPages::landingFontUrls() as $fontUrl)
+                <link rel="preload" href="{{ $fontUrl }}" as="font" type="font/woff2" crossorigin>
+            @endforeach
+            @php
+                $ldUrl = $ogBase.'/';
+                $structuredData = [
+                    '@context' => 'https://schema.org',
+                    '@graph' => [
+                        [
+                            '@type' => 'SoftwareApplication',
+                            'name' => 'Webhook Trap',
+                            'applicationCategory' => 'DeveloperApplication',
+                            'operatingSystem' => 'Linux, macOS, Windows',
+                            'url' => $ldUrl,
+                            'description' => $ogDescription,
+                            'license' => 'https://www.gnu.org/licenses/agpl-3.0.html',
+                            'codeRepository' => 'https://github.com/jiordiviera/webhooktrap',
+                            'image' => $ogBase.'/og/landing.png',
+                            'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'USD'],
+                            'publisher' => ['@id' => $ldUrl.'#organization'],
+                        ],
+                        [
+                            '@type' => 'Organization',
+                            '@id' => $ldUrl.'#organization',
+                            'name' => 'Webhook Trap',
+                            'url' => $ldUrl,
+                            'logo' => $ogBase.'/brand/png/webhooktrap-mark-light-512.png',
+                            'sameAs' => ['https://github.com/jiordiviera/webhooktrap'],
+                        ],
+                        [
+                            '@type' => 'WebSite',
+                            'name' => 'Webhook Trap',
+                            'url' => $ldUrl,
+                            'publisher' => ['@id' => $ldUrl.'#organization'],
+                        ],
+                    ],
+                ];
+            @endphp
+            <script type="application/ld+json">{!! json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR) !!}</script>
+        @endif
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])

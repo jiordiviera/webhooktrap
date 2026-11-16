@@ -1,0 +1,15 @@
+{
+    "name": "Webhook Trap",
+    "short_name": "Webhook Trap",
+    "description": "Capture webhooks, prove your handler against real provider scenarios, and replay them.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "theme_color": "#141411",
+    "background_color": "#141411",
+    "icons": [
+        { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+        { "src": "/brand/png/webhooktrap-mark-dark-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/brand/png/webhooktrap-mark-dark-1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+    ]
+}

@@ -19,6 +19,7 @@ final readonly class HealthController
 
         return new JsonResponse($report, $report['ok'] === true ? 200 : 503, [
             'Cache-Control' => 'no-store',
+            'X-Robots-Tag' => 'noindex, nofollow',
         ]);
     }
 }

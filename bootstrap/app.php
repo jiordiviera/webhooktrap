@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\CrawlerController;
 use App\Http\ErrorPages;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -17,6 +18,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery as BasePreventRequestForgery;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -24,6 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        // Crawler files carry this instance's APP_URL; outside `web`: no session, no cookie.
+        then: function (): void {
+            Route::get('/robots.txt', [CrawlerController::class, 'robots'])->name('robots');
+            Route::get('/sitemap.xml', [CrawlerController::class, 'sitemap'])->name('sitemap');
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // The guest cookie carries a random token stored hashed; it is read raw.

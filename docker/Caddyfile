@@ -158,6 +158,25 @@ import /etc/frankenphp/caddy/trust-site-*.caddy
 			}
 			log_skip @share
 			root * /app/public
+			# Static files only (the `file` matcher): a missing /build/x falls through to Laravel's
+			# 404, which keeps its own headers. Vite names /build/* by content hash, so it never
+			# changes; the rest is renamed by hand, a day is enough. HTML stays as Laravel sets it.
+			@static_immutable {
+				path /build/*
+				file
+			}
+			header @static_immutable Cache-Control "public, max-age=31536000, immutable"
+			@static_daily {
+				path /og/* /brand/* /favicon.ico /favicon.svg /apple-touch-icon.png /manifest.webmanifest
+				file
+			}
+			header @static_daily Cache-Control "public, max-age=86400"
+			@webmanifest {
+				path /manifest.webmanifest
+				file
+			}
+			header @webmanifest Content-Type "application/manifest+json"
+			# App responses only: captures take the ingest handles above and are never encoded.
 			encode zstd gzip
 			php_server
 		}
