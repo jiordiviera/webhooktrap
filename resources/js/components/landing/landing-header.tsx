@@ -6,9 +6,12 @@ import { index as projects } from '@/routes/projects';
 import { GetUrlButton, LandingButton } from './landing-button';
 
 const links = [
-    { label: 'Docs', todo: 'docs' },
-    { label: 'Self-host', todo: 'self-host' },
-    { label: 'GitHub', todo: 'github' },
+    { label: 'Docs', href: 'https://docs.webhooktrap.dev' },
+    {
+        label: 'Self-host',
+        href: 'https://github.com/jiordiviera/webhooktrap#self-hosting',
+    },
+    { label: 'GitHub', href: 'https://github.com/jiordiviera/webhooktrap' },
 ];
 
 export function LandingHeader() {
@@ -32,8 +35,8 @@ export function LandingHeader() {
                 {links.map((l) => (
                     <a
                         key={l.label}
-                        href="#"
-                        data-todo={l.todo}
+                        href={l.href}
+                        rel="noopener"
                         className="text-lp-muted no-underline hover:text-lp-ink max-sm:hidden"
                     >
                         {l.label}

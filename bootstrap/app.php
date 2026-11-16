@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
 
         $middleware->redirectGuestsTo('/sign-in');
-        $middleware->redirectUsersTo('/');
+        $middleware->redirectUsersTo('/projects');
         $middleware->alias([
             'recent-auth' => RequireRecentAuthentication::class,
             'verified-email' => EnsureEmailIsVerified::class,
