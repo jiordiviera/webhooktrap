@@ -9,7 +9,7 @@ const links = [
     { label: 'Docs', href: 'https://docs.webhooktrap.dev' },
     {
         label: 'Self-host',
-        href: 'https://github.com/jiordiviera/webhooktrap#self-hosting',
+        href: 'https://docs.webhooktrap.dev/guides/self-hosting',
     },
     { label: 'GitHub', href: 'https://github.com/jiordiviera/webhooktrap' },
 ];

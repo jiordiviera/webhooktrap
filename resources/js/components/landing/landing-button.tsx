@@ -1,35 +1,30 @@
+import { router, usePage } from '@inertiajs/react';
 import { useState, type AnchorHTMLAttributes } from 'react';
+import { store as startGuest } from '@/actions/App/Modules/Workspace/Http/Controllers/GuestWorkspaceController';
 import { cn } from '@/lib/utils';
+import projects from '@/routes/projects';
 
 type Props = AnchorHTMLAttributes<HTMLAnchorElement> & {
     size?: 'sm' | 'lg';
-    /** Marks a link whose target flow is not built yet. */
-    todo?: string;
 };
 
-/** Terminal-direction button, rendered as a link: ink block, magenta on hover. */
-export function LandingButton({
-    size = 'lg',
-    todo,
-    className,
-    ...props
-}: Props) {
-    return (
-        <a
-            {...(todo ? { 'data-todo': todo } : {})}
-            className={cn(
-                'inline-flex items-center justify-center gap-2.5 rounded-[3px] border border-lp-ink bg-lp-ink font-bold whitespace-nowrap text-lp-bg no-underline hover:border-lp-mag hover:bg-lp-mag hover:text-lp-mag-ink',
-                size === 'lg'
-                    ? 'h-12 px-5 text-sm'
-                    : 'h-9 px-3.5 text-[12.5px]',
-                className,
-            )}
-            {...props}
-        />
+const buttonClass = (size: 'sm' | 'lg', className?: string) =>
+    cn(
+        'inline-flex items-center justify-center gap-2.5 rounded-[3px] border border-lp-ink bg-lp-ink font-bold whitespace-nowrap text-lp-bg no-underline hover:border-lp-mag hover:bg-lp-mag hover:text-lp-mag-ink',
+        size === 'lg' ? 'h-12 px-5 text-sm' : 'h-9 px-3.5 text-[12.5px]',
+        className,
     );
+
+/** Terminal-direction button, rendered as a link: ink block, magenta on hover. */
+export function LandingButton({ size = 'lg', className, ...props }: Props) {
+    return <a className={buttonClass(size, className)} {...props} />;
 }
 
-/** The one CTA of S-01. Guest capture is not built yet. */
+/**
+ * The one CTA of S-01. A visitor starts a guest workspace (POST /new, which
+ * also sends a live guest back to their project); a signed-in user goes to
+ * their projects.
+ */
 export function GetUrlButton({
     className,
     short = false,
@@ -37,15 +32,42 @@ export function GetUrlButton({
     className?: string;
     short?: boolean;
 }) {
+    const { principal } = usePage().props;
+    const [busy, setBusy] = useState(false);
+    const size = short ? 'sm' : 'lg';
+    const label = short ? 'Get a URL' : 'Get a URL, no sign-up';
+
+    if (principal.kind === 'user') {
+        return (
+            <LandingButton
+                href={projects.index().url}
+                size={size}
+                className={className}
+            >
+                {short ? 'Open app' : 'Open your projects'}
+            </LandingButton>
+        );
+    }
+
     return (
-        <LandingButton
-            href="#"
-            todo="guest-capture"
-            size={short ? 'sm' : 'lg'}
-            className={className}
+        <button
+            type="button"
+            disabled={busy}
+            aria-busy={busy || undefined}
+            className={buttonClass(size, cn('cursor-pointer', className))}
+            onClick={() =>
+                router.post(
+                    startGuest.url(),
+                    {},
+                    {
+                        onStart: () => setBusy(true),
+                        onFinish: () => setBusy(false),
+                    },
+                )
+            }
         >
-            {short ? 'Get a URL' : 'Get a URL, no sign-up'}
-        </LandingButton>
+            {label}
+        </button>
     );
 }
 

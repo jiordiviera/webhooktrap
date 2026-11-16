@@ -439,7 +439,10 @@ function MoreMenu({ className = '' }: { className?: string }) {
                         </a>
                     </Menu.Item>
                     <Menu.Item asChild>
-                        <a className="tt-menu-item" href="#" data-todo="docs">
+                        <a
+                            className="tt-menu-item"
+                            href="https://docs.webhooktrap.dev"
+                        >
                             Docs
                         </a>
                     </Menu.Item>

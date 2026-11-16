@@ -693,7 +693,7 @@ export const FooterCta = forwardRef<HTMLElement>(function FooterCta(_, ref) {
 const footerLinks = [
     ['Docs', 'https://docs.webhooktrap.dev'],
     ['GitHub', 'https://github.com/jiordiviera/webhooktrap'],
-    ['Self-host', 'https://github.com/jiordiviera/webhooktrap#self-hosting'],
+    ['Self-host', 'https://docs.webhooktrap.dev/guides/self-hosting'],
     // Hosted on OpenStatus, reached through a Cloudflare redirect: it stays up when the VPS is down.
     ['Status', 'https://status.webhooktrap.dev'],
 ] as const;
