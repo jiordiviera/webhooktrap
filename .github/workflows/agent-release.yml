@@ -300,7 +300,8 @@ jobs:
             if [ "$(npm view "$name@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
               echo "$name@$VERSION already published"; continue
             fi
-            npm publish "tgz/webhooktrap-$p-$VERSION.tgz" --provenance --access public --tag "$dist_tag"
+            # ./ prefix: npm reads a bare "dir/file.tgz" as a GitHub "user/repo" shorthand.
+            npm publish "./tgz/webhooktrap-$p-$VERSION.tgz" --provenance --access public --tag "$dist_tag"
           done < publish-order.txt
       - name: Provenance is on the registry
         env:
