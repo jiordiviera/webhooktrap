@@ -178,6 +178,38 @@ type Job struct {
 	DeliveryCount *int           `json:"delivery_count"` // null until the server can plan
 	ExpiresAt     string         `json:"expires_at"`
 	Captures      []SelectionRef `json:"captures"` // verify jobs
+
+	// Runner jobs only (contracts §6): the requested guard mode, which can
+	// only narrow the runner's local ceiling (RN-3), its allow-list entries
+	// for B′, and the per-request limits.
+	Guard     string           `json:"guard,omitempty"`
+	Allowlist []AllowlistEntry `json:"allowlist,omitempty"`
+	Limits    *JobLimits       `json:"limits,omitempty"`
+}
+
+// AllowlistEntry is one B′ allow-list entry of a runner job: a host name or
+// a CIDR, and an inclusive port range.
+type AllowlistEntry struct {
+	Host     string `json:"host,omitempty"`
+	CIDR     string `json:"cidr,omitempty"`
+	PortFrom int    `json:"port_from"`
+	PortTo   int    `json:"port_to"`
+}
+
+// JobLimits are a runner job's per-request limits; the engine's own limits
+// (30 s, 1 MiB) are the ceiling.
+type JobLimits struct {
+	RequestTimeoutMS int   `json:"request_timeout_ms"`
+	ResponseCapBytes int64 `json:"response_cap_bytes"`
+}
+
+// RunnerHello is POST /runner/v1/hello (contracts §6): the runner's
+// version, which must equal the app's.
+type RunnerHello struct {
+	Proto    int    `json:"proto"`
+	Version  string `json:"version"`
+	ProtoMin int    `json:"proto_min"`
+	ProtoMax int    `json:"proto_max"`
 }
 
 // CaptureRequest is the capture fetch body: the headers in received order
@@ -208,6 +240,10 @@ const (
 	AbortTargetUnreachable         = "target_unreachable"
 	AbortInterrupted               = "interrupted"
 	AbortInternalError             = "internal_error"
+	// Runner only (contracts §6, RN-3): the job asks for more than the
+	// runner's local ceiling allows.
+	AbortGuardExceedsCeiling = "guard_exceeds_ceiling"
+	AbortTargetNotAllowed    = "target_not_allowed"
 )
 
 // declineRequest is the body of decline and abort: proto and a reason.

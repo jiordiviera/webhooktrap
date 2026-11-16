@@ -106,6 +106,12 @@ type Client struct {
 	AgentID string
 	Key     ed25519.PrivateKey
 
+	// Base is the API base path: /agent/v1 (default) or /runner/v1.
+	Base string
+	// Bearer is a static token (the runner token, contracts §6). When set,
+	// no challenge-response runs and a 401 is never retried.
+	Bearer string
+
 	authMu   sync.Mutex // one challenge-response at a time
 	mu       sync.Mutex
 	token    string
@@ -133,8 +139,8 @@ type callOpts struct {
 // call sends one request to the pinned origin and decodes a 2xx JSON body
 // into out. It returns (status, error); 204 leaves out untouched.
 func (c *Client) call(ctx context.Context, method, path string, in, out any, o callOpts) (int, error) {
-	if !strings.HasPrefix(path, "/agent/v1/") {
-		return 0, errors.New("agentapi: path outside /agent/v1")
+	if !strings.HasPrefix(path, c.base()+"/") {
+		return 0, errors.New("agentapi: path outside " + c.base())
 	}
 	u, err := url.Parse(c.Origin + path)
 	if err != nil {
@@ -174,7 +180,7 @@ func (c *Client) call(ctx context.Context, method, path string, in, out any, o c
 		// One retry with a fresh token when the server says the token is no
 		// longer valid but the agent isn't revoked.
 		var ae *APIError
-		if o.auth && !o.noRetry && attempt == 0 && errors.As(err, &ae) && ae.Status == http.StatusUnauthorized && ae.Code != "revoked" {
+		if o.auth && !o.noRetry && c.Bearer == "" && attempt == 0 && errors.As(err, &ae) && ae.Status == http.StatusUnauthorized && ae.Code != "revoked" {
 			c.dropToken()
 			continue
 		}
@@ -269,8 +275,19 @@ func (c *Client) dropToken() {
 	c.mu.Unlock()
 }
 
+// base is the API base path.
+func (c *Client) base() string {
+	if c.Base == "" {
+		return "/agent/v1"
+	}
+	return c.Base
+}
+
 // accessToken returns a valid token, renewing it before expiry.
 func (c *Client) accessToken(ctx context.Context) (string, error) {
+	if c.Bearer != "" {
+		return c.Bearer, nil
+	}
 	c.mu.Lock()
 	tok, exp := c.token, c.tokenExp
 	c.mu.Unlock()
@@ -343,7 +360,7 @@ func (c *Client) TokenExpiry() time.Time {
 func (c *Client) Pair(ctx context.Context, r PairRequest) (*PairResponse, error) {
 	r.Proto, r.ProtoMin, r.ProtoMax = Proto, Proto, Proto
 	var out PairResponse
-	status, err := c.call(ctx, http.MethodPost, "/agent/v1/pair", r, &out, callOpts{})
+	status, err := c.call(ctx, http.MethodPost, c.base()+"/pair", r, &out, callOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -355,13 +372,13 @@ func (c *Client) Pair(ctx context.Context, r PairRequest) (*PairResponse, error)
 
 // Confirm clears needs_reconfirm after the local [y/N].
 func (c *Client) Confirm(ctx context.Context) error {
-	_, err := c.call(ctx, http.MethodPost, "/agent/v1/confirm", protoOnly{Proto}, nil, callOpts{auth: true})
+	_, err := c.call(ctx, http.MethodPost, c.base()+"/confirm", protoOnly{Proto}, nil, callOpts{auth: true})
 	return err
 }
 
 // Unpair is DELETE /agent/v1/agent.
 func (c *Client) Unpair(ctx context.Context) error {
-	_, err := c.call(ctx, http.MethodDelete, "/agent/v1/agent", nil, nil, callOpts{auth: true})
+	_, err := c.call(ctx, http.MethodDelete, c.base()+"/agent", nil, nil, callOpts{auth: true})
 	return err
 }
 
@@ -375,16 +392,31 @@ func (c *Client) Hello(ctx context.Context, h Hello) (*HelloResponse, error) {
 		h.Targets = []TargetMirror{}
 	}
 	var out HelloResponse
-	if _, err := c.call(ctx, http.MethodPost, "/agent/v1/hello", h, &out, callOpts{auth: true}); err != nil {
+	if _, err := c.call(ctx, http.MethodPost, c.base()+"/hello", h, &out, callOpts{auth: true}); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
+// NewRunner returns a client for the runner API (/runner/v1) that sends the
+// runner token on every call (contracts §6). The token is never logged.
+func NewRunner(origin, token string, hc *http.Client, userAgent string, now func() time.Time) *Client {
+	c := New(origin, hc, userAgent, now)
+	c.Base, c.Bearer = "/runner/v1", token
+	return c
+}
+
+// HelloRunner is the runner's hello and heartbeat (426 when its version
+// differs from the app's).
+func (c *Client) HelloRunner(ctx context.Context, version string) error {
+	_, err := c.call(ctx, http.MethodPost, c.base()+"/hello", RunnerHello{Proto, version, Proto, Proto}, nil, callOpts{auth: true})
+	return err
+}
+
 // NextJob long-polls for a job; (nil, nil) on 204.
 func (c *Client) NextJob(ctx context.Context, wait int) (*Job, error) {
 	var out Job
-	status, err := c.call(ctx, http.MethodGet, "/agent/v1/jobs/next", nil, &out, callOpts{auth: true, limit: maxJobResponse, query: url.Values{"wait": {strconv.Itoa(wait)}}})
+	status, err := c.call(ctx, http.MethodGet, c.base()+"/jobs/next", nil, &out, callOpts{auth: true, limit: maxJobResponse, query: url.Values{"wait": {strconv.Itoa(wait)}}})
 	if err != nil {
 		return nil, err
 	}
@@ -397,7 +429,7 @@ func (c *Client) NextJob(ctx context.Context, wait int) (*Job, error) {
 // FetchCapture fetches one capture referenced by the job.
 func (c *Client) FetchCapture(ctx context.Context, jobID, captureID string) (*CaptureRequest, error) {
 	var out CaptureRequest
-	p := "/agent/v1/jobs/" + url.PathEscape(jobID) + "/captures/" + url.PathEscape(captureID) + "/request"
+	p := c.base() + "/jobs/" + url.PathEscape(jobID) + "/captures/" + url.PathEscape(captureID) + "/request"
 	if _, err := c.call(ctx, http.MethodGet, p, nil, &out, callOpts{auth: true, limit: maxCaptureResponse}); err != nil {
 		return nil, err
 	}
@@ -406,13 +438,13 @@ func (c *Client) FetchCapture(ctx context.Context, jobID, captureID string) (*Ca
 
 // Accept takes the job.
 func (c *Client) Accept(ctx context.Context, jobID string) error {
-	_, err := c.call(ctx, http.MethodPost, "/agent/v1/jobs/"+url.PathEscape(jobID)+"/accept", protoOnly{Proto}, nil, callOpts{auth: true})
+	_, err := c.call(ctx, http.MethodPost, c.base()+"/jobs/"+url.PathEscape(jobID)+"/accept", protoOnly{Proto}, nil, callOpts{auth: true})
 	return err
 }
 
 // Decline refuses the job with one of the Decline* reasons.
 func (c *Client) Decline(ctx context.Context, jobID, reason string) error {
-	_, err := c.call(ctx, http.MethodPost, "/agent/v1/jobs/"+url.PathEscape(jobID)+"/decline", declineRequest{Proto, reason}, nil, callOpts{auth: true})
+	_, err := c.call(ctx, http.MethodPost, c.base()+"/jobs/"+url.PathEscape(jobID)+"/decline", declineRequest{Proto, reason}, nil, callOpts{auth: true})
 	return err
 }
 
@@ -420,14 +452,14 @@ func (c *Client) Decline(ctx context.Context, jobID, reason string) error {
 // notes): the run becomes Aborted with one of the Abort* reasons. 409 means
 // the job wasn't accepted or is already finished.
 func (c *Client) Abort(ctx context.Context, jobID, reason string) error {
-	_, err := c.call(ctx, http.MethodPost, "/agent/v1/jobs/"+url.PathEscape(jobID)+"/abort", declineRequest{Proto, reason}, nil, callOpts{auth: true})
+	_, err := c.call(ctx, http.MethodPost, c.base()+"/jobs/"+url.PathEscape(jobID)+"/abort", declineRequest{Proto, reason}, nil, callOpts{auth: true})
 	return err
 }
 
 // PostObservations sends one batch (idempotent on seq).
 func (c *Client) PostObservations(ctx context.Context, runID string, o Observations) error {
 	o.Proto = Proto
-	_, err := c.call(ctx, http.MethodPost, "/agent/v1/runs/"+url.PathEscape(runID)+"/observations", o, nil, callOpts{auth: true})
+	_, err := c.call(ctx, http.MethodPost, c.base()+"/runs/"+url.PathEscape(runID)+"/observations", o, nil, callOpts{auth: true})
 	return err
 }
 
@@ -436,6 +468,6 @@ func (c *Client) PostFinal(ctx context.Context, runID string, doc json.RawMessag
 	if len(doc) > MaxFinalDocument {
 		return fmt.Errorf("the run document is larger than %d bytes", MaxFinalDocument)
 	}
-	_, err := c.call(ctx, http.MethodPost, "/agent/v1/runs/"+url.PathEscape(runID)+"/final", doc, nil, callOpts{auth: true})
+	_, err := c.call(ctx, http.MethodPost, c.base()+"/runs/"+url.PathEscape(runID)+"/final", doc, nil, callOpts{auth: true})
 	return err
 }

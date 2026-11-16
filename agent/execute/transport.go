@@ -38,6 +38,11 @@ type HTTPTransport struct {
 	Clock  Clock
 	// InsecureLocalhost skips TLS verification for local targets only (TGT-3).
 	InsecureLocalhost bool
+	// Timeout and ResponseCap narrow RequestTimeout and ResponseCap (a
+	// runner job's limits, contracts §6); zero or larger values keep the
+	// engine's own limits.
+	Timeout     time.Duration
+	ResponseCap int64
 }
 
 // Open implements Transport.
@@ -65,12 +70,21 @@ func (t *HTTPTransport) Open(ctx context.Context) (Conn, error) {
 		_ = tc.SetDeadline(time.Time{})
 		c = tc
 	}
-	return &httpConn{c: c, clock: t.Clock}, nil
+	hc := &httpConn{c: c, clock: t.Clock, timeout: RequestTimeout, cap: ResponseCap}
+	if t.Timeout > 0 && t.Timeout < RequestTimeout {
+		hc.timeout = t.Timeout
+	}
+	if t.ResponseCap > 0 && t.ResponseCap < ResponseCap {
+		hc.cap = t.ResponseCap
+	}
+	return hc, nil
 }
 
 type httpConn struct {
-	c     net.Conn
-	clock Clock
+	c       net.Conn
+	clock   Clock
+	timeout time.Duration
+	cap     int64
 }
 
 func (h *httpConn) Close() error { return h.c.Close() }
@@ -81,7 +95,7 @@ func (h *httpConn) Do(ctx context.Context, r *Request) Result {
 	var res Result
 	raw := encode(r)
 	// Socket deadlines are an OS timeout, not a measured time: real time is right here.
-	_ = h.c.SetDeadline(time.Now().Add(RequestTimeout))
+	_ = h.c.SetDeadline(time.Now().Add(h.timeout))
 	stop := context.AfterFunc(ctx, func() { _ = h.c.SetDeadline(time.Unix(1, 0)) })
 	defer stop()
 
@@ -103,7 +117,7 @@ func (h *httpConn) Do(ctx context.Context, r *Request) Result {
 	res.Framework = Framework(resp.Header)
 	res.Header = resp.Header
 	hash := sha256.New()
-	n, _ := io.Copy(hash, io.LimitReader(resp.Body, ResponseCap))
+	n, _ := io.Copy(hash, io.LimitReader(resp.Body, h.cap))
 	res.Response = observe.Response{
 		ContentType: resp.Header.Get("Content-Type"),
 		BodySHA256:  hex.EncodeToString(hash.Sum(nil)),

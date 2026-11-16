@@ -77,3 +77,18 @@ func TestPureStagesImportNoIO(t *testing.T) {
 		}
 	}
 }
+
+// ENG-2, ADR-010 §1 rule 2: serve-sandbox reaches plan, verify and ping
+// only. No executor, guard, HTTP, config file or agent state is linked
+// into the sandbox package.
+func TestSandboxReachesNoExecutor(t *testing.T) {
+	got := imports(t, filepath.Join(root(t), "internal", "sandbox"))
+	for _, bad := range []string{
+		"net/http", module + "execute", module + "guard", module + "observe",
+		module + "internal/config", module + "internal/agentstate", module + "internal/fixture",
+	} {
+		if file, ok := got[bad]; ok {
+			t.Errorf("internal/sandbox/%s imports %q (ENG-2)", file, bad)
+		}
+	}
+}

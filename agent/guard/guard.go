@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-// Mode is the guard mode of a role (ADR-010 §7). Only `local` is built in this
-// increment; `public` and `allowlist` belong to the server runner.
+// Mode is the guard mode of a role (ADR-010 §7): `local` for the agent and
+// CI, `public` and `allowlist` for the server runner (server.go).
 type Mode string
 
 const Local Mode = "local"
@@ -41,6 +41,11 @@ type Guard struct {
 	// Declared holds exact "host:port" entries (TGT-2), lower-case.
 	Declared map[string]bool
 	Resolver Resolver
+	// Allow is the job's allow-list (allowlist mode only).
+	Allow []AllowEntry
+	// Deny holds addresses refused in the server modes whatever else
+	// allows them (RN-4).
+	Deny []netip.Prefix
 }
 
 // New returns a local-mode guard with the declared entries.
@@ -64,6 +69,8 @@ type Target struct {
 	Addrs   []netip.Addr
 	Local   bool
 	Warning string // printed on every run for a declared non-local target
+
+	peer func(netip.Addr) error // server modes: re-check at dial
 }
 
 // providerDeny: provider domains are never targets (prototype deny list).
@@ -86,7 +93,7 @@ var metadataNames = []string{"metadata.google.internal", "metadata.goog", "metad
 
 // Check validates a URL and pins its addresses. Nothing is dialled.
 func (g *Guard) Check(ctx context.Context, raw string) (*Target, error) {
-	if g.Mode != Local {
+	if g.Mode != Local && g.Mode != Public && g.Mode != Allowlist {
 		return nil, refuse("guard mode %q is not available in this build", g.Mode)
 	}
 	u, err := url.Parse(raw)
@@ -133,6 +140,9 @@ func (g *Guard) Check(ctx context.Context, raw string) (*Target, error) {
 	}
 	if u.RawQuery != "" {
 		t.Path += "?" + u.RawQuery
+	}
+	if g.Mode != Local {
+		return g.checkServer(ctx, t)
 	}
 
 	var addrs []netip.Addr
@@ -252,7 +262,8 @@ func (t *Target) Dial(ctx context.Context, d *net.Dialer) (net.Conn, error) {
 			continue
 		}
 		peer, perr := netip.ParseAddrPort(c.RemoteAddr().String())
-		if perr != nil || peer.Addr().Unmap() != a.Unmap() || alwaysRefused(peer.Addr()) != nil || (t.Local && !isLoopback(peer.Addr())) {
+		if perr != nil || peer.Addr().Unmap() != a.Unmap() || alwaysRefused(peer.Addr()) != nil || (t.Local && !isLoopback(peer.Addr())) ||
+			(t.peer != nil && t.peer(peer.Addr()) != nil) {
 			_ = c.Close()
 			return nil, refuse("connection peer %s is not the pinned address", c.RemoteAddr())
 		}
