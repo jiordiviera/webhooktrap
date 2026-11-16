@@ -2,7 +2,6 @@ import { router } from '@inertiajs/react';
 import {
     Check,
     Info,
-    LoaderCircle,
     OctagonX,
     TriangleAlert,
     Undo2,
@@ -69,7 +68,7 @@ function WtToast({
     options: ToastOptions;
     loading: boolean;
 }) {
-    const Icon = loading ? LoaderCircle : ICONS[kind];
+    const Icon = ICONS[kind];
     const duration = options.duration ?? DURATIONS[kind];
     const timed = !loading && Number.isFinite(duration);
     const action = loading ? null : options.action;
@@ -122,7 +121,16 @@ function WtToast({
                 />
             )}
             <span className="wt-toast-chip" aria-hidden="true">
-                <Icon />
+                {loading ? (
+                    <span className="wt-toast-load">
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                    </span>
+                ) : (
+                    <Icon />
+                )}
             </span>
             <div className="wt-toast-body">
                 <p className="wt-toast-title">{options.title}</p>

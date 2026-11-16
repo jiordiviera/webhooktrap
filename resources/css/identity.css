@@ -1385,8 +1385,27 @@
     height: 14px;
     stroke-width: 2;
 }
-.wt-toast[data-loading] .wt-toast-chip svg {
-    animation: wt-spin 0.9s linear infinite;
+/* Loading: four cells lit in turn, clockwise, like deliveries going out. */
+.wt-toast-load {
+    display: grid;
+    grid-template-columns: repeat(2, 4px);
+    gap: 2px;
+}
+.wt-toast-load i {
+    width: 4px;
+    height: 4px;
+    background: var(--tone);
+    opacity: 0.25;
+    animation: wt-cell 1s steps(1, end) infinite;
+}
+.wt-toast-load i:nth-child(2) {
+    animation-delay: 0.25s;
+}
+.wt-toast-load i:nth-child(4) {
+    animation-delay: 0.5s;
+}
+.wt-toast-load i:nth-child(3) {
+    animation-delay: 0.75s;
 }
 .wt-toast-tick {
     flex: none;
@@ -1505,15 +1524,18 @@
         transform: translateX(300%);
     }
 }
-@keyframes wt-spin {
-    to {
-        transform: rotate(360deg);
+@keyframes wt-cell {
+    0% {
+        opacity: 1;
+    }
+    25% {
+        opacity: 0.25;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .wt-toast,
-    .wt-toast[data-loading] .wt-toast-chip svg,
+    .wt-toast-load i,
     .wt-toast[data-loading] .wt-toast-bar {
         animation: none;
     }
