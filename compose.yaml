@@ -76,7 +76,7 @@ services:
 
   app:
     <<: *app
-    networks: [edge, internal, egress, runner]
+    networks: [edge, internal, egress, runner, ssr]
     ports:
       - "${BIND_ADDRESS:-0.0.0.0}:${HTTP_PORT:-80}:8080"
       - "${BIND_ADDRESS:-0.0.0.0}:${HTTPS_PORT:-443}:8443"
@@ -88,6 +88,7 @@ services:
       INGEST_UPSTREAM: haproxy:8080
       APP_NUM_THREADS: ${APP_NUM_THREADS:-8}
       LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-8} # always the app's thread count
+      INERTIA_SSR_URL: http://ssr:13714 # public pages only; a dead `ssr` falls back to client rendering
     secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret, pulsesend_api_key] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
     volumes: [storage:/app/storage/app, engine_sock:/run/engine, backup_status:/status:ro, caddy_data:/data]
     group_add: ["10001"]
@@ -206,6 +207,25 @@ services:
       # up to 150 s so a fresh scheduler turns healthy within deploy.sh's wait (step 8).
       start_period: 150s
       start_interval: 5s
+
+  ssr: # server-side rendering of the public pages (landing, legal, example run), same as hosted
+    <<: *hardening
+    image: ghcr.io/jiordiviera/webhooktrap:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
+    entrypoint: ["node", "/app/bootstrap/ssr/ssr.js"]
+    user: "65534:65534"
+    read_only: true
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=64
+    networks: [ssr] # reached by `app` only
+    mem_limit: 128m
+    pids_limit: 32
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:13714/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   engine: # ENG-1, same as hosted
     <<: *hardening
@@ -342,6 +362,7 @@ networks:
   egress: {}
   backup_egress: {}
   runner: {}
+  ssr: { internal: true } # app and ssr only
 
 volumes:
   storage:

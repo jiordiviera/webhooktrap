@@ -39,7 +39,7 @@ x-app: &app
 services:
   app:
     <<: *app
-    networks: [edge, internal, egress] # egress: mail, OAuth
+    networks: [edge, internal, egress, ssr] # egress: mail, OAuth; ssr: the render server only
     ports: ["127.0.0.1:${APP_PORT:?Set APP_PORT}:8080"] # loopback only (P-6); the port is in the private plan
     environment:
       PROXY_TRUST_MODE: secret
@@ -48,6 +48,7 @@ services:
       INGEST_UPSTREAM: haproxy:8080 # decision 61: per-address limits before ingest
       APP_NUM_THREADS: ${APP_NUM_THREADS:-12} # FrankenPHP pool of the front (compose-profile §3)
       LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-12} # always the same value: long-poll slots leave 2 workers free
+      INERTIA_SSR_URL: http://ssr:13714 # public pages only; a dead `ssr` falls back to client rendering (compose-profile §2.5)
     secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret, pulsesend_api_key] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
     mem_limit: 1200m
     memswap_limit: 1200m
@@ -206,6 +207,29 @@ services:
       start_period: 30s
       start_interval: 5s
 
+  ssr: # Inertia SSR of the public pages, anonymous visitors only (PO 2026-11-16, compose-profile §2.5)
+    <<: *hardening
+    image: ${APP_IMAGE:?Set APP_IMAGE}@${APP_DIGEST:?Set APP_DIGEST}
+    entrypoint: ["node", "/app/bootstrap/ssr/ssr.js"] # self-contained bundle, listens on 13714
+    user: "65534:65534" # nobody: reads the world-readable bundle, owns nothing
+    read_only: true
+    # no env_file, no secrets, no volumes, no tmpfs: it only ever sees public page props
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=64
+    networks: [ssr] # reached by `app` only; no Postgres, no Valkey, no internet
+    mem_limit: 128m # measured 54 MiB idle, 86 MiB after 1,200 renders (20 in parallel)
+    memswap_limit: 128m
+    cpus: 0.25
+    pids_limit: 32
+    oom_score_adj: 500
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:13714/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   valkey: # HD-8
     <<: *hardening
     image: valkey/valkey:8-alpine@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a
@@ -308,6 +332,7 @@ networks:
   # Subnets chosen not to clash with the host's existing Docker networks (private plan); no IP-based trust anyway (SV-2).
   edge: { ipam: { config: [{ subnet: "172.31.248.0/24" }] } }
   internal: { internal: true, ipam: { config: [{ subnet: "172.31.249.0/24" }] } }
+  ssr: { internal: true, ipam: { config: [{ subnet: "172.31.250.0/24" }] } } # app and ssr only
   egress: {}
   backup_egress: {}
 

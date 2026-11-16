@@ -6,13 +6,15 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
     plugins: lazyPlugins(() => [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            // Public pages only (App\Http\Ssr\PublicPagesSsrGateway).
+            ssr: 'resources/js/ssr.tsx',
             refresh: true,
         }),
-        inertia(),
+        inertia({ ssr: 'resources/js/ssr.tsx' }),
         react(),
         babel({
             presets: [reactCompilerPreset()],
@@ -22,6 +24,10 @@ export default defineConfig({
             formVariants: true,
         }),
     ]),
+    // The production SSR bundle is one self-contained file: the runtime image
+    // has the node binary but no node_modules. The dev server keeps the
+    // default (dependencies loaded from node_modules).
+    ssr: command === 'build' ? { noExternal: true } : {},
     server: {
         watch: {
             ignored: [
@@ -95,4 +101,4 @@ export default defineConfig({
             stylesheet: 'resources/css/app.css',
         },
     },
-});
+}));

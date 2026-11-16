@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compose policy for the hosted profile (project/operations/ci-cd.md §4.2, rules P-1 to P-20).
+"""Compose policy for the hosted profile (project/operations/ci-cd.md §4.2, rules P-1 to P-21).
 
 deploy.sh runs it on the box, as root, with `python3 -I`, on the resolved configuration of the
 candidate compose.production.yaml (`docker compose ... config --format json`). It is installed at
@@ -21,7 +21,7 @@ import os
 import re
 import sys
 
-APP_IMAGE_SERVICES = {"app", "ingest", "haproxy-config", "reverb", "horizon", "scheduler", "engine"}
+APP_IMAGE_SERVICES = {"app", "ingest", "haproxy-config", "reverb", "horizon", "scheduler", "engine", "ssr"}
 PG_IMAGE_SERVICES = {"postgres", "backup"}
 SERVICES = APP_IMAGE_SERVICES | PG_IMAGE_SERVICES | {"valkey", "haproxy"}
 LARAVEL = {"app", "ingest", "reverb", "horizon", "scheduler"}
@@ -51,9 +51,10 @@ SECRETS_PER_SERVICE = {
     "backup": {"backup_cipher_pass", "backup_s3_key", "backup_s3_secret"},
     "engine": set(),
     "haproxy-config": set(),
+    "ssr": set(),
 }
 NETWORKS_PER_SERVICE = {
-    "app": {"edge", "internal", "egress"},
+    "app": {"edge", "internal", "egress", "ssr"},
     "ingest": {"internal"},
     "haproxy": {"internal"},
     "reverb": {"edge", "internal"},
@@ -62,9 +63,10 @@ NETWORKS_PER_SERVICE = {
     "valkey": {"internal"},
     "postgres": {"internal"},
     "backup": {"internal", "backup_egress"},
+    "ssr": {"ssr"},
 }
 NO_NETWORK = {"engine", "haproxy-config"}
-USERS = {"engine": "10001:10001", "backup": "postgres", "haproxy-config": "0:0"}
+USERS = {"engine": "10001:10001", "backup": "postgres", "haproxy-config": "0:0", "ssr": "65534:65534"}
 GROUP_ADD = {"app": ["10001"], "haproxy": ["33"]}
 CAP_ADD = {
     "valkey": {"SETUID", "SETGID"},
@@ -74,7 +76,8 @@ FORBIDDEN_KEYS = ("privileged", "devices", "device_cgroup_rules", "pid", "ipc", 
                   "userns_mode", "cgroup", "runtime", "gpus", "volumes_from", "sysctls", "build")
 FORBIDDEN_BIND = ("/", "/proc", "/sys", "/dev", "/etc", "/var/lib/docker", "/var/run/docker.sock",
                   "/run/docker.sock")  # anything outside APP_DIR is refused anyway (P-5)
-READ_ONLY = {"app", "ingest", "haproxy", "haproxy-config", "reverb", "horizon", "scheduler", "engine"}
+READ_ONLY = {"app", "ingest", "haproxy", "haproxy-config", "reverb", "horizon", "scheduler", "engine",
+             "ssr"}
 HAPROXY_ENV = {"WT_CAPTURE_MAX_CONN", "WT_CAPTURE_MAX_RATE", "WT_CAPTURE_MAX_STREAM",
                "WT_CAPTURE_STREAM_SLOTS"}
 HAPROXY_CONFIG_ENTRYPOINT = ["cp", "/etc/webhooktrap/haproxy.cfg",
@@ -82,6 +85,11 @@ HAPROXY_CONFIG_ENTRYPOINT = ["cp", "/etc/webhooktrap/haproxy.cfg",
 INGEST_COMMAND = ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile.ingest",
                   "--adapter", "caddyfile"]
 HAPROXY_COMMAND = ["haproxy", "-f", "/wt-haproxy/haproxy.cfg"]
+# P-21: the SSR render server (PO decision 2026-11-16). Node on the bundle, no secrets, no state.
+SSR_ENTRYPOINT = ["node", "/app/bootstrap/ssr/ssr.js"]
+SSR_ENV = {"NODE_ENV", "NODE_OPTIONS"}
+SSR_URL = "http://ssr:13714"
+SSR_MAX_MEM = 256 * 1024 * 1024
 PLAIN_SECRETS = ("APP_KEY", "APP_PREVIOUS_KEYS", "DB_PASSWORD", "REDIS_PASSWORD",
                  "REVERB_APP_SECRET", "MAIL_PASSWORD", "PULSESEND_API_KEY",
                  "GITHUB_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET", "ERROR_TRACKER_DSN",
@@ -231,8 +239,9 @@ class Policy:
             net = net or {}
             if net.get("external") or net.get("driver") in ("host", "macvlan", "ipvlan"):
                 self.fail("P-7", "network " + nname)
-        if not (nets.get("internal") or {}).get("internal"):
-            self.fail("P-7", "network internal")
+        for internal in ("internal", "ssr"):
+            if not (nets.get(internal) or {}).get("internal"):
+                self.fail("P-7", "network " + internal)
         for name, svc in self.services().items():
             have = set((svc.get("networks") or {}).keys())
             if name in NO_NETWORK:
@@ -335,9 +344,33 @@ class Policy:
                 if file_value not in (None, "") and not str(file_value).startswith("/run/secrets/"):
                     self.fail("P-20", name)
 
+    # P-21: `ssr` runs node on the bundle and nothing else: no env_file, secrets, volumes, tmpfs or
+    # command; settings limited to NODE_ENV and NODE_OPTIONS; a health check; at most 256 MiB.
+    # `app` reaches it at the fixed internal URL (network `ssr`, P-7 and P-15).
+    def p21(self) -> None:
+        svcs = self.services()
+        svc = svcs.get("ssr") or {}
+        if svc.get("entrypoint") != SSR_ENTRYPOINT or svc.get("command"):
+            self.fail("P-21", "ssr entrypoint")
+        for key in ("env_file", "secrets", "volumes", "tmpfs", "group_add", "cap_add"):
+            if svc.get(key):
+                self.fail("P-21", "ssr " + key)
+        if set(self.env(svc)) - SSR_ENV:
+            self.fail("P-21", "ssr environment")
+        if not ((svc.get("healthcheck") or {}).get("test")):
+            self.fail("P-21", "ssr healthcheck")
+        try:
+            if int(svc.get("mem_limit") or 0) > SSR_MAX_MEM:
+                self.fail("P-21", "ssr mem_limit")
+        except (TypeError, ValueError):
+            self.fail("P-21", "ssr mem_limit")
+        if self.env(svcs.get("app") or {}).get("INERTIA_SSR_URL") != SSR_URL:
+            self.fail("P-21", "app INERTIA_SSR_URL")
+
     def run(self) -> list[tuple[str, str]]:
         for check in (self.p1, self.p2, self.p3_p4, self.p5_p13, self.p6, self.p7_p15,
-                      self.p8_p10, self.p9, self.p12, self.p14, self.p16, self.p17, self.p18_to_p20):
+                      self.p8_p10, self.p9, self.p12, self.p14, self.p16, self.p17, self.p18_to_p20,
+                      self.p21):
             check()
         return self.failures
 

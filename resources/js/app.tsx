@@ -1,33 +1,25 @@
 import { createInertiaApp, http } from '@inertiajs/react';
-import { Toaster } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
+import { appTitle, withAppProviders } from '@/lib/app-options';
 import { lazyLive } from '@/lib/realtime/live';
 
 // The XSRF cookie carries the __Host- prefix (TM-T4).
 http.setClient({ xsrfCookieName: '__Host-XSRF-TOKEN' });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Webhook Trap';
-
 // Live props over Echo + Reverb, when the server shares a Reverb key. Echo and
 // pusher-js load only when a page subscribes to a live prop (lib/realtime/live.ts).
 const live = lazyLive();
 
+// Public pages (App\Http\PublicPages) arrive server-rendered and hydrate;
+// every other page renders here (resources/js/ssr.tsx).
 void createInertiaApp({
     ...(live ? { live } : {}),
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: appTitle,
     // Every page renders its own shell (components/shell, identity, landing):
     // no persistent Inertia layout.
     layout: () => null,
     strictMode: true,
-    withApp(app) {
-        return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
-        );
-    },
+    withApp: withAppProviders,
     progress: {
         color: '#4B5563',
     },

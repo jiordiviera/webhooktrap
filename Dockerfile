@@ -65,6 +65,8 @@ RUN cp .env.example .env \
     && composer dump-autoload --optimize --classmap-authoritative --no-dev --no-interaction \
     && php artisan key:generate --no-interaction \
     && pnpm run build \
+    && test -f bootstrap/ssr/ssr.js \
+    && find bootstrap/ssr -name '*.map' -delete \
     && rm -f .env \
     && rm -rf node_modules tests agent
 
@@ -92,6 +94,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && groupadd --system --gid 10001 engine \
     && useradd --system --uid 10001 --gid engine --no-create-home --shell /usr/sbin/nologin engine
 COPY --from=engine /out/webhooktrap /usr/local/bin/webhooktrap
+# SSR of the public pages (PO decision 2026-11-16): the `ssr` service runs `node
+# /app/bootstrap/ssr/ssr.js` from this image. Only the node binary is copied, from the same pinned
+# node image as the build stage (no npm, no node_modules: the bundle is self-contained). About
+# +125 MB uncompressed, +40 MB compressed; a second image would cost more and break "one image".
+COPY --from=node:22-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee /usr/local/bin/node /usr/local/bin/node
 COPY --from=build --chown=www-data:www-data /app /app
 COPY docker/Caddyfile /etc/frankenphp/Caddyfile
 # The `ingest` service runs this one instead (A09 S3-3, S3-4; compose-profile §2.3).
@@ -113,7 +120,8 @@ RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/fra
     && chown -R www-data:www-data storage bootstrap/cache /data /config \
     && mkdir -p /status && chown 999:999 /status \
     && mkdir -p /run/engine && chown 10001:10001 /run/engine && chmod 0770 /run/engine \
-    && webhooktrap version
+    && webhooktrap version \
+    && node --version
 USER www-data
 EXPOSE 8080 8443
 HEALTHCHECK NONE

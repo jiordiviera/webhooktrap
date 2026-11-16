@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Http\Ssr\PublicPagesSsrGateway;
 use App\Infrastructure\Clock\Clock;
 use App\Infrastructure\Clock\SystemClock;
 use Carbon\CarbonImmutable;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Ssr\Gateway;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(Clock::class, SystemClock::class);
+        // SSR for the public pages only (replaces inertia-laravel's binding).
+        $this->app->bind(Gateway::class, PublicPagesSsrGateway::class);
     }
 
     /**

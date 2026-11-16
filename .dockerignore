@@ -18,6 +18,7 @@ storage/framework/sessions/*
 storage/framework/views/*
 bootstrap/cache/*.php
 public/build
+bootstrap/ssr
 public/hot
 public/storage
 coverage

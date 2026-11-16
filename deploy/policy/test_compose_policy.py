@@ -80,6 +80,21 @@ FIXTURES = {
     "DB_HOST elsewhere": ("P-19", lambda c: S(c, "app")["environment"].update(DB_HOST="pgbouncer")),
     "plain APP_KEY": ("P-20", lambda c: S(c, "app")["environment"].update(APP_KEY="base64:plain")),
     "_FILE outside /run/secrets": ("P-20", lambda c: S(c, "horizon")["environment"].update(MAIL_PASSWORD_FILE="/app/.env")),
+    "ssr gets a secret": ("P-14", lambda c: S(c, "ssr").update(secrets=[{"source": "app_key", "target": "/run/secrets/app_key"}])),
+    "ssr on internal": ("P-15", lambda c: S(c, "ssr")["networks"].update(internal=None)),
+    "ssr on egress": ("P-15", lambda c: S(c, "ssr")["networks"].update(egress=None)),
+    "ssr network not internal": ("P-7", lambda c: c["networks"]["ssr"].pop("internal")),
+    "ssr as root": ("P-3", lambda c: S(c, "ssr").update(user="0:0")),
+    "ssr writable root": ("P-16", lambda c: S(c, "ssr").update(read_only=False)),
+    "ssr published port": ("P-6", lambda c: S(c, "ssr").update(ports=[{"host_ip": "127.0.0.1", "target": 13714, "published": "13714"}])),
+    "ssr keeps capabilities": ("P-4", lambda c: S(c, "ssr").pop("cap_drop")),
+    "ssr other entrypoint": ("P-21", lambda c: S(c, "ssr").update(entrypoint=["sh", "-c", "id"])),
+    "ssr reads the env file": ("P-21", lambda c: S(c, "ssr").update(env_file=[os.path.join(APP_DIR, ".env.production")])),
+    "ssr extra environment": ("P-21", lambda c: S(c, "ssr")["environment"].update(DB_PASSWORD_FILE="/run/secrets/db_password")),
+    "ssr storage volume": ("P-21", lambda c: S(c, "ssr").update(volumes=[{"type": "volume", "source": "storage", "target": "/app/storage/app"}])),
+    "ssr without healthcheck": ("P-21", lambda c: S(c, "ssr").pop("healthcheck")),
+    "ssr memory above budget": ("P-21", lambda c: S(c, "ssr").update(mem_limit="1073741824")),
+    "app SSR URL elsewhere": ("P-21", lambda c: S(c, "app")["environment"].update(INERTIA_SSR_URL="http://evil.example:13714")),
 }
 
 

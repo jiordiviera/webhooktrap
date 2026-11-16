@@ -1,6 +1,7 @@
 # Compose profile · Webhook Trap 2.0
 
-**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-16 (rev. 16)
+**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-16 (rev. 17)
+**Rev. 17 (2026-11-16):** PO decision of 2026-11-16: server-side rendering of the public pages (landing, legal pages, example run) for anonymous visitors only, by a new `ssr` service in both profiles: the same image, `node` on the self-contained bundle, network `ssr` with `app` only, no secrets, 128m (new §2.5, §3, §4, §5, §6; policy P-21). Change table at the end.
 **Rev. 16 (2026-11-16):** decision 72: mail through PulseSend (`MAIL_MAILER=pulsesend`); its key is the optional file secret `pulsesend_api_key` on `app` and `horizon` (§5). Change table at the end.
 **Scope:** decision 32 §4 (one self-host profile, Redis-compatible store required, no minimal profile), decision 43 (template `jiordiviera/laravel-inertia-vps-template`), HD-4, HD-5, HD-8, HD-10, ADR-008.
 **Derived from:** the template's `compose.production.yaml` (read with `gh api` on 2026-11-14) plus Reverb, Valkey, Postgres + pgBackRest (the private hosted deployment plan §5, option A), healthchecks and limits.
@@ -78,7 +79,7 @@ x-app: &app
 services:
   app:
     <<: *app
-    networks: [edge, internal, egress]  # egress: mail, OAuth
+    networks: [edge, internal, egress, ssr]  # egress: mail, OAuth; rev. 17: ssr, the render server only (§2.5)
     ports: ["127.0.0.1:${APP_PORT:?Set APP_PORT}:8080"]   # hosted port from the private plan; loopback only, policy P-6
     environment:
       PROXY_TRUST_MODE: secret
@@ -87,6 +88,7 @@ services:
       INGEST_UPSTREAM: haproxy:8080     # rev. 9: through the per-address limits (§2.4)
       APP_NUM_THREADS: ${APP_NUM_THREADS:-8}          # rev. 12: the front's FrankenPHP pool (8 GB: 8, 16 GB: 12)
       LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-8}    # rev. 12: always the same value (§3.2)
+      INERTIA_SSR_URL: http://ssr:13714 # rev. 17: public pages only; a dead `ssr` falls back to client rendering (§2.5)
     secrets: [app_key, postgres_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret, pulsesend_api_key]   # rev. 13: per-service list, §5; rev. 16: pulsesend_api_key
     mem_limit: 768m                     # CI-2/P-8: every service carries mem_limit, memswap_limit, cpus, pids_limit (8 GB column of §3; 16 GB values in §3)
     memswap_limit: 768m
@@ -233,6 +235,29 @@ services:
       timeout: 5s
       retries: 3
 
+  ssr:                                  # rev. 17: Inertia SSR of the public pages, anonymous visitors only (§2.5)
+    <<: *hardening
+    image: ${APP_IMAGE:?Set APP_IMAGE}@${APP_DIGEST:?Set APP_DIGEST}   # same signed image; node binary + bootstrap/ssr/ssr.js
+    entrypoint: ["node", "/app/bootstrap/ssr/ssr.js"]                # listens on 13714
+    user: "65534:65534"                 # nobody: reads the world-readable bundle, owns nothing
+    read_only: true
+    # no env_file, no secrets, no volumes, no tmpfs: it only ever sees public page props
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=64
+    networks: [ssr]                     # reached by `app` only; no Postgres, no Valkey, no internet
+    mem_limit: 128m                     # measured 54 MiB idle, 86 MiB after 1,200 renders (20 in parallel)
+    memswap_limit: 128m
+    cpus: 0.25
+    pids_limit: 32
+    oom_score_adj: 500
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:13714/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   valkey:                               # HD-8, replaces the template's redis:7-alpine
     <<: *hardening
     image: valkey/valkey:8.x-alpine@sha256:<digest>
@@ -324,6 +349,7 @@ secrets:                                # files under $APP_DIR/secrets; owners i
 networks:
   edge:          { ipam: { config: [{ subnet: "<subnet-edge>" }] } }      # no IP-based trust; the proxy proves itself with X-WT-Edge (SV-2)
   internal:      { internal: true, ipam: { config: [{ subnet: "<subnet-internal>" }] } }
+  ssr:           { internal: true, ipam: { config: [{ subnet: "<subnet-ssr>" }] } }   # rev. 17: app and ssr only (the file uses 172.31.250.0/24)
   egress:        {}
   backup_egress: {}
 
@@ -496,7 +522,7 @@ Hosted: `SERVER_NAME=:8080`, `CADDY_AUTO_HTTPS=off` (the host proxy does TLS), `
 
 ### 2.2 What `deploy.sh` enforces on this file (CI-2)
 
-On the VPS the file is not trusted just because it is in the signed image: `deploy.sh` checks the resolved configuration against `deploy/policy/compose-policy.py` before `up` (`ci-cd.md` §4.2, rules P-1..P-9). In short, this file must keep: project name `webhooktrap`; exactly the eleven services above (rev. 8: `ingest`; rev. 9: `haproxy` and the one-shot `haproxy-config`; the policy rules gain them in `ci-cd.md` §4.2, for A09's review); images from the two hard-coded repositories by digest (plus `valkey/valkey` by digest); `cap_drop: [ALL]` everywhere and `cap_add` only where listed (valkey, postgres); no `privileged`, host namespaces, devices or Docker socket; bind mounts only under `$APP_DIR`; no `external` volume or network, **no volume with `driver` or `driver_opts`** (a local-driver bind of `/` is a named volume), **no top-level `configs`**, top-level `secrets` with `file` only from `$APP_DIR/secrets/`; `oom_score_adj` ≥ 0; ports only on `127.0.0.1` (`app` publishes `${APP_PORT}` → 8080); `cgroup_parent: webhooktrap.slice`, `mem_limit`, `pids_limit` on every service (the YAML in §2 now carries `mem_limit`, `memswap_limit`, `cpus` and `pids_limit` on all eleven, so it passes P-8). The resolved configuration is never printed (it inlines `.env.production`). A change that breaks a rule ships with the policy change in the same PR, reviewed by A09 and installed by the PO.
+On the VPS the file is not trusted just because it is in the signed image: `deploy.sh` checks the resolved configuration against `deploy/policy/compose-policy.py` before `up` (`ci-cd.md` §4.2, rules P-1..P-9). In short, this file must keep: project name `webhooktrap`; exactly the twelve services above (rev. 8: `ingest`; rev. 9: `haproxy` and the one-shot `haproxy-config`; rev. 17: `ssr`, rule P-21; the policy rules gain them in `ci-cd.md` §4.2, for A09's review); images from the two hard-coded repositories by digest (plus `valkey/valkey` by digest); `cap_drop: [ALL]` everywhere and `cap_add` only where listed (valkey, postgres); no `privileged`, host namespaces, devices or Docker socket; bind mounts only under `$APP_DIR`; no `external` volume or network, **no volume with `driver` or `driver_opts`** (a local-driver bind of `/` is a named volume), **no top-level `configs`**, top-level `secrets` with `file` only from `$APP_DIR/secrets/`; `oom_score_adj` ≥ 0; ports only on `127.0.0.1` (`app` publishes `${APP_PORT}` → 8080); `cgroup_parent: webhooktrap.slice`, `mem_limit`, `pids_limit` on every service (the YAML in §2 now carries `mem_limit`, `memswap_limit`, `cpus` and `pids_limit` on all eleven, so it passes P-8). The resolved configuration is never printed (it inlines `.env.production`). A change that breaks a rule ships with the policy change in the same PR, reviewed by A09 and installed by the PO.
 
 ### 2.3 Ingest runtime (rev. 8, A09 slice 3 S3-3, S3-4)
 
@@ -583,6 +609,18 @@ None of them depends on the capture key. The front removes `Server` and `Via` fr
 - **Slow bodies:** with 8 small-body slow senders (twice ingest's threads), a fresh capture answered at once and the slow ones got `408` at 15 s. A sender that first sent 40 KB reached ingest and was cut there at 15 s.
 - **Wiring:** the one-shot copy, the read-only `haproxy` with the secret as `root:33 0440` read through `group_add`, the healthcheck, and the rerun of the copy on a second `up` all worked in a Compose run.
 
+### 2.5 SSR render server (rev. 17, PO decision 2026-11-16)
+
+**Why.** Crawlers saw an empty `<div id="app">` and the landing's H1 was painted by JavaScript (FCP/LCP 1.28 s on desktop). The public pages are now rendered on the server, and the browser hydrates them.
+
+**What is rendered.** Only the pages of `App\Http\PublicPages` (`welcome`, `Legal/Privacy`, `Legal/Terms`, and `Run/Show` with `access` = `example`), and only for **anonymous** visitors (the shared `principal` prop is `anonymous`). A signed-in user or a guest session on the same pages, and every other page, renders in the browser as before. `App\Http\Ssr\PublicPagesSsrGateway` replaces Inertia's gateway binding and decides per page, failing closed when `principal` is missing. Second fence: the SSR bundle (`resources/js/ssr.tsx`) only contains those four page components and throws for any other name. So no account, workspace or session data reaches the render process.
+
+**The service.** `ssr` runs `node /app/bootstrap/ssr/ssr.js` from the **same signed image** (the runtime stage gains only the `node` binary, copied from the build stage's pinned `node:22-bookworm-slim` digest: +125 MB uncompressed, +42 MB compressed; no npm, no `node_modules`, the bundle is self-contained). It runs as `nobody` (65534), `read_only`, `cap_drop: [ALL]`, `no-new-privileges`, with no `env_file`, no secrets, no volume and no tmpfs, on its own `internal` network `ssr` that only `app` joins (not `internal`: it cannot reach Postgres or Valkey; no internet, no published port). `app` reaches it at `INERTIA_SSR_URL=http://ssr:13714`. The Inertia render server also answers an unauthenticated `/shutdown`; only `app` can reach it, and Compose restarts it (`restart: unless-stopped`).
+
+**Fallback (never a 500, never a hang).** `config/inertia.php`: `timeout` 1 s, `connect_timeout` 0.25 s (`INERTIA_SSR_TIMEOUT`, `INERTIA_SSR_CONNECT_TIMEOUT`), `throw_on_error` fixed to false. A refused connection, a 500 from the renderer, or a server that accepts and never answers all give the client-rendered page (tests: `tests/Feature/Shell/SsrTest.php`). `app` does not `depends_on` `ssr` for the same reason; `deploy.sh` still waits for it to be healthy like every service.
+
+**Measured (2026-11-16, local build of the image).** 54 MiB idle, 86 MiB after 1,200 renders with 20 in parallel, heap capped at 64 MiB (`NODE_OPTIONS`); a render takes about 10 ms. Limit 128m, 0.25 CPU, `pids_limit` 32.
+
 ---
 
 ## 3. Resource limits for the shared VPS
@@ -599,11 +637,12 @@ None of them depends on the capture key. The front removes `Server` and `Via` fr
 | horizon | 512m · 1.0 |
 | scheduler | 128m · 0.25 |
 | engine | 192m · 0.25 |
+| ssr (rev. 17) | 128m · 0.25 |
 | valkey | 384m · 0.5 |
 | postgres | 2048m · 1.5 (`shared_buffers` 1 GB, `effective_cache_size` 3 GB) |
 | backup | 384m · 0.5 |
 
-- **Sum:** about 5.8 GiB. The slice proposal is `MemoryMax=6G`, `CPUQuota=300%` (the private hosted deployment plan §6.1), so the ceilings fit under it with no overcommit.
+- **Sum:** about 5.9 GiB (rev. 17: 6,032 MiB with `ssr`; 5,904 MiB before). The slice proposal is `MemoryMax=6G`, `CPUQuota=300%` (the private hosted deployment plan §6.1), so the ceilings fit under it with no overcommit.
 - **Settings in `.env.production`:** `PASSWORD_HASH_MAX_CONCURRENT=3`, `LONGPOLL_AGENT_SLOTS=6`, `VALKEY_MAXMEMORY=288mb`.
 - **§3.1 rule at 1200m:** 3 × 70 MiB ≤ 300 MiB (25 %), and a 560 MB baseline ≤ 600 MB (50 %).
 
@@ -625,6 +664,7 @@ Ceilings, not reservations. The slice caps the sum; per-service limits cap each 
 | valkey | 256m (`VALKEY_MAXMEMORY` ~75 % of it) · 0.25 | 384m · 0.5 | |
 | backup | 256m · 0.25 | 384m · 0.5 | low I/O weight |
 | engine | 128m · 0.25 | 192m · 0.25 | `pids_limit` 128, no network |
+| ssr (rev. 17) | 128m · 0.25 | 128m · 0.25 | `pids_limit` 32, network `ssr` with `app` only; measured 86 MiB peak (§2.5) |
 | **Sum of limits** | ≈ 3.95 GB with `ingest`, `haproxy` at 128m and `horizon` at 448m (3.99 GB while the one-shot runs); the slice ceiling of 3.2 GB still binds | ≈ 5.84 GB (slice 5 GB) | `memswap_limit` = `mem_limit` everywhere (no swap use) |
 
 **Rev. 9 proposal (PO to choose).** The per-service limits are ceilings: they now add up to about 0.75 GB more than the slice on the 8 GB box (rev. 11) (rev. 7: about 0.18 GB). Steady state is expected near 2.0 GB: the earlier 1.8 GB estimate plus `ingest` (measured 86 MiB idle) and `haproxy` (22 MiB idle). Two ways forward:
@@ -727,6 +767,7 @@ One file, derived from §2 by these changes only (decision 32: single profile, R
 | HAProxy gate (rev. 9, §2.4) | `haproxy` and `haproxy-config`, `INGEST_UPSTREAM=haproxy:8080` on `app` | same, wired by default; defaults 20 in flight and 1200/min per address, partial bodies 2 per address and 6 in total (`WT_CAPTURE_*`, rev. 10); a self-host operator whose own proxy hides client addresses must use mode `secret` or `ip`, or every capture shares one bucket; limits 128m and 32m; rev. 10: the edge secret only on `app`, `ingest`, `haproxy` (not `migrate`, `reverb`, `horizon`, `scheduler`) |
 | Ingest (rev. 8, §2.3) | `ingest` service, `INGEST_MODE=proxy` on `app` | same service and wiring, nothing to configure; `PROXY_TRUST_MODE` is `${PROXY_TRUST_MODE:-none}` on the app family and always `secret` on `ingest`; `secrets/edge_proxy_secret` is needed in every TLS mode (it signs the hop) |
 | Engine sandbox (ENG-1) | `engine` service, `network_mode: none`, socket volume `engine_sock` | same service and volume, same limits; settled before instance-secret `verify` ships. Rev. 16: the image creates `/run/engine` as 10001:10001 0770, so a new `engine_sock` volume is seeded with that owner; the socket is 0660 and `app` reaches it through `group_add: ["10001"]`. A volume created by an older image stays root-owned and the engine cannot bind: `docker compose down engine app && docker volume rm <project>_engine_sock` (it holds only the socket), or `chown 10001:10001` and `chmod 0770` its directory |
+| SSR (rev. 17, §2.5) | `ssr` service, `INERTIA_SSR_URL=http://ssr:13714` on `app` | same service and network, 128m, nothing to configure; without it the public pages render in the browser |
 | Runner | not present (own VM) | `runner` service: `ghcr.io/<owner>/<repo>-runner:${WEBHOOKTRAP_VERSION}` (distroless static, non-root), `read_only`, `cap_drop: [ALL]`, `pids_limit: 256`, 256 MB, 1 CPU; network `runner` only (with `app`), no DB/Valkey/Reverb variables; `RUNNER_TOKEN_FILE` from a secret created by `php artisan runner:token` on first start; idle while server runs are off |
 | Backup repository | `s3` (R2 EU) | default `posix` on the `pgbackrest_repo` volume, with a loud note that same-disk backups are not disaster backups; `s3`/`sftp` documented |
 | `cgroup_parent`, `oom_score_adj` | set (shared box) | removed (unknown host) |
@@ -735,7 +776,7 @@ One file, derived from §2 by these changes only (decision 32: single profile, R
 | Admin bootstrap | console command over SSH | `ADMIN_SETUP_TOKEN` printed to the log on first start if unset (TM-19) |
 | Kill switch | `SERVER_REPLAY_PUBLIC` false until C11 | same default false; the operator turns it on |
 
-Networks in self-host: `edge` (app, reverb), `internal` with `internal: true` (app, ingest, haproxy, reverb, horizon, scheduler, migrate, postgres, valkey, backup), `egress` (app, horizon), `backup_egress` (backup), `runner` (runner, app). Postgres and Valkey never join a network with internet access; the runner never joins `internal` (S-11, TM-80). The engine guard is the primary SSRF control on self-host; a DOCKER-USER egress recipe is documented as optional hardening (A09 §7.2 item 5).
+Networks in self-host: `edge` (app, reverb), `internal` with `internal: true` (app, ingest, haproxy, reverb, horizon, scheduler, migrate, postgres, valkey, backup), `egress` (app, horizon), `backup_egress` (backup), `runner` (runner, app), `ssr` with `internal: true` (ssr, app; rev. 17). Postgres and Valkey never join a network with internet access; the runner never joins `internal` (S-11, TM-80). The engine guard is the primary SSRF control on self-host; a DOCKER-USER egress recipe is documented as optional hardening (A09 §7.2 item 5).
 
 **Redis-compatible store:** `REDIS_HOST` may point at an operator's own Redis or Valkey; the bundled `valkey` service stays in the file (decision 32 forbids a minimal profile), and the architecture test accepts either (HD-8).
 
@@ -776,6 +817,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | Reverb | `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET(_FILE)`, `REVERB_HOST`, `REVERB_PORT`, `REVERB_SCHEME`, `REVERB_SERVER_HOST`, `REVERB_SERVER_PORT`, `REVERB_SCALING_ENABLED`, `REVERB_PUBLIC_HOST` (sent to the browser at runtime, see note); rev. 7: `REVERB_APP_MAX_CONNECTIONS` (proposed 1500), `REVERB_ACCEPT_CLIENT_EVENTS_FROM` (fixed `none`, no override in `.env.example`), `REALTIME_MAX_CONNECTIONS_PER_PRINCIPAL`, `REALTIME_MAX_CONNECTION_LIFETIME_SECONDS` (A05's own code in the Reverb process, decision 50), `REVERB_MIN_NOFILE` (4096), `LONGPOLL_AGENT_SLOTS`, `LONGPOLL_RUNNER_SLOTS`, `LONGPOLL_MAX_WAIT_SECONDS`, `LONGPOLL_RETRY_AFTER_SECONDS` |
 | Mail | `MAIL_MAILER` (hosted: `pulsesend`), `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD(_FILE)`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`; rev. 16: `PULSESEND_API_KEY(_FILE)`, `PULSESEND_BASE_URL`; `PULSESEND_ROUTES` stays unset (the package's webhook route is off by default, decision 72) |
 | OAuth | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET(_FILE)`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET(_FILE)` |
+| SSR (rev. 17) | `INERTIA_SSR_URL` (fixed `http://ssr:13714` by Compose, policy P-21), `INERTIA_SSR_ENABLED` (default true), `INERTIA_SSR_TIMEOUT` (1 s), `INERTIA_SSR_CONNECT_TIMEOUT` (0.25 s); on `ssr` only `NODE_ENV`, `NODE_OPTIONS` |
 | Server runs | `SERVER_REPLAY_PUBLIC`, `WEBHOOKTRAP_ALLOW_PRIVATE_REPLAY_TARGETS` |
 | Runner | `RUNNER_SERVER_ORIGIN` (fixed `http://app:8080` in `compose.yaml`: plain http only to a single-label Compose name), `RUNNER_TOKEN_FILE` (fixed `/run/secrets/runner_token`), `RUNNER_CONCURRENCY`, rev. 16: `RUNNER_GUARD_CEILING` (`public` default, or `allowlist`), `RUNNER_ALLOWLIST_FILE` (required with `allowlist`; `./runner/` is mounted read-only at `/etc/webhooktrap-runner`) |
 | Backup | `BACKUP_ENABLED`, `BACKUP_BEFORE_MIGRATE`, `BACKUP_REPO_TYPE`, `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`, `BACKUP_S3_KEY_FILE`, `BACKUP_S3_SECRET_FILE`, `BACKUP_CIPHER_PASS_FILE`, `BACKUP_RETENTION_FULL`, `BACKUP_RETENTION_ARCHIVE_DAYS`, `BACKUP_FULL_SCHEDULE` |
@@ -806,6 +848,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | backup | last full < 26 h, archive lag < 15 min; ledger last ship < 15 min, weekly ledger verify (rev. 6, DL-3) | Compose, `/health`, alert |
 | sign-in failures (rev. 6) | `signin_failures_5m` and `signin_alert_level` in `/health`; counts only | `/health`, alert (the private hosted deployment plan §6.6) |
 | engine | socket ping (`sandbox-ping`) | Compose (`app` depends on it) |
+| ssr (rev. 17) | `GET /health` on loopback (Inertia's render server) | Compose, deploy script; `app` does not depend on it (a dead `ssr` means client rendering, §2.5) |
 | runner (self-host) | last poll age, reported to `/health` | `/health` |
 
 ---
@@ -968,3 +1011,12 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | ID | Area | Rev. 15 | Rev. 16 | Where |
 | -- | ---- | ------- | ------- | ----- |
 | Decision 72 | Mail | `MAIL_MAILER=log` until a mail account exists | `MAIL_MAILER=pulsesend`; key in `secrets/pulsesend_api_key` (optional, empty = log) on `app` and `horizon`; in the entrypoint's `_FILE` list; the package's webhook route off | §5 |
+
+## Change table (rev. 16 → rev. 17, SSR of the public pages)
+
+| ID | Area | Rev. 16 | Rev. 17 | Where |
+| -- | ---- | ------- | ------- | ----- |
+| PO 2026-11-16 | Services | eleven | twelve: `ssr` (same image, `node` on the bundle, nobody, read-only, no secrets), network `ssr` with `app` only; policy P-21 | §2, §2.2, §2.5, §4 |
+| PO 2026-11-16 | Image | no Node at runtime | `node` binary from the pinned build-stage image: +125 MB uncompressed, +42 MB compressed | §2.5 |
+| PO 2026-11-16 | Resources | sum 5,904 MiB | 6,032 MiB with `ssr` at 128m, under the 6G slice | §3 |
+| PO 2026-11-16 | Fallback | none needed | 1 s timeout, 0.25 s connect timeout, never throws: client rendering | §2.5 |

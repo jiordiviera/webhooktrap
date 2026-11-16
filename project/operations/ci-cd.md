@@ -1,6 +1,7 @@
 # CI/CD · Webhook Trap 2.0
 
-**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-16 (rev. 15)
+**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-16 (rev. 16)
+**Rev. 16 (2026-11-16):** PO decision of 2026-11-16 (SSR of the public pages): the `ssr` service in the policy (P-1, P-2, P-3 user `65534:65534`, P-7 network `ssr` internal, P-14 no secrets, P-15, P-16, new P-21), 15 more fixtures (49); `pnpm run build` now also writes the SSR bundle, which the image ships and the Pest suite renders with. No workflow change. Change table at the end.
 **Rev. 15 (2026-11-16):** decision 72: the `pulsesend_api_key` secret (P-5, P-14 on `app` and `horizon`, P-20 `PULSESEND_API_KEY`). Change table at the end.
 **Rev. 13 (2026-11-15, step C2):** the repo is on GitHub, private, default branch `v2` (decisions 65-66; `main` deleted, 1.x on `v1`). CI and container run on `v2` and are green. The Compose policy (`deploy/policy`), `deploy.sh` and `deploy-gate` (`deploy/bin`) exist and are tested in CI. GitHub artifact attestations wait for the repo to go public. §1.3 lists the GitHub settings and secrets (names only). Change table at the end.
 **Rev. 12 (2026-11-15):** every app secret is a Compose file secret (CLAUDE.md rule), mounted only where read: P-5 file list, P-14 per service, P-17 without `_FILE` routing, new P-20 (no secret as a plain value in any resolved environment). Change table at the end.
@@ -182,7 +183,7 @@ Constants in the script (installed at C3, changed only by a PO-approved reinstal
 
 ### 4.2 Compose policy (CI-2, TM-146)
 
-**Rev. 13:** implemented in `deploy/policy/compose-policy.py`. CI (`infra` job) runs it on the real hosted file, and runs 34 breaking fixtures (`deploy/policy/test_compose_policy.py`, TM-T146); each fixture must fail with its rule. `config` omits a default `oom_score_adj: 0`, so the policy reads an absent value as 0. Rev. 14 of `compose-profile.md`: `postgres` holds only `postgres_password`, and the app family reads `db_password`.
+**Rev. 13:** implemented in `deploy/policy/compose-policy.py`. CI (`infra` job) runs it on the real hosted file, and runs 49 breaking fixtures (rev. 16: 15 for `ssr`) (`deploy/policy/test_compose_policy.py`, TM-T146); each fixture must fail with its rule. `config` omits a default `oom_score_adj: 0`, so the policy reads an absent value as 0. Rev. 14 of `compose-profile.md`: `postgres` holds only `postgres_password`, and the app family reads `db_password`.
 
 Implemented in one root-owned script (Python 3 standard library, run with `-I`, which Ubuntu 24.04 ships; if it is absent, installing it is a PO decision) that reads the resolved JSON from `docker compose config`. It is versioned in the repo (`deploy/policy/compose-policy.py`), **installed on the box at C3 and never read from the image**; changing it is a PO-approved host change. Tests TM-T146 run it in CI against fixtures.
 
@@ -207,6 +208,7 @@ Implemented in one root-owned script (Python 3 standard library, run with `-I`, 
 | P-18 | **No dev agent builds (rev. 11).** `AGENT_ALLOW_DEV_BUILDS` is absent from every service's resolved `environment` (which inlines `.env.production`), or `0`/`false`; and `APP_ENV` is `production` on every app-image service. The entrypoint refuses the variable outside `APP_ENV` `local`/`testing` as well, which also covers production self-host. |
 | P-19 | **Session-pooled database only (rev. 11).** The long-poll slots are PostgreSQL session advisory locks (`config/agent.php`), held for the life of the connection; a transaction pooler would hand the lock's session to another client or lose it. So: `DB_HOST` on every app-image service is `postgres` (the Compose service, no pooler). If a pooler is ever added (PgBouncer, PgCat, Odyssey, Supavisor, by image name), that is a policy change, and the rule then requires its pool mode in session mode (`PGBOUNCER_POOL_MODE`/`POOL_MODE`/`pool_mode` = `session` in its resolved environment); `transaction` or `statement` fails. |
 | P-20 | **No secret as a plain value (rev. 12, CLAUDE.md).** In every service's resolved `environment` (which inlines `.env.production`), none of `APP_KEY`, `APP_PREVIOUS_KEYS`, `DB_PASSWORD`, `REDIS_PASSWORD`, `REVERB_APP_SECRET`, `MAIL_PASSWORD`, `PULSESEND_API_KEY` (rev. 15), `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_SECRET`, `ERROR_TRACKER_DSN`, `IDENTITY_EMAIL_HMAC_KEY`, `IDENTITY_RECOVERY_CODE_KEY`, `AGENT_PAIRING_HMAC_KEY`, `POSTGRES_PASSWORD` is set; their `_FILE` forms may only point under `/run/secrets/`. The entrypoint reads each from its Compose secret (`/run/secrets/<lower-case name>`; `DB_PASSWORD` from `postgres_password`, `REDIS_PASSWORD` from `valkey_password`). |
+| P-21 | **`ssr` (rev. 16, PO 2026-11-16, compose-profile §2.5).** An app-image service (P-2) whose `entrypoint` is exactly `["node", "/app/bootstrap/ssr/ssr.js"]`, no `command`; no `env_file`, `secrets`, `volumes`, `tmpfs`, `group_add` or `cap_add`; `environment` only `NODE_ENV`, `NODE_OPTIONS`; `user: 65534:65534` (P-3); `read_only` (P-16); networks exactly `[ssr]`, a network with `internal: true` (P-7, P-15) that `app` also joins (`app` becomes `[edge, internal, egress, ssr]`); no published port (P-6); a healthcheck; `mem_limit` at most 256 MiB. `app` has `INERTIA_SSR_URL=http://ssr:13714`. |
 | P-11 | The policy never prints the resolved configuration (it inlines `.env.production`): on failure it prints rule id and service name only; the JSON stays in a root-only temp file that is deleted on exit. |
 
 A rule that the real file legitimately needs to break is a policy change in the same PR, reviewed by A09, then installed by the PO.
@@ -463,3 +465,10 @@ The template has **no licence** (`gh api` reports `license: null`; its README as
 | ID | Area | Rev. 14 | Rev. 15 | Where |
 | -- | ---- | ------- | ------- | ----- |
 | Decision 72 | Mail secret | none | `pulsesend_api_key` in the policy (P-5, P-14 on `app` and `horizon`, P-20), the CI secret stand-ins and `c3-finish.sh` (template check and summary) | §4.2 |
+
+## Change table (rev. 16, SSR of the public pages)
+
+| ID | Area | Rev. 15 | Rev. 16 | Where |
+| -- | ---- | ------- | ------- | ----- |
+| PO 2026-11-16 | Compose policy | eleven services | twelve: `ssr` (P-1, P-2, P-3, P-7, P-14, P-15, P-16, new P-21); 49 fixtures | §4.2 |
+| PO 2026-11-16 | Build | `pnpm run build` writes `public/build` | also `bootstrap/ssr/ssr.js` (`vp build && vp build --ssr`); the image keeps the bundle without source maps and gains the `node` binary | §3 |

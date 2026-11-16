@@ -3,8 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vp build",
-        "build:ssr": "vp build && vp build --ssr",
+        "build": "vp build && vp build --ssr",
+        "build:ssr": "vp build --ssr",
         "dev": "vp dev",
         "check": "vp check",
         "check:fix": "vp check --fix",

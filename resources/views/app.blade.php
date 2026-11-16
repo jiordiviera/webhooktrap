@@ -39,7 +39,7 @@
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
         <link rel="manifest" href="/manifest.webmanifest">
 
-        {{-- Link previews (Open Graph, X). No SSR, so crawlers only see these server-rendered tags.
+        {{-- Link previews (Open Graph, X). SSR covers the public pages' body only (App\Http\Ssr\PublicPagesSsrGateway); these tags stay in Blade.
              Images are exports of the "Webhook Trap — OG images" Claude Design canvas. --}}
         @php
             $ogPages = [

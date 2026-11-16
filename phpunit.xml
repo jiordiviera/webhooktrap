@@ -34,6 +34,8 @@
         <env name="AGENT_PAIRING_HMAC_KEY" value="test-agent-pairing-hmac-key-0123456789abcdef"/>
         <env name="AGENT_SERVER_ORIGIN" value="https://webhooktrap.test"/>
         <env name="IDENTITY_RECOVERY_CODE_KEY" value="test-recovery-code-key-0123456789abcdef"/>
+        <!-- SSR is off unless a test turns it on (tests/Feature/Shell/SsrTest.php). -->
+        <env name="INERTIA_SSR_ENABLED" value="false"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="CACHE_FAILURE_REPORT_STORE" value="array"/>
         <!-- PostgreSQL, like production. Host, port and credentials come from .env or CI. -->
