@@ -108,6 +108,34 @@ jobs:
           work-dir: agent
           go-version-file: agent/go.mod
 
+  agent-dist:
+    # Dry run of the agent release (agent-release.yml, project/operations/agent-release.md):
+    # the six release archives, SHA256SUMS, the seven npm packages packed, and the launcher
+    # smoke-tested on linux-x64. Signs and publishes nothing.
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: agent/go.mod
+          check-latest: false
+          cache: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Build the six release archives
+        run: |
+          for t in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+            agent/release/build.sh 0.0.0-ci "$GITHUB_SHA" "${t%/*}" "${t#*/}" "$RUNNER_TEMP/release"
+          done
+          cd "$RUNNER_TEMP/release" && sha256sum webhooktrap_* > SHA256SUMS && cat SHA256SUMS
+      - name: Assemble, npm pack --dry-run, launcher smoke test
+        run: agent/release/npm-pack.sh 0.0.0-ci "$RUNNER_TEMP/release" "$RUNNER_TEMP/npm"
+
   infra:
     runs-on: ubuntu-24.04
     permissions:
@@ -194,4 +222,4 @@ jobs:
             haproxy:3.4.7-alpine@sha256:b9fe316f718d5015c5cfebd8ca019591f3e44656f61d93cb8b59a1028961e530 \
             haproxy -c -f /wt-haproxy/haproxy.cfg
       - name: Shell scripts parse
-        run: for f in docker/*.sh docker/postgres/wt-backup deploy/bin/*; do sh -n "$f"; done
+        run: for f in docker/*.sh docker/postgres/wt-backup deploy/bin/* agent/install.sh agent/release/*.sh; do sh -n "$f"; done

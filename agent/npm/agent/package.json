@@ -1,0 +1,46 @@
+{
+  "name": "@webhooktrap/agent",
+  "version": "0.0.0",
+  "description": "Webhook Trap agent: pair this machine with Webhook Trap, prove a webhook handler against provider scenarios, replay captures.",
+  "keywords": [
+    "webhook",
+    "webhooks",
+    "testing",
+    "stripe",
+    "github",
+    "shopify",
+    "cli"
+  ],
+  "homepage": "https://webhooktrap.dev",
+  "bugs": {
+    "url": "https://github.com/jiordiviera/webhooktrap/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiordiviera/webhooktrap.git",
+    "directory": "agent/npm/agent"
+  },
+  "license": "AGPL-3.0-only",
+  "bin": {
+    "webhooktrap": "bin/webhooktrap.js"
+  },
+  "files": [
+    "bin/webhooktrap.js",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "@webhooktrap/agent-darwin-arm64": "0.0.0",
+    "@webhooktrap/agent-darwin-x64": "0.0.0",
+    "@webhooktrap/agent-linux-arm64": "0.0.0",
+    "@webhooktrap/agent-linux-x64": "0.0.0",
+    "@webhooktrap/agent-win32-arm64": "0.0.0",
+    "@webhooktrap/agent-win32-x64": "0.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

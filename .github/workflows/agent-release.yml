@@ -1,0 +1,343 @@
+# Agent release (ADR-010 "Distribution and supply chain"; runbook: project/operations/agent-release.md).
+# Tag agent-vX.Y.Z (protected, PO only) → six static binaries, archives, SHA256SUMS signed keyless
+# with cosign, SLSA build provenance, a GitHub release, and the npm packages published with
+# provenance through npm trusted publishing (OIDC, no NPM_TOKEN).
+# workflow_dispatch is a dry run: it builds, checksums and packs, and never signs or publishes.
+# Rules (ci-cd.md §1.4): actions pinned by commit SHA, permissions {} at workflow level and granted
+# per job, persist-credentials: false, no caches, no pull_request_target / workflow_run.
+name: agent-release
+
+on:
+  push:
+    tags: ['agent-v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build, checksum and pack only. Publishing happens only from an agent-v* tag push.
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: agent-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  meta:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+      publish: ${{ steps.v.outputs.publish }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+    steps:
+      - id: v
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          RUN: ${{ github.run_number }}
+        run: |
+          if [ "$EVENT" = workflow_dispatch ] && [ "$DRY_RUN" = false ]; then
+            echo "::error::workflow_dispatch never publishes; push a tag agent-vX.Y.Z to release"; exit 1
+          fi
+          case "$REF" in
+            refs/tags/agent-v*) version=${REF_NAME#agent-v} ;;
+            *) version="0.0.0-dryrun.$RUN" ;;
+          esac
+          # Bare semver: the server compares it with min_agent_version, and "v1.0.0" sorts below 0.9.0.
+          if ! printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::tag must be agent-vX.Y.Z or agent-vX.Y.Z-pre (got $REF_NAME)"; exit 1
+          fi
+          publish=false
+          [ "$EVENT" = push ] && publish=true
+          prerelease=false
+          case "$version" in *-*) prerelease=true ;; esac
+          {
+            echo "version=$version"
+            echo "tag=$REF_NAME"
+            echo "publish=$publish"
+            echo "prerelease=$prerelease"
+          } >> "$GITHUB_OUTPUT"
+          echo "version $version, publish $publish, prerelease $prerelease"
+
+  test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: agent/go.mod
+          check-latest: false
+          cache: false
+      - run: go vet ./...
+      - run: go test ./...
+
+  build:
+    needs: meta
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: true
+      matrix:
+        target:
+          - linux/amd64
+          - linux/arm64
+          - darwin/amd64
+          - darwin/arm64
+          - windows/amd64
+          - windows/arm64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: agent/go.mod
+          check-latest: false
+          cache: false
+      - name: Toolchain is the one go.mod pins
+        working-directory: agent
+        run: |
+          want=$(sed -n 's/^toolchain //p' go.mod)
+          go version | grep -q " $want " || { go version; echo "::error::expected $want"; exit 1; }
+      - name: Build and archive
+        id: build
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          agent/release/build.sh "$VERSION" "$GITHUB_SHA" "${TARGET%/*}" "${TARGET#*/}" "$RUNNER_TEMP/out"
+          echo "name=$(echo "$TARGET" | tr / -)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: archive-${{ steps.build.outputs.name }}
+          path: ${{ runner.temp }}/out/
+          if-no-files-found: error
+          retention-days: 7
+
+  package:
+    needs: [meta, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: archive-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/release
+      - name: SHA256SUMS and the linux/amd64 binary's version
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        working-directory: ${{ runner.temp }}/release
+        run: |
+          set -- webhooktrap_*
+          test "$#" -eq 6
+          sha256sum webhooktrap_* > SHA256SUMS
+          cat SHA256SUMS
+          tar -xzf "webhooktrap_${VERSION}_linux_amd64.tar.gz" -O "webhooktrap_${VERSION}_linux_amd64/webhooktrap" > "$RUNNER_TEMP/wt"
+          chmod +x "$RUNNER_TEMP/wt"
+          got=$("$RUNNER_TEMP/wt" version --json)
+          echo "$got"
+          echo "$got" | grep -q "\"version\":\"$VERSION\",\"commit\":\"$GITHUB_SHA\",\"protocol\":\"v1\""
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Assemble, pack and smoke-test the npm packages
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: agent/release/npm-pack.sh "$VERSION" "$RUNNER_TEMP/release" "$RUNNER_TEMP/npm"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sums
+          path: ${{ runner.temp }}/release/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm
+          path: |
+            ${{ runner.temp }}/npm/tgz/
+            ${{ runner.temp }}/npm/publish-order.txt
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    # Signs, attests and creates the GitHub release as a draft; `finalize` publishes it after npm.
+    needs: [meta, test, package]
+    if: needs.meta.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # create the draft release
+      id-token: write # cosign keyless and the provenance attestation
+      attestations: write
+    env:
+      VERSION: ${{ needs.meta.outputs.version }}
+      TAG: ${{ needs.meta.outputs.tag }}
+      CERT_ID: https://github.com/${{ github.repository }}/.github/workflows/agent-release.yml@${{ github.ref }}
+      ISSUER: https://token.actions.githubusercontent.com
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: archive-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/release
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: sums
+          path: ${{ runner.temp }}/release
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+        with:
+          cosign-release: v3.1.4 # same pin as container.yml and deploy/bin/c3-finish.sh
+      - name: Sign SHA256SUMS (keyless) and verify it
+        working-directory: ${{ runner.temp }}/release
+        run: |
+          cosign version | grep -q 'v3.1.4'
+          sha256sum --strict -c SHA256SUMS
+          cosign sign-blob --yes --bundle SHA256SUMS.sigstore.json SHA256SUMS
+          # The bundle holds the signature, the Fulcio certificate and the Rekor proof. The two
+          # pieces are also published on their own for people who verify without a bundle.
+          jq -r '.messageSignature.signature' SHA256SUMS.sigstore.json > SHA256SUMS.sig
+          {
+            echo '-----BEGIN CERTIFICATE-----'
+            jq -r '(.verificationMaterial.certificate.rawBytes // .verificationMaterial.x509CertificateChain.certificates[0].rawBytes)' \
+              SHA256SUMS.sigstore.json | fold -w 64
+            echo '-----END CERTIFICATE-----'
+          } > SHA256SUMS.pem
+          openssl x509 -in SHA256SUMS.pem -noout -ext subjectAltName | grep -qF "$CERT_ID"
+          cosign verify-blob --bundle SHA256SUMS.sigstore.json \
+            --certificate-identity "$CERT_ID" --certificate-oidc-issuer "$ISSUER" \
+            --certificate-github-workflow-sha "$GITHUB_SHA" SHA256SUMS
+      - name: Attest build provenance (SLSA)
+        # Artifact attestations are refused on user-owned private repositories (see container.yml).
+        if: ${{ !github.event.repository.private }}
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            ${{ runner.temp }}/release/webhooktrap_*.tar.gz
+            ${{ runner.temp }}/release/webhooktrap_*.zip
+      - name: Draft GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ needs.meta.outputs.prerelease }}
+        run: |
+          cp agent/install.sh "$RUNNER_TEMP/release/install.sh"
+          notes="$RUNNER_TEMP/notes.md"
+          cat > "$notes" <<EOF
+          webhooktrap agent $VERSION (commit $GITHUB_SHA, protocol v1).
+
+          Install: \`npx @webhooktrap/agent@${VERSION%%.*} pair CODE\`, \`npm i -g @webhooktrap/agent@$VERSION\`,
+          or \`sh install.sh\` from this release (checks SHA256SUMS and its Sigstore signature).
+
+          Verify by hand:
+
+              sha256sum --ignore-missing -c SHA256SUMS
+              cosign verify-blob --bundle SHA256SUMS.sigstore.json \\
+                --certificate-identity $CERT_ID \\
+                --certificate-oidc-issuer $ISSUER SHA256SUMS
+              gh attestation verify webhooktrap_${VERSION}_linux_amd64.tar.gz --repo $GITHUB_REPOSITORY
+          EOF
+          flags=""
+          [ "$PRERELEASE" = true ] && flags="--prerelease"
+          cd "$RUNNER_TEMP/release"
+          # shellcheck disable=SC2086
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --draft $flags \
+            --title "Agent $VERSION" --notes-file "$notes" \
+            webhooktrap_* SHA256SUMS SHA256SUMS.sigstore.json SHA256SUMS.sig SHA256SUMS.pem install.sh
+
+  npm-publish:
+    # Trusted publishing: npm trusts this workflow file in the environment npm-publish
+    # (runbook §3). Platform packages first, the launcher last, so `npx` never resolves a
+    # launcher whose binary is not yet on the registry.
+    needs: [meta, release]
+    if: needs.meta.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write # npm OIDC exchange and provenance
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm
+          path: ${{ runner.temp }}/npm
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: npm CLI with trusted publishing (>= 11.5.1)
+        run: |
+          npm install -g npm@11.21.1
+          npm --version
+      - name: Publish
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+          PRERELEASE: ${{ needs.meta.outputs.prerelease }}
+        working-directory: ${{ runner.temp }}/npm
+        run: |
+          dist_tag=latest
+          [ "$PRERELEASE" = true ] && dist_tag=next
+          while read -r p; do
+            name="@webhooktrap/$p"
+            # A re-run skips what an earlier attempt already published (versions are immutable).
+            if [ "$(npm view "$name@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+              echo "$name@$VERSION already published"; continue
+            fi
+            npm publish "tgz/webhooktrap-$p-$VERSION.tgz" --provenance --access public --tag "$dist_tag"
+          done < publish-order.txt
+      - name: Provenance is on the registry
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        working-directory: ${{ runner.temp }}/npm
+        run: |
+          while read -r p; do
+            for _ in 1 2 3 4 5 6; do
+              att=$(npm view "@webhooktrap/$p@$VERSION" dist.attestations.provenance.predicateType 2>/dev/null || true)
+              [ -n "$att" ] && break
+              sleep 10
+            done
+            [ -n "$att" ] || { echo "::error::@webhooktrap/$p@$VERSION has no provenance"; exit 1; }
+            echo "@webhooktrap/$p@$VERSION: $att"
+          done < publish-order.txt
+
+  finalize:
+    needs: [meta, npm-publish]
+    if: needs.meta.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # publish the draft release
+    env:
+      VERSION: ${{ needs.meta.outputs.version }}
+      TAG: ${{ needs.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+        with:
+          cosign-release: v3.1.4
+      - name: install.sh against the published release
+        run: |
+          PREFIX="$RUNNER_TEMP/prefix" WEBHOOKTRAP_VERSION="$VERSION" WEBHOOKTRAP_REQUIRE_SIGNATURE=1 sh agent/install.sh
+          "$RUNNER_TEMP/prefix/bin/webhooktrap" version --json | grep -q "\"version\":\"$VERSION\""

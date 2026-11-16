@@ -80,15 +80,15 @@ These are the latest releases at the time of reading; their major versions are n
 - **Public Rekor:** the keyless cosign signature is recorded in the public Rekor log, as planned. That publishes the repo name, the `v2` ref, the commit SHA and the image digests, never code. The repo was public until decision 66, so its name is already known. Signing without the log would weaken verification; the PO may object before C6.
 
 
-Branch protection on `v2`, the default branch (rev. 13; `main` is deleted, 1.x lives on `v1`) (required checks: `ci/*`, `container/build`); `production` environment with the PO as required reviewer and deployment branch `v2` only; `release-agent` environment (tags `agent/v*` only) and `npm-publish` environment (PO as required reviewer), §1.4; tag protection for `v*` and `agent/v*`; Actions setting "require SHA pinning" if available on the plan; Dependabot for `github-actions`, `composer`, `npm`, `gomod`, `docker`; secret scanning and push protection on.
+Branch protection on `v2`, the default branch (rev. 13; `main` is deleted, 1.x lives on `v1`) (required checks: `ci/*`, `container/build`); `production` environment with the PO as required reviewer and deployment branch `v2` only; `release-agent` environment (tags `agent-v*` only) and `npm-publish` environment (PO as required reviewer), §1.4; tag protection for `v*` and `agent-v*`; Actions setting "require SHA pinning" if available on the plan; Dependabot for `github-actions`, `composer`, `npm`, `gomod`, `docker`; secret scanning and push protection on.
 
 ### 1.4 Workflow rules (CI-3, CI-4)
 
 - **Triggers.** No `pull_request_target` and no `workflow_run` on workflows that check out or run code from a PR or a fork. `pull_request` only, with `contents: read` and no secrets. A lint (`actionlint` plus a grep for those two triggers) fails CI if they appear.
-- **Caches.** No dependency or layer caches (`actions/cache`, `setup-*` `cache:`, buildx `cache-from`/`cache-to`) in the jobs that push images, sign, release or publish (`container.yml` push job, `release-agent.yml`). A cache written by an unreviewed job cannot reach a release job. `ci.yml` may cache, and nothing it caches is used by those jobs.
+- **Caches.** No dependency or layer caches (`actions/cache`, `setup-*` `cache:`, buildx `cache-from`/`cache-to`) in the jobs that push images, sign, release or publish (`container.yml` push job, `agent-release.yml`). A cache written by an unreviewed job cannot reach a release job. `ci.yml` may cache, and nothing it caches is used by those jobs.
 - **Credentials.** `actions/checkout` with `persist-credentials: false` in every workflow. `GITHUB_TOKEN` permissions stay `{}` at workflow level.
 - **Dependabot.** Pull requests are never auto-merged (no auto-merge setting, no merge bot); a human reads each bump, Actions SHA bumps included.
-- **Release credentials (CI-3).** `HOMEBREW_TAP_TOKEN` and the Apple keys are secrets of the GitHub environment **`release-agent`**, not repository secrets; that environment accepts only the protected tags `agent/v*` (deployment tag rule). npm publishing uses trusted publishing bound to the workflow file **and** to the GitHub environment **`npm-publish`**, whose required reviewer is the PO; the `npm` job declares that environment. Nothing in `ci.yml`, `container.yml`, `deploy.yml` or `conformance-remote.yml` can read either environment.
+- **Release credentials (CI-3).** `HOMEBREW_TAP_TOKEN` and the Apple keys are secrets of the GitHub environment **`release-agent`**, not repository secrets; that environment accepts only the protected tags `agent-v*` (deployment tag rule). npm publishing uses trusted publishing bound to the workflow file **and** to the GitHub environment **`npm-publish`**, whose required reviewer is the PO; the `npm-publish` job of `agent-release.yml` declares that environment. Nothing in `ci.yml`, `container.yml`, `deploy.yml` or `conformance-remote.yml` can read either environment.
 
 ---
 
@@ -284,22 +284,23 @@ Run in the `conformance` job and again at C6 on the box before the first deploy,
 
 ---
 
-## 5. Agent release (`release-agent.yml`, new)
+## 5. Agent release (`agent-release.yml`)
 
-Trigger: push of a tag `agent/v*` (protected). Jobs run with `permissions: {}` and grant per job.
+Built 2026-11-16; the runbook is `agent-release.md`, which supersedes the plan that stood here.
+Differences from that plan: the tag is `agent-v*` (not `agent/v*`); the workflow file is
+`agent-release.yml`; plain `go build` through `agent/release/build.sh` instead of GoReleaser (no
+new tool; archives are byte-for-byte reproducible, checked locally); the cosign bundle
+`SHA256SUMS.sigstore.json` plus `.sig`/`.pem` taken from it; the GitHub release stays a draft
+until npm has published, then `finalize` publishes it and runs `install.sh` against it. Not built
+yet: SBOM per archive, the second-build reproducibility job, the Homebrew tap (`publish` job,
+`HOMEBREW_TAP_TOKEN`) and §6 signing. npm trusted publishing is bound to `agent-release.yml` and
+the environment `npm-publish` (PO as required reviewer, tags `agent-v*` only). `ci.yml` job
+`agent-dist` runs the build and npm packing as a dry run on every push and pull request.
 
-| Job | Permissions | Steps |
-| --- | ----------- | ----- |
-| `build` | `contents: write` (release), `id-token: write`, `attestations: write` | checkout (full history for GoReleaser) → setup-go (pinned toolchain from `go.mod` `toolchain`) → `go test ./...` → GoReleaser (pinned version + checksum) with `CGO_ENABLED=0`, `-trimpath`, `-buildvcs=true`, `mod_timestamp: {{ .CommitTimestamp }}`, ldflags `-s -w -X …version`; targets linux, darwin, windows × amd64, arm64; archives + raw binaries; `SHA256SUMS`; SBOM per archive (syft) → `cosign sign-blob --yes --bundle SHA256SUMS.sigstore.json SHA256SUMS` (keyless, A09 §7.7 item 2) → `attest-build-provenance` on every archive (SLSA provenance) → GitHub release (draft until `verify` passes) |
-| `verify` | `contents: read` | download the draft assets → `sha256sum -c SHA256SUMS` → `cosign verify-blob` with the expected workflow identity → `gh attestation verify` → run the linux/amd64 binary `version --json` → a second build in a clean job compares hashes (reproducibility check; mismatch fails the release) |
-| `npm` | `contents: read`, `id-token: write` | setup-node with the npm registry → build per-platform packages `@webhooktrap/agent-<os>-<arch>` from the **verified** binaries (checksum compared again) with `os`/`cpu` fields, no `scripts` → wrapper `@webhooktrap/agent` with those packages as `optionalDependencies` pinned to the exact version, a JS `bin` shim that resolves the platform package, **no `postinstall`** → `npm publish --provenance --access public` for platform packages first, wrapper last, using **npm trusted publishing (OIDC), no `NPM_TOKEN`** (A09 §7.7 item 1; needs a recent npm CLI, version pinned in the job) |
-| `publish` | `contents: write` | un-draft the release; open a PR (not a direct push) to the Homebrew tap with version + SHA-256 (tap write via a fine-grained token scoped to that repo only, secret `HOMEBREW_TAP_TOKEN`) |
-
-`install.sh` (static, served from the main domain): HTTPS only, downloads the archive, `SHA256SUMS` and its Sigstore bundle, verifies checksum **and** signature (cosign if present, otherwise documented manual verification and refusal by default) before moving the binary into place (A09 §7.7 item 3). The UI pairing command pins the major version (`npx @webhooktrap/agent@1 pair …`, item 6). No self-update (item 7).
-
-**Credentials (CI-3).** `publish` declares the environment `release-agent` (tags `agent/v*` only), which holds `HOMEBREW_TAP_TOKEN` and, if signing is chosen, the Apple keys. `npm` declares the environment `npm-publish` (PO as required reviewer); npm trusted publishing is bound to this workflow file **and** that environment. `build` and `verify` declare neither. Workflow rules of §1.4 (no `pull_request_target`/`workflow_run`, no caches, `persist-credentials: false`) apply to every job here.
-
-**PO account actions (HD-3, PO GO REQUIRED):** create the `@webhooktrap` npm org with 2FA, reserve `webhooktrap` and obvious typosquats, configure trusted publishing for this repo and workflow; create the Homebrew tap repository.
+**PO account actions (HD-3, PO GO REQUIRED):** `agent-release.md` §2 (npm org with 2FA,
+typosquat placeholders, placeholder publish of the seven packages, trusted publishers, the
+`npm-publish` environment and the `agent-v*` tag ruleset); create the Homebrew tap repository
+when item 4 is built.
 
 ---
 
@@ -357,7 +358,7 @@ The template has **no licence** (`gh api` reports `license: null`; its README as
 | CI-1, TM-147 | Image verification | on the GitHub runner only; the box pulled any digest it was given | box re-verifies signature, provenance and commit binding before pulling; runner check kept as fast-fail | §4 steps 2-3 |
 | CI-1 | Deploy arguments | hosted deployment plan §3.3: one argument; here: SHA + two digests | one grammar, defined here; plan refers to it; repositories are constants in `deploy.sh` | §4 |
 | CI-2, TM-146 | Compose from the image | `config --quiet` then `up`, as root | policy P-1..P-9 on the box before `up`; the policy is not read from the image; rollback re-checks | §4.2 |
-| CI-3 | Release credentials | repository secrets; npm binding to the workflow only | `release-agent` environment (tags `agent/v*`), `npm-publish` environment (PO reviewer), trusted publishing bound to both | §1.3, §1.4, §5, §8 |
+| CI-3 | Release credentials | repository secrets; npm binding to the workflow only | `release-agent` environment (tags `agent-v*`), `npm-publish` environment (PO reviewer), trusted publishing bound to both | §1.3, §1.4, §5, §8 |
 | CI-4 | Workflow rules | not stated | no `pull_request_target`/`workflow_run` over untrusted code, no caches in push/release/publish jobs, `persist-credentials: false`, no Dependabot auto-merge | §1.4, §3 |
 | TM-T141, TM-T145, TM-T146 | CI tests | none | added to the `conformance` job | §2 |
 | (facts) | `APP_PORT` | unspecified | fixed in the private plan | §8 |

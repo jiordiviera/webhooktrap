@@ -1,7 +1,11 @@
 // Package version holds build metadata, set at link time:
 //
-//	go build -ldflags "-X github.com/jiordiviera/webhooktrap/agent/internal/version.Version=v1.2.3 \
+//	go build -ldflags "-X github.com/jiordiviera/webhooktrap/agent/internal/version.Version=1.2.3 \
 //	  -X github.com/jiordiviera/webhooktrap/agent/internal/version.Commit=$GITHUB_SHA"
+//
+// Version is bare semver, never "v1.2.3": the server compares it with its
+// min_agent_version, and a leading "v" sorts below every release (refused as
+// too old). Release builds come from agent/release/build.sh.
 package version
 
 import (

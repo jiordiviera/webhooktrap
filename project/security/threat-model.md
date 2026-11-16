@@ -657,7 +657,7 @@ All §9.1–§9.10 changes are present in the designs, checked line by line agai
 | SV-6 | Confirm no neighbour backup job or snapshot routine copies `/opt/apps/webhooktrap` or Docker volumes off the box |
 | CI-1 | `deploy.sh` verifies the cosign signature and provenance itself (pinned identity), with the image repository hard-coded; resolve the mismatch between plan §3.3 (one argument) and ci-cd §4 (SHA + two digests) |
 | CI-2 | `deploy.sh` checks the extracted Compose file against a policy before `up`: no `privileged`, no `cap_add`, no host network/PID/IPC, no Docker socket, no bind mounts outside `$APP_DIR`, ports only on `127.0.0.1`, fixed project name and `cgroup_parent` |
-| CI-3 | `HOMEBREW_TAP_TOKEN` and Apple keys in an environment restricted to protected `agent/v*` tags; npm trusted publishing bound to the workflow **and** an environment with the PO as reviewer |
+| CI-3 | `HOMEBREW_TAP_TOKEN` and Apple keys in an environment restricted to protected `agent-v*` tags; npm trusted publishing bound to the workflow **and** an environment with the PO as reviewer |
 | CI-4 | No `pull_request_target` or `workflow_run` over untrusted code; no dependency caches in container-push, release and publish jobs; `persist-credentials: false` everywhere; Dependabot PRs never auto-merged |
 | ENG-1 | Pick a concrete sandbox for `plan`/`verify`: recommended a separate `engine` service with `network_mode: none`, no secrets mounted and no database variables, called over a local socket; else Landlock network rules in the engine. Must be settled before instance-secret `verify` ships on self-host |
 
