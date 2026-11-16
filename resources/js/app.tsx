@@ -9,7 +9,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 // The XSRF cookie carries the __Host- prefix (TM-T4).
 http.setClient({ xsrfCookieName: '__Host-XSRF-TOKEN' });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Webhook Trap';
 
 // Live props over Echo + Reverb, when the server shares a Reverb key.
 const live = setupLive();
