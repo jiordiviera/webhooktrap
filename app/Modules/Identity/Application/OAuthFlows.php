@@ -13,6 +13,7 @@ use App\Modules\Identity\Domain\User;
 use App\Modules\Identity\Domain\UserIdentity;
 use App\Modules\Identity\Events\UserRegistered;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
@@ -90,11 +91,22 @@ final readonly class OAuthFlows
         // and no code. `access_denied` is the person saying no.
         $error = $request->query('error');
         if ($error !== null) {
+            // The provider's own error code only (RFC 6749 §4.1.2.1), never the query string.
+            Log::warning('oauth.provider_error', ['provider' => $provider, 'error' => is_string($error) ? mb_substr($error, 0, 64) : 'invalid']);
+
             return $context + ['error' => $error === 'access_denied' ? 'oauth_cancelled' : 'oauth_failed'];
         }
         try {
             $profile = Socialite::driver($provider)->user();
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            // Class and a short message: enough to tell state, PKCE and token-exchange failures
+            // apart. The code, the state and any token never reach the log.
+            Log::warning('oauth.exchange_failed', [
+                'provider' => $provider,
+                'exception' => $exception::class,
+                'message' => mb_substr(preg_replace('/(code|state|token|secret)=[^&\s"]+/i', '$1=[redacted]', $exception->getMessage()) ?? '', 0, 300),
+            ]);
+
             return $context + ['error' => 'oauth_failed'];
         }
 
