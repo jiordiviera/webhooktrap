@@ -1,36 +1,49 @@
 ---
-title: "Webhooktrap: Debug Webhooks with Capture and Replay"
-sidebarTitle: "Home"
-description: "Webhooktrap captures every webhook exactly as received and lets you replay it to localhost or staging with full response visibility."
+title: "Introduction"
+description: "Your webhook handler works. Once. Webhook Trap replays your real events the way providers deliver them and tells you when your database ends up wrong."
+icon: "house"
 ---
 
-Webhooktrap gives you an instant ingest URL that records every incoming webhook — method, headers, body, and query string — exactly as your provider sent it. When you're ready to debug, replay any captured event to localhost or staging and see the full HTTP response without touching a tunnel.
+Providers deliver webhooks more than once, out of order, late, and again after a timeout. A handler that passes one manual test can still create a second order on a duplicate, accept a body nobody signed, or leave state wrong when events arrive in reverse.
 
-<CardGroup cols={2}>
-  <Card title="Introduction" icon="book-open" href="/introduction">
-    Learn what Webhooktrap does, how inbox modes work, and which providers it supports.
-  </Card>
-  <Card title="Quickstart" icon="bolt" href="/quickstart">
-    Create an inbox, capture your first webhook, and replay it to localhost in minutes.
-  </Card>
-  <Card title="API Reference" icon="code" href="/api/overview">
-    Explore the full REST API for managing inboxes, events, and replays programmatically.
-  </Card>
-  <Card title="Integrations" icon="plug" href="/integrations/overview">
-    Step-by-step guides for connecting Stripe, GitHub, Shopify, Twilio, and more.
-  </Card>
-</CardGroup>
+Webhook Trap captures real deliveries from Stripe, GitHub, Shopify and any Standard Webhooks sender, then replays them against your handler in nine scenarios. A small agent on your machine sends the deliveries to localhost, signs them with a secret that never leaves your machine, and reads your database state between deliveries. The result is a list of findings with the evidence, the cause when the run shows it, and a fix.
+
+<Frame caption="A run against a deliberately buggy Stripe handler: two findings, exit 1.">
+  <img src="/images/run-result.webp" alt="Run #1 page: 2 findings, one Critical and one High, a strip of nine scenario results, and the deliveries table." />
+</Frame>
 
 ## How it works
 
 <Steps>
-  <Step title="Receive">
-    Point any webhook provider at your Webhooktrap ingest URL (`https://webhooktrap.dev/i/:inboxId`). Every request is captured instantly — no configuration, no tunnel, no waiting.
+  <Step title="Capture">
+    Point a provider at your capture URL. Every request is stored as received: method, path, headers and the exact body bytes.
   </Step>
-  <Step title="Inspect">
-    Open the dashboard to review the full request: status line, headers, query parameters, and raw body. Share a read-only link with a teammate so they can see exactly what arrived.
+  <Step title="Prove">
+    Select captured events and start a run. Your paired agent sends them to your handler as Once, Twice, Shuffled, Late, Retry after error, Tampered, Unsigned, Burst and Slow budget.
   </Step>
-  <Step title="Replay">
-    Send any stored event to a destination URL you choose — your local dev server, a staging environment, or a feature branch. Webhooktrap shows you the response status code, latency, and body so you can confirm your handler behaves correctly.
+  <Step title="Read the verdict">
+    Each finding names the scenario, the deliveries that broke the rule, what happened, why it matters for that provider, and how to fix it.
+  </Step>
+  <Step title="Keep it in CI">
+    `webhooktrap test` runs the same scenarios from fixture files in your repository and exits non-zero when a finding is at or above `--fail-on`.
   </Step>
 </Steps>
+
+## Where to start
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get a capture URL without an account, capture an event, pair the agent and read your first finding.
+  </Card>
+  <Card title="Core concepts" icon="book-open" href="/concepts">
+    Projects, captures, guest sessions, the agent, runs, scenarios, findings and packs.
+  </Card>
+  <Card title="Test in CI" icon="git-branch" href="/guides/ci">
+    Run `webhooktrap test` in GitHub Actions and fail the build on High and above.
+  </Card>
+  <Card title="Self-host" icon="server" href="/guides/self-hosting">
+    Run your own instance with Docker Compose.
+  </Card>
+</Columns>
+
+Webhook Trap is open source under AGPL-3.0. The source is at [github.com/jiordiviera/webhooktrap](https://github.com/jiordiviera/webhooktrap). The hosted app is at [app.webhooktrap.dev](https://app.webhooktrap.dev) and its status page at [status.webhooktrap.dev](https://status.webhooktrap.dev).

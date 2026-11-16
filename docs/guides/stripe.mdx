@@ -1,0 +1,74 @@
+---
+title: "Stripe"
+description: "Capture Stripe webhooks, then prove your handler against duplicates, reordering, stale timestamps, retries and forged bodies."
+icon: "credit-card"
+---
+
+import SecretsLocal from '/snippets/secrets-local.mdx';
+
+## Point Stripe at your capture URL
+
+<Steps>
+  <Step title="Copy your capture URL">
+    It is on **Arrivals** and in the header of every project page: `https://in.webhooktrap.dev/c/` followed by a 12-character key.
+  </Step>
+  <Step title="Add a webhook destination in Stripe">
+    In test mode, open **Developers › Webhooks › Add destination**. Paste the URL, pick the events you handle, and save.
+  </Step>
+  <Step title="Trigger events">
+    Trigger a test checkout, or any action that sends the events you picked. Stripe sends straight to the capture URL; no CLI is needed.
+  </Step>
+</Steps>
+
+Webhook Trap recognises a Stripe delivery by its `Stripe-Signature` header, reads the event type and id from the body (`type`, `id`), and groups events by the object they are about: subscription, invoice, payment intent, checkout session and others.
+
+<Frame caption="Stripe deliveries grouped by subscription.">
+  <img src="/images/captures-stream.webp" alt="Arrivals with three Stripe deliveries in one subscription group and the selected delivery's detail." />
+</Frame>
+
+## Configure the agent
+
+```yaml webhooktrap.yml
+target: http://127.0.0.1:3000/webhooks/stripe
+provider: stripe
+secret: env:STRIPE_WEBHOOK_SECRET
+probe:
+  - as: orders.count
+    cmd: psql "$DATABASE_URL" -Atc "select count(*) from orders"
+reset: npm run db:reset:webhooks
+```
+
+```bash
+export STRIPE_WEBHOOK_SECRET=whsec_...
+webhooktrap agent
+```
+
+If you leave out `secret`, the agent looks for `STRIPE_WEBHOOK_SECRET`, the name in the Stripe pack.
+
+<SecretsLocal />
+
+Stripe signs a timestamp with every delivery, and a captured signature goes stale after the 300-second tolerance. So without the secret the agent can't send a valid delivery: the run stops as **Couldn't start** with the reason `needs_secret`.
+
+## What the scenarios do for Stripe
+
+| Scenario | For Stripe |
+| -------- | ---------- |
+| Once | Each selected event, re-signed now. |
+| Twice | The first event again, 500 ms later, same body and event id, new `Stripe-Signature` timestamp. |
+| Shuffled | The events in reverse order. Needs 2 or more events. |
+| Late | The first event signed for a timestamp 360 s in the past (tolerance 300 s + 60 s). |
+| Retry after error | The first event, then the same event 2 s after the first attempt completes. |
+| Tampered | The body with one field changed, signed for the original body. The pack names the field per event type: `data.object.amount_paid` or `data.object.total` for `invoice.*`, `data.object.amount_received` or `data.object.amount` for `payment_intent.*`, `data.object.amount` for `charge.*`, `data.object.amount_total` for `checkout.session.*`. |
+| Unsigned | The first event with `Stripe-Signature` removed. |
+| Burst | Every selected event at once (two copies when you select one). |
+| Slow budget | One more delivery, measured against the 10 s budget. |
+
+The 10 s budget is the Webhook Trap default, not a limit taken from Stripe's docs, so you can lower or raise it with `budget:` in `webhooktrap.yml`.
+
+## Common findings
+
+- **Accepts tampered payload** (Critical): the handler returned 2xx, or changed state, for a body Stripe never signed. Verify with `stripe.webhooks.constructEvent` on the raw body and return 400 when it throws, before any write.
+- **Duplicate delivery changed `<probe>` again** (High): Twice or Retry after error wrote twice. Record `event.id` before the write and return 200 when it is already recorded.
+- **Accepts a stale signature** (High): Late was accepted. Use the SDK's timestamp tolerance.
+
+See [Scenarios](/reference/scenarios) and [Findings and exit codes](/reference/findings).

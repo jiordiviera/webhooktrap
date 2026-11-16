@@ -1,0 +1,106 @@
+---
+title: "Core concepts"
+description: "Projects, captures, guest sessions, the agent, runs, scenarios, findings, packs and the server runner."
+icon: "book-open"
+---
+
+## Workspaces and projects
+
+Everything you capture and run lives in a **project**. A project has one capture URL, its own quotas and its own retention settings. Projects belong to a **workspace**: your account has one, and a guest session has its own.
+
+With an account you can create several projects from **Projects › New project**.
+
+<Frame caption="Creating a project.">
+  <img src="/images/project-new.webp" alt="New project form with the project name brindle-app." />
+</Frame>
+
+## Captures
+
+A **capture** (shown as a *delivery* in the app) is one HTTP request received on a capture URL, stored as it arrived: method, path and query, headers, source address and the exact body bytes. Bodies up to 5 MiB are kept; for a larger body only its size and SHA-256 are kept. Credential headers such as `Authorization` and `Cookie` are replaced before storage. See [Capture endpoint](/reference/capture-endpoint).
+
+Webhook Trap reads each capture with the provider's pack: it detects the provider from its headers, reads the event type and id, and puts related events in a **group**, for example every Stripe event about one subscription.
+
+<Frame caption="Arrivals: deliveries grouped by the subscription they belong to.">
+  <img src="/images/captures-stream-group.webp" alt="Arrivals list with a group header sub_1QH3… Subscription, Stripe, 3 deliveries, framed." />
+</Frame>
+
+The delivery page shows the request facts and the raw body. The signature stays **Not checked** in the app: checking it needs your signing secret, which only the agent holds.
+
+<Frame caption="A delivery: request facts, raw and decoded views.">
+  <img src="/images/delivery-detail.webp" alt="Delivery detail for invoice.paid with signature Not checked and the request facts." />
+</Frame>
+
+## Guest sessions
+
+You can use Webhook Trap without an account. A **guest session** is created when you press **Get a URL** on the [example run](https://app.webhooktrap.dev/r/example). It is a random token in a cookie and holds one project.
+
+<Frame caption="The guest session bar: time left, deliveries and runs used.">
+  <img src="/images/guest-session-bar.webp" alt="Guest session · expires in 23 h 59 m · 3/100 deliveries · 0/10 runs · Sign in to keep." />
+</Frame>
+
+A guest session lasts 24 hours and holds up to 100 deliveries and 10 runs. When it ends, it is deleted with everything in it. Signing in from the session moves its project into your account.
+
+## The agent
+
+The **agent** is the `webhooktrap` binary running on your machine. It is the only part that sends requests to your handler. It:
+
+- pairs once with a server using a code from your browser, and keeps one Ed25519 key per server origin;
+- connects out to the server and waits for runs; it opens no listening socket;
+- sends deliveries only to the target declared in `webhooktrap.yml`, after you approve that target once in the terminal;
+- signs deliveries with your secret, read from an environment variable. The server learns the variable's name, never its value;
+- runs your probe and reset commands, and reports only display forms of the readings.
+
+<Frame caption="Agents paired with your account.">
+  <img src="/images/agents-list.webp" alt="Agents page listing maya-mbp, connected, version 1.0.0, linux." />
+</Frame>
+
+The same binary runs in CI with `webhooktrap test`, which needs no server and no pairing. See [CLI](/reference/cli).
+
+## Runs
+
+A **run** replays selected events (1 to 5, from one provider) against one target, in a fixed set of scenarios. It is planned before the first delivery and sends at most 50 deliveries. Every delivery carries `Webhooktrap-Run`, `Webhooktrap-Delivery`, `Webhooktrap-Scenario` and `Webhooktrap-Dry-Run: 1` headers, so your handler can recognise a test delivery.
+
+A run is judged at two levels:
+
+| Level | Needs | Checks |
+| ----- | ----- | ------ |
+| Level 1, transport | nothing | status codes, latency against the provider's budget, whether forged or stale deliveries are accepted |
+| Level 2, state | a `probe` in `webhooktrap.yml` | whether your database state after each delivery is the state one clean delivery leaves |
+
+Without a probe, a scenario where every delivery got a 2xx is **Inconclusive**: the status codes can't show whether a duplicate wrote twice.
+
+A run ends with one status: **Couldn't start**, **Aborted**, **N findings**, **Inconclusive** or **Passed**. Runs are private to the project's owner. See [Findings and exit codes](/reference/findings).
+
+<Frame caption="Runs of a project.">
+  <img src="/images/runs-list.webp" alt="Runs page listing Run #1 with 2 findings, run by maya-mbp from the web app." />
+</Frame>
+
+## Scenarios
+
+A **scenario** is one way a provider really delivers: **Once**, **Twice**, **Shuffled**, **Late**, **Retry after error**, **Tampered**, **Unsigned**, **Burst** and **Slow budget**. Once always runs first; it is the setup check. A scenario that doesn't apply to a provider is marked `n/a` with the reason, for example Late for GitHub, which signs no timestamp. See [Scenarios](/reference/scenarios).
+
+## Findings
+
+A **finding** is a rule the run proved broken, with a severity:
+
+| Severity | Meaning |
+| -------- | ------- |
+| Critical | Forged input had an effect: anyone who can reach the URL can make the handler act on content the provider never sent. |
+| High | A real provider behaviour corrupts state or loses the delivery. |
+| Medium | Operational risk: the provider will see failures and retry, alert or disable the endpoint. |
+| Info | Something the run couldn't check, or a suggestion. Never counted. |
+
+## Packs
+
+A **pack** is versioned data about one provider: how to detect it, its signing scheme and timestamp tolerance, its response-time budget, its duplicate and retry headers, which fields Tampered changes, how events group, and the text and citations of its findings. The judge reads packs only. Webhook Trap 2.0 ships packs for Stripe, GitHub, Shopify and Standard Webhooks, all at version 1.0.0, embedded in the agent.
+
+| Pack | Budget | Signature header | Signed timestamp |
+| ---- | ------ | ---------------- | ---------------- |
+| Stripe | 10 s (Webhook Trap default) | `Stripe-Signature` | yes, 300 s tolerance |
+| GitHub | 10 s (GitHub limit) | `X-Hub-Signature-256` | no |
+| Shopify | 5 s (Shopify limit) | `X-Shopify-Hmac-Sha256` | no |
+| Standard Webhooks | 10 s (Webhook Trap default) | `webhook-signature` | yes, 300 s tolerance |
+
+## The server runner
+
+The engine also has a **server runner** (`webhooktrap serve-run`), which runs scenarios from the server against a public URL without an agent. It ships in the [self-host Compose file](/guides/self-hosting). The app does not start server runs in 2.0: every run goes through a paired agent.

@@ -1,0 +1,108 @@
+---
+title: "Configuration"
+description: "Every key of webhooktrap.yml: target, provider, secret, fixtures, scenarios, budget, framework, targets, probe, settle, reset."
+icon: "file-cog"
+---
+
+`webhooktrap.yml` sits at the root of your project. `webhooktrap test` and `webhooktrap agent` read it from the current directory; `--config` points at another file.
+
+```yaml webhooktrap.yml
+target: http://127.0.0.1:3000/webhooks/stripe
+provider: stripe
+secret: env:STRIPE_WEBHOOK_SECRET
+budget: 5000ms
+probe:
+  - as: orders.count
+    cmd: psql "$DATABASE_URL" -Atc "select count(*) from orders"
+    covers: [invoice]
+settle: 2s
+reset: npm run db:reset:webhooks
+```
+
+The file is read strictly: one YAML document, known keys only, plain values and lists. Anchors, aliases, merge keys, custom tags and repeated keys are refused. Any error is a definition error: `webhooktrap test` exits `3` and sends nothing.
+
+## Keys
+
+<ParamField path="target" type="URL" required>
+  Where deliveries go: an `http://` or `https://` URL with no credentials. A host that resolves only to loopback (`127.0.0.0/8`, `::1`, `localhost`, `*.localhost`) is allowed. Any other host must be listed in `targets`. Provider domains, metadata endpoints and hosts that resolve to both loopback and other addresses are always refused. The agent resolves the host once per run and uses those addresses for every delivery.
+</ParamField>
+
+<ParamField path="provider" type="string">
+  The pack to use: `stripe`, `github`, `shopify` or `standard_webhooks`. Without `fixtures`, `test` reads `webhooktrap/fixtures/<provider>/`. Without `provider`, the provider of the first fixture is used.
+</ParamField>
+
+<ParamField path="secret" type="env:NAME">
+  The environment variable that holds the signing secret, written `env:NAME` (uppercase letters, digits and `_`). A value is never accepted here. Default: the pack's variable (`STRIPE_WEBHOOK_SECRET`, `GITHUB_WEBHOOK_SECRET`, `SHOPIFY_API_SECRET`, `WEBHOOK_SECRET`).
+</ParamField>
+
+<ParamField path="fixtures" type="list of paths">
+  Fixture files for `webhooktrap test`, in place of the provider's fixture directory. See [Fixture files](/reference/fixtures).
+</ParamField>
+
+<ParamField path="scenarios" type="list">
+  Scenarios for `webhooktrap test`, by machine name: `once`, `twice`, `shuffled`, `late`, `retry`, `tampered`, `unsigned`, `burst`, `slow_budget`. `--scenarios` overrides it. Default: all.
+</ParamField>
+
+<ParamField path="budget" type="100 to 30000 ms">
+  Response-time budget, in place of the pack's. Written `5000` or `5000ms`. A value above a budget the provider documents (GitHub 10 000 ms, Shopify 5 000 ms) is refused, because it would hide a failure the provider documents. A value above a Webhook Trap default (Stripe, Standard Webhooks) is allowed.
+</ParamField>
+
+<ParamField path="framework" type="express | nextjs | laravel">
+  The framework of your handler, for fix snippets. By default it is detected from the response headers (`X-Powered-By`, a `laravel_session` cookie).
+</ParamField>
+
+<ParamField path="targets" type="list of host:port">
+  Non-loopback hosts the agent may send to, as exact `host:port` entries. A run to a listed host prints a warning every time. The server can't add to this list.
+</ParamField>
+
+<ParamField path="probe" type="list">
+  Commands or URLs that read your state after each delivery. Each entry has:
+
+  - `as`: the probe's name, 1 to 48 characters from `a-z`, `0-9`, `_` and `.`, unique in the file;
+  - exactly one of `cmd:` (a shell command) or `url:` (a URL fetched through the same target rules). `sql:` is reserved: this build refuses it and suggests a `cmd:` with `psql`;
+  - `covers` (optional): the object types this probe reads, such as `invoice` or `subscription`. A run reports object types that no probe covers;
+  - `show` (optional): accepted, but agent 1.0.0 doesn't use it; readings are always sent as display forms.
+
+  The probe's output is compared before and after each delivery. A probe must be stable: before the first delivery it is read twice, 500 ms apart, and a run whose probe changes with nothing sent stops as **Couldn't start** (`probe_unstable`). Avoid time-based values such as `updated_at` or `now()`.
+</ParamField>
+
+<ParamField path="settle" type="duration, at most 30s">
+  Default `0`: the probe is read once, right after the response. With `settle: 2s`, it is read every 250 ms until its value has been unchanged for 2 s, for at most 2 s + 5 s; a value that never settles makes that judgement Inconclusive. Use it when your handler writes from a background job.
+</ParamField>
+
+<ParamField path="probe_timeout" type="duration, at most 30s">
+  Timeout of each probe command. Default 5 s.
+</ParamField>
+
+<ParamField path="reset" type="shell command">
+  Runs before every scenario, Once included, so each scenario starts from the same state. Timeout 60 s. A failing reset stops the run. Without a reset, the judgements that compare against the state after Once are Inconclusive and the run gets the Info finding *No reset between scenarios*.
+</ParamField>
+
+## Confirmation of commands
+
+`cmd:` probes and `reset` run on your machine, so they are shown and confirmed once per version of the file (by its SHA-256). `webhooktrap test` remembers the answer in `.webhooktrap/state.json`; in CI, pass `--yes`. The agent asks in its terminal.
+
+Probe and reset commands run without the signing secret, or any secret variable a pack names, in their environment.
+
+## Probe templates
+
+A probe can name an object of the selected events: `{{invoice.id}}` is the id of the first `invoice` among them.
+
+```yaml
+probe:
+  - as: orders.status
+    cmd: psql "$DATABASE_URL" -Atc "select status from orders where stripe_invoice_id = '{{invoice.id}}'"
+  - as: ledger
+    url: http://localhost:3000/_debug/ledger?invoice={{invoice.id}}
+```
+
+These values come from captured bodies, which anyone who knows a capture URL can write, so:
+
+- A value is used only if it is a plain id: 1 to 128 characters from `A-Z`, `a-z`, `0-9`, `_` and `-`, matching the pack's id pattern when it has one. Anything else is refused: `webhooktrap test` exits `3`, and the agent aborts the run.
+- A `cmd:` probe never gets the value in its command text. The value is passed as the environment variable `WT_<TYPE>_ID` (`{{invoice.id}}` → `WT_INVOICE_ID`), and the template becomes a reference to it, quoted for where it sits. You can write the reference yourself: `'$WT_INVOICE_ID'`.
+- On Windows the reference is `!WT_INVOICE_ID!` and commands run with `cmd.exe /D /V:ON /S /C`. Don't write `%WT_INVOICE_ID%`. Escape a literal `!` as `^!`.
+- A `url:` probe gets the value query-escaped.
+
+## What the server sees
+
+The agent sends the server the target's scheme, host and port, the secret's variable name, and a hash of the probe configuration. Probe readings leave your machine only as display forms: counts up to 9 999 as numbers, other values as short codes such as `#a1f3c0`, which only show whether a value changed. Commands, raw values and probe output stay on your machine.

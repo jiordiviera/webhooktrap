@@ -1,0 +1,113 @@
+---
+title: "Scenarios"
+description: "What each of the nine scenarios sends, and what makes it fail."
+icon: "list-checks"
+---
+
+A run sends its scenarios in a fixed order: Once, Twice, Shuffled, Late, Retry after error, Tampered, Unsigned, Burst, Slow budget. Once always runs, because it is the setup check and the baseline for the state checks. The *primary event* is the first selected event in capture order.
+
+<Frame caption="One cell per scenario: result, severity and the state change it saw.">
+  <img src="/images/example-run-scenarios.webp" alt="Scenario strip of the example run: Once pass, Twice High, Shuffled pass, Late pass, Retry after error High, Tampered Critical, Burst pass, Slow budget Medium." />
+</Frame>
+
+| # | Scenario | Machine name | Deliveries (n events) | Applies when |
+| - | -------- | ------------ | --------------------- | ------------ |
+| 1 | Once | `once` | n | always |
+| 2 | Twice | `twice` | 2 | the pack's duplicate rule is verified |
+| 3 | Shuffled | `shuffled` | n | n ≥ 2 |
+| 4 | Late | `late` | 1 | the provider signs a timestamp |
+| 5 | Retry after error | `retry` | 2 | the provider retries automatically, and the pack's rule is verified |
+| 6 | Tampered | `tampered` | 1 | the body is JSON and the provider signs |
+| 7 | Unsigned | `unsigned` | 1 | the provider signs |
+| 8 | Burst | `burst` | max(n, 2) | always |
+| 9 | Slow budget | `slow_budget` | 1 | always |
+
+A run selects 1 to 5 events from one provider and sends at most 50 deliveries. With 3 events and every scenario that applies to Stripe, a run sends 17 deliveries.
+
+## Rules for every valid delivery
+
+Once, Twice, Shuffled, Retry after error, Burst and Slow budget send *valid* deliveries: the exact body, signed so the provider's own verifier accepts it. On any of them:
+
+| Observation | Finding | Severity |
+| ----------- | ------- | -------- |
+| 5xx, timeout (30 s) or connection reset | `server_error` | High |
+| 3xx or 4xx | `non_2xx_on_valid` | Medium |
+| Latency over the budget | `over_budget` | Medium |
+| Connection refused, DNS or TLS failure | none: the delivery is *unreachable* | — |
+
+Before each delivery, a refused connection is retried every 500 ms for up to 5 s, so a dev server restarting after a file change isn't reported as unreachable. Three unreachable deliveries in a row stop the run as Aborted (`target_lost`).
+
+## Once
+
+Sends every selected event once, in capture order, 150 ms apart.
+
+If the **first** delivery gets a 3xx or 4xx, the run stops at once as **Couldn't start** (`baseline_rejected`): your handler rejected a correctly signed delivery, which usually means a wrong secret or path. If it is unreachable, the run stops as Couldn't start (`target_unreachable`). A 3xx or 4xx on a later Once delivery is `non_2xx_on_valid`, and the run goes on.
+
+## Twice
+
+Sends the primary event, then the same event again 500 ms after the first completes, with the same event id and the provider's duplicate headers.
+
+- With a probe: the state after the second delivery must equal the state after the first. Otherwise: `duplicate_changed_state` (High).
+- Without a probe, two 2xx are Inconclusive (`needs_probe`).
+
+## Shuffled
+
+Sends the selected events in reverse capture order, which puts every dependent event before the event it depends on.
+
+- Needs a probe and a reset: the state after the last delivery must equal the state after Once. Otherwise: `order_changed_state` (High).
+
+## Late
+
+Sends the primary event with a signature valid for a timestamp *tolerance + 60 s* in the past: 360 s for Stripe and Standard Webhooks. The body is unchanged. Your handler should reject it.
+
+## Retry after error
+
+Sends the primary event twice: the second attempt 2 s after the first completes, with the provider's retry headers. The second attempt is always sent, because a provider retries when it saw a failure or a timeout, and your handler can't tell a retry from a duplicate.
+
+| First attempt | State | Finding |
+| ------------- | ----- | ------- |
+| 2xx | second attempt changed it again | `duplicate_changed_state` (High) |
+| failed (non-2xx, transport failure) | changed by the failed attempt | `partial_side_effect` (High): the handler reported failure but kept its write |
+| failed | unchanged, and the retry didn't leave the state one clean delivery leaves (needs a reset) | `retry_diverged` (High) |
+
+## Tampered
+
+Changes one field of the body in the raw bytes, then signs for the **original** body at the current time, so only the body check can fail. The field is the first that applies:
+
+1. the first path in the pack's tamper paths for this event type (numbers become `0`, or `1` if already `0`);
+2. else the first numeric field whose name contains `amount`, `total`, `price` or `quantity`;
+3. else `"_webhooktrap_tampered":true` is added at the end of the top-level object.
+
+Fields named `id`, `type`, `object`, `created` or ending in `_id` are never changed. Your handler should reject it.
+
+## Unsigned
+
+Sends the primary event with every signature header of the pack removed. The body is unchanged. Your handler should reject it.
+
+## How Late, Tampered and Unsigned are judged
+
+| Response | No probe | Probe, state unchanged | Probe, state changed |
+| -------- | -------- | ---------------------- | -------------------- |
+| 2xx | finding | finding | finding |
+| 4xx | pass (rejected) | pass (rejected) | finding: rejected, but the write happened first |
+| 3xx | Inconclusive (`redirected`) | pass | finding |
+| 5xx or transport failure | `error_on_invalid` (Medium) | `error_on_invalid` (Medium) | finding |
+
+The finding is `accepts_stale` (High) for Late, `accepts_tampered` (Critical) for Tampered and `accepts_unsigned` (Critical) for Unsigned. These deliveries don't count against the budget: providers never send them.
+
+## Burst
+
+Sends every selected event at the same moment, from connections opened beforehand. With one selected event it sends two copies of it, with the same event id.
+
+- The probe is read once before and once after the whole burst. With a reset: the final state must equal the state after Once. Otherwise: `concurrent_changed_state` (High).
+- If the requests left more than 20 ms apart, the scenario is Inconclusive (`not_simultaneous`).
+
+## Slow budget
+
+Sends one more valid delivery of the primary event, after the reset, to measure the handler warm. `over_budget` findings from every scenario merge here.
+
+A latency is over budget when it is strictly greater than the budget. If only the first delivery of the run is over budget, it is reported as the Info finding *Slow first delivery* (`cold_start`) instead: development servers often compile a route on the first request.
+
+## Probe, reset and Inconclusive
+
+Without a probe, Level 2 judgements can't run, and scenarios where every delivery got a 2xx are Inconclusive with `needs_probe`. Without a reset, the judgements that compare against the state after Once (Shuffled, Burst, the third row of Retry after error) are Inconclusive with `needs_reset`. See [Configuration](/reference/configuration).

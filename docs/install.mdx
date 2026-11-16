@@ -1,0 +1,74 @@
+---
+title: "Install the agent"
+description: "Run the webhooktrap agent with npx, install it with npm, or download a signed release binary."
+icon: "download"
+---
+
+The agent is one binary, `webhooktrap`, for Linux, macOS and Windows on amd64 and arm64. It is open source under AGPL-3.0.
+
+<Tabs>
+  <Tab title="npx">
+    Nothing to install. The major version is pinned, so `@1` always gets the newest 1.x release.
+
+    ```bash
+    npx @webhooktrap/agent@1 version
+    ```
+  </Tab>
+  <Tab title="npm">
+    ```bash
+    npm i -g @webhooktrap/agent
+    webhooktrap version
+    ```
+
+    The package `@webhooktrap/agent` contains a small launcher and pulls the binary for your platform from one of six packages (`@webhooktrap/agent-linux-x64`, `-linux-arm64`, `-darwin-x64`, `-darwin-arm64`, `-win32-x64`, `-win32-arm64`). None of them has install scripts. They are published with npm provenance from the release workflow.
+  </Tab>
+  <Tab title="Install script">
+    For Linux and macOS. The script downloads the release archive, checks its SHA-256 against `SHA256SUMS`, verifies the signature of `SHA256SUMS` with cosign when cosign is installed, and installs `~/.local/bin/webhooktrap`. Nothing is installed if a check fails.
+
+    ```bash
+    curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/jiordiviera/webhooktrap/v2/agent/install.sh | sh
+    ```
+
+    | Variable | Effect |
+    | -------- | ------ |
+    | `WEBHOOKTRAP_VERSION` | Version to install, for example `1.0.0`. Default: the newest 1.x release that is not a prerelease. |
+    | `PREFIX` | Install prefix. The binary goes to `$PREFIX/bin`. Default `~/.local`. |
+    | `WEBHOOKTRAP_REQUIRE_SIGNATURE` | `1` refuses to install when cosign is not available. |
+
+    ```bash
+    WEBHOOKTRAP_VERSION=1.0.0 WEBHOOKTRAP_REQUIRE_SIGNATURE=1 sh install.sh
+    ```
+
+    The same `install.sh` is attached to every GitHub release.
+  </Tab>
+  <Tab title="Release archive">
+    Download the archive for your platform from the [`agent-v1.0.0` release](https://github.com/jiordiviera/webhooktrap/releases/tag/agent-v1.0.0):
+
+    - `webhooktrap_1.0.0_linux_amd64.tar.gz`, `webhooktrap_1.0.0_linux_arm64.tar.gz`
+    - `webhooktrap_1.0.0_darwin_amd64.tar.gz`, `webhooktrap_1.0.0_darwin_arm64.tar.gz`
+    - `webhooktrap_1.0.0_windows_amd64.zip`, `webhooktrap_1.0.0_windows_arm64.zip`
+
+    Verify it before you run it: see [Verify the download](/guides/verify-download).
+  </Tab>
+</Tabs>
+
+## Check the install
+
+```bash
+webhooktrap version
+webhooktrap version --json
+```
+
+`version --json` prints the version, the commit, the protocol (`v1`), the Go version, and the OS and architecture.
+
+## Update
+
+The agent doesn't update itself. Update through the channel you installed with: `npm i -g @webhooktrap/agent@latest`, run `install.sh` again, or download the new archive. `npx @webhooktrap/agent@1` already takes the newest 1.x.
+
+When a server needs a newer agent, `pair` and `agent` stop with `This agent (1.0.0) is too old for … ; it needs … or later.`
+
+## Where the agent keeps its state
+
+The pairing and its key live under your OS config directory, in `webhooktrap/` (for example `~/.config/webhooktrap` on Linux). Set `WEBHOOKTRAP_CONFIG_DIR` to use another directory. There is one key per server origin, written `0600` in a `0700` directory; a key readable by other users is refused. On Windows the key file's access list isn't checked, and the agent says so when it starts.
+
+`webhooktrap test` writes run documents and its confirmations under `.webhooktrap/` in the current directory.

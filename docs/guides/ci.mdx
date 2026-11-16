@@ -1,0 +1,154 @@
+---
+title: "Test in CI"
+description: "Run the scenarios from fixture files with webhooktrap test, and fail the build when a finding reaches --fail-on."
+icon: "git-branch"
+---
+
+`webhooktrap test` runs the same plan, delivery and judge steps as a run started from the browser, but from fixture files in your repository. It needs no server, no account and no pairing; the only network traffic is to your handler. It exits with a code your CI can act on.
+
+## What you need in the repository
+
+```text
+your-app/
+├── webhooktrap.yml
+└── webhooktrap/
+    └── fixtures/
+        └── stripe/
+            ├── invoice.paid.json
+            ├── payment_intent.succeeded.json
+            └── customer.subscription.updated.json
+```
+
+- `webhooktrap.yml` declares the target, the provider, the secret's variable name, and optionally a probe and a reset. See [Configuration](/reference/configuration).
+- Fixtures are JSON files with the provider, the event type, the headers and the exact body. With `provider: stripe` and no `fixtures:` list, `test` reads every file under `webhooktrap/fixtures/stripe/`. See [Fixture files](/reference/fixtures).
+
+Fixtures carry no signature: the agent re-signs every delivery at send time with the secret from the environment. In CI, set that variable to the same test secret your handler verifies with.
+
+## Run it locally first
+
+```bash
+export STRIPE_WEBHOOK_SECRET=whsec_test_only
+webhooktrap test
+```
+
+The first run asks you to confirm the side-effect warning for the target, and the probe and reset commands if there are any. The answers are remembered in `.webhooktrap/state.json`. In CI, where nobody can answer, pass `--yes`.
+
+This is the output of a real run against a handler that checks the timestamp but only logs a bad signature, and doesn't record event ids (`--ascii`, shortened):
+
+```text
+Running 17 deliveries against http://127.0.0.1:4242/webhooks/stripe …
+Webhook Trap | webhooktrap test | Stripe invoice.paid
+  target    http://127.0.0.1:4242/webhooks/stripe
+  handler   Express (detected from X-Powered-By)
+  events    #1 invoice.paid | #2 payment_intent.succeeded | #3 customer.subscription.updated
+  checks    Level 1 transport | Level 2 probe orders.count | reset between scenarios
+  budget    10 000 ms (Webhook Trap default)
+
+ PASS Once                D1 D2 D3      200 x 3 | orders.count 0 -> 1
+ FAIL Twice               D4 D5         orders.count 1 -> 2 on D5, expected 1
+ PASS Shuffled            D6 D7 D8      reversed | orders.count 0 -> 1
+ PASS Late                D9            400 in 3 ms | rejected as expected
+ FAIL Retry after error   D10 D11       3 ms -> retry -> orders.count 1 -> 2 on D11, expected 1
+ FAIL Tampered            D12           expected 4xx | got 200 in 0 ms | orders.count 0 -> 1
+ PASS Unsigned            D13           400 in 0 ms | rejected as expected
+ PASS Burst               D14 D15 D16   200 x 3 | 0 ms | orders.count 0 -> 1 (final)
+ PASS Slow budget         D17           200 in 0 ms | within budget
+
+ [C] F1  Critical Accepts tampered payload                       D12
+ [H] F2  High     Duplicate delivery changed orders.count again  D5 D11
+ [I] F3  Info     Probe doesn't see subscription state           D6 D16
+
+2 findings | 1 Critical | 1 High | 1 Info
+9 scenarios | 17 deliveries | 14.5 s | run_01M7JFRDSCE6TSGT4HR8CNFTQX
+  run file  .webhooktrap/runs/run_01M7JFRDSCE6TSGT4HR8CNFTQX.json
+exit 1 --fail-on high
+```
+
+The last line is the exit code and why.
+
+## Exit codes
+
+| Exit | When |
+| ---- | ---- |
+| `0` | Passed, Inconclusive without `--fail-on-inconclusive`, or findings below `--fail-on`. |
+| `1` | A finding at or above `--fail-on` (default `high`), or Inconclusive with `--fail-on-inconclusive`. |
+| `2` | The run couldn't start or was aborted, or a scenario's target was unreachable. Findings already proven are still printed. |
+| `3` | The run definition is invalid: unknown flag, a `webhooktrap.yml` error, an unknown scenario, more than 50 deliveries, an unresolvable probe template, or a confirmation that wasn't given. Nothing is sent. |
+
+`--fail-on` takes `critical`, `high`, `medium` or `never`. Info findings never fail a run. See [Findings and exit codes](/reference/findings).
+
+## GitHub Actions
+
+Start your handler in the job, wait until it answers, then run `webhooktrap test`. This example uses a Node app; adapt the start and reset commands to yours.
+
+```yaml .github/workflows/webhooks.yml
+name: Webhook handler
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  webhooktrap:
+    runs-on: ubuntu-latest
+    env:
+      # A test-only secret: the app verifies with it, the agent signs with it.
+      STRIPE_WEBHOOK_SECRET: whsec_ci_test_only
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Start the app
+        run: |
+          npm start &
+          npx --yes wait-on http://127.0.0.1:3000/health
+
+      - name: Prove the webhook handler
+        run: npx @webhooktrap/agent@1 test --yes --fail-on high
+
+      - name: Keep the run document
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webhooktrap-run
+          path: .webhooktrap/runs/
+```
+
+<Warning>
+  Don't run `webhooktrap test` with real secrets on `pull_request_target`: a pull request from a fork would run your `cmd:` probes and reset with access to them. In a `pull_request_target` job, `webhooktrap test` refuses `cmd:` probes and `reset` unless you pass `--allow-untrusted-config`; pass it only for trusted code.
+</Warning>
+
+## Re-check a run document
+
+Every run writes a run document, by default to `.webhooktrap/runs/<run id>.json` (`--out` changes the path). It holds the plan and every observation, so the verdict can be recomputed:
+
+```bash
+webhooktrap rejudge .webhooktrap/runs/run_01M7JFRDSCE6TSGT4HR8CNFTQX.json
+```
+
+```text
+rejudge: identical (findings, 3 findings)
+```
+
+`rejudge` exits `0` when the verdict is identical, `1` when it differs, and `3` when the file isn't a local run document.
+
+## Useful flags
+
+| Flag | Use |
+| ---- | --- |
+| `--scenarios twice,tampered` | Run only some scenarios. Once always runs first. |
+| `--seed 42` | Reproduce a run's plan exactly. `--verbose` prints the seed of each run. |
+| `--json` | Print the run document instead of the text report. |
+| `--ascii` | ASCII glyphs, for CI logs that mangle Unicode. Also used when `TERM=dumb`. |
+| `--insecure-localhost` | Skip TLS verification for a local `https://` target. |
+
+The full list is in the [CLI reference](/reference/cli).

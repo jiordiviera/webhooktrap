@@ -1,0 +1,48 @@
+---
+title: "Fixture files"
+description: "The JSON format webhooktrap test reads events from."
+icon: "braces"
+---
+
+`webhooktrap test` replays events from fixture files instead of captures. A fixture is one JSON file per event. By default they live in `webhooktrap/fixtures/<provider>/`, read in file-name order; `fixtures:` in `webhooktrap.yml` lists them explicitly.
+
+```json webhooktrap/fixtures/stripe/invoice.paid.json
+{
+  "provider": "stripe",
+  "event_type": "invoice.paid",
+  "capture_order": 1,
+  "source": "#01",
+  "headers": [
+    ["User-Agent", "Stripe/1.0 (+https://stripe.com/docs/webhooks)"],
+    ["Content-Type", "application/json; charset=utf-8"]
+  ],
+  "signature": "resign",
+  "body_sha256": "bdc57f1dc99b7aef6790c59f1c6840bed375da8593219c89fa52db721a56818d",
+  "body": "{\n  \"id\": \"evt_1QK9BpyOmOFtoVkdOlN4pjPU\",\n  \"object\": \"event\",\n  \"type\": \"invoice.paid\", …}"
+}
+```
+
+| Field | Required | Description |
+| ----- | -------- | ----------- |
+| `provider` | yes | Pack id: `stripe`, `github`, `shopify` or `standard_webhooks`. |
+| `event_type` | no | The event type, for reading. |
+| `capture_order` | no | Order of the event among the selected ones. Shuffled sends them in reverse of this order. |
+| `source` | no | Where the event came from, for reading. |
+| `headers` | no | The request headers as `[name, value]` pairs, in order. |
+| `signature` | no | `"resign"` or empty. Fixtures are always re-signed at send time; a stored signature is never used. |
+| `body_sha256` | no | Hex SHA-256 of `body`. When present, it must match. |
+| `body` | yes | The exact body, as a string. At most 5 MiB. |
+
+Unknown fields are refused. File paths may contain only `A-Z`, `a-z`, `0-9`, `_`, `.`, `/` and `-`, must end in `.json`, can't contain `..`, and must be regular files.
+
+## Making fixtures from captures
+
+A fixture's body must be byte-for-byte what the provider sent. Download a capture's exact body from its delivery page (**Download raw**), and copy the headers you need from the same page. Keep the body as received: re-serialising the JSON changes the bytes.
+
+<Note>
+  The **Fixtures** tab in the app is marked *Soon*: exporting fixtures from the app is not available in 2.0.
+</Note>
+
+## Secrets in fixtures
+
+Don't commit real customer data or secrets. Fixtures carry no signature, so the secret only needs to be in the environment when `webhooktrap test` runs, and in CI it can be a test-only value your handler is configured with.

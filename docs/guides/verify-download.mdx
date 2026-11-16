@@ -1,0 +1,83 @@
+---
+title: "Verify the agent download"
+description: "Check a release archive's checksum, its Sigstore signature and its build provenance before you run it."
+icon: "shield-check"
+---
+
+Every agent release is built by the `agent-release.yml` workflow in [jiordiviera/webhooktrap](https://github.com/jiordiviera/webhooktrap) from a tag `agent-v<version>`. The builds are reproducible. Each release has:
+
+| Asset | What it is |
+| ----- | ---------- |
+| `webhooktrap_<v>_<os>_<arch>.tar.gz` / `.zip` | The binary and its LICENSE. |
+| `SHA256SUMS` | SHA-256 of every archive. |
+| `SHA256SUMS.sigstore.json` | Keyless Sigstore signature of `SHA256SUMS`, made by the release workflow. |
+| `SHA256SUMS.sig`, `SHA256SUMS.pem` | The same signature and certificate as separate files. |
+| `install.sh` | The install script. |
+
+Each archive also has a SLSA build provenance attestation on GitHub, and the npm packages are published with npm provenance.
+
+## With the install script
+
+`install.sh` does the checks below for you. Make the signature check mandatory:
+
+```bash
+curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/jiordiviera/webhooktrap/v2/agent/install.sh \
+  | WEBHOOKTRAP_REQUIRE_SIGNATURE=1 sh
+```
+
+Without cosign on your `PATH`, the script still checks the SHA-256, says that the signature was not checked, and prints the commands to check it yourself.
+
+## By hand
+
+This example verifies release `agent-v1.0.0` for Linux on amd64. Change the archive name for your platform.
+
+<Steps>
+  <Step title="Download the archive, the checksums and the signature bundle">
+    ```bash
+    v=1.0.0
+    base=https://github.com/jiordiviera/webhooktrap/releases/download/agent-v$v
+    curl -fsSL -O "$base/webhooktrap_${v}_linux_amd64.tar.gz" \
+               -O "$base/SHA256SUMS" \
+               -O "$base/SHA256SUMS.sigstore.json"
+    ```
+  </Step>
+
+  <Step title="Verify the signature of SHA256SUMS with cosign">
+    The certificate identity must be the release workflow at that tag, issued through GitHub Actions:
+
+    ```bash
+    cosign verify-blob --bundle SHA256SUMS.sigstore.json \
+      --certificate-identity "https://github.com/jiordiviera/webhooktrap/.github/workflows/agent-release.yml@refs/tags/agent-v$v" \
+      --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+      SHA256SUMS
+    ```
+
+    Install cosign from [docs.sigstore.dev](https://docs.sigstore.dev).
+  </Step>
+
+  <Step title="Check the archive against SHA256SUMS">
+    ```bash
+    sha256sum --ignore-missing -c SHA256SUMS
+    ```
+
+    On macOS: `shasum -a 256 --ignore-missing -c SHA256SUMS`.
+  </Step>
+
+  <Step title="Check the build provenance (optional)">
+    ```bash
+    gh attestation verify "webhooktrap_${v}_linux_amd64.tar.gz" --repo jiordiviera/webhooktrap
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  `SHA256SUMS.pem` shows who signed (`openssl x509 -in SHA256SUMS.pem -noout -text`; the subject alternative name must be the workflow URL above). Checking `SHA256SUMS.sig` against it with openssl skips the Sigstore certificate chain and transparency log, so it doesn't replace cosign or `gh attestation verify`.
+</Note>
+
+## npm installs
+
+In a project that depends on `@webhooktrap/agent`, check the registry signatures and provenance attestations:
+
+```bash
+npm audit signatures
+```

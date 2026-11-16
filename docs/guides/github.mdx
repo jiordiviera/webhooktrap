@@ -1,0 +1,58 @@
+---
+title: "GitHub"
+description: "Capture GitHub webhooks and prove your handler against forged and unsigned deliveries, bursts and GitHub's 10-second limit."
+icon: "github"
+---
+
+import SecretsLocal from '/snippets/secrets-local.mdx';
+
+## Point GitHub at your capture URL
+
+<Steps>
+  <Step title="Copy your capture URL">
+    It is on **Arrivals**: `https://in.webhooktrap.dev/c/` followed by a 12-character key.
+  </Step>
+  <Step title="Add the webhook">
+    In the repository, open **Settings › Webhooks › Add webhook**. Set **Payload URL** to the capture URL, **Content type** to `application/json`, and set a secret.
+  </Step>
+  <Step title="Trigger events">
+    Push a commit, open an issue, or use **Redeliver** on a recent delivery in the webhook's settings.
+  </Step>
+</Steps>
+
+Webhook Trap recognises a GitHub delivery by its `X-GitHub-Event` header, takes the event type from that header and the event id from `X-GitHub-Delivery`, and groups events by repository and organization.
+
+## Configure the agent
+
+```yaml webhooktrap.yml
+target: http://127.0.0.1:3000/webhooks/github
+provider: github
+secret: env:GITHUB_WEBHOOK_SECRET
+```
+
+```bash
+export GITHUB_WEBHOOK_SECRET=...
+webhooktrap agent
+```
+
+If you leave out `secret`, the agent looks for `GITHUB_WEBHOOK_SECRET`, the name in the GitHub pack.
+
+<SecretsLocal />
+
+GitHub signs no timestamp, so the body and its original `X-Hub-Signature-256` still verify later. Without the secret the agent sends valid deliveries with the captured signature header; with it, it re-signs them.
+
+## What the scenarios do for GitHub
+
+| Scenario | For GitHub |
+| -------- | ---------- |
+| Once | Each selected event. |
+| Twice | `n/a (not verified for GitHub)`: the GitHub pack's duplicate rule is not verified yet. |
+| Shuffled | The events in reverse order. Needs 2 or more events. |
+| Late | `n/a (provider signs no timestamp)`. |
+| Retry after error | `n/a (GitHub doesn't retry automatically)`. |
+| Tampered | The body with one field changed, signed for the original body. The GitHub pack names no field, so the first numeric field whose name contains `amount`, `total`, `price` or `quantity` changes; if there is none, `"_webhooktrap_tampered":true` is added. |
+| Unsigned | The first event with `X-Hub-Signature-256` and `X-Hub-Signature` removed. |
+| Burst | Every selected event at once (two copies when you select one). |
+| Slow budget | One more delivery, measured against the 10 s budget. |
+
+The 10 s budget comes from GitHub's docs. A `budget:` above it in `webhooktrap.yml` is refused as a configuration error, because it would hide a failure GitHub documents.

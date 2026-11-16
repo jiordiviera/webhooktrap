@@ -50,7 +50,7 @@ tools over Docker for local dev. Tests use the `webhooktrap_testing` database.
 
 ## Repository rules
 
-- `docs/` is the live Mintlify site: do not touch. `spikes/`, `.worktrees/`, `.playwright-mcp/` are local only.
+- `docs/` is the 2.0 Mintlify site (docs.webhooktrap.dev, deployed on every push to `v2`): edit with care, run `mint broken-links` and `mint validate` in `docs/` before committing, regenerate screenshots with `docs/scripts/screenshots.mjs`. `spikes/`, `.worktrees/`, `.playwright-mcp/` are local only.
 - One local commit per finished slice on phase 5 branches; nothing is pushed; no AI attribution in commits.
 - `.env.example` holds variable names only. Secrets reach containers as `<NAME>_FILE`.
 - New packages beyond Laravel first-party and the starter kit's dependencies are proposals first.

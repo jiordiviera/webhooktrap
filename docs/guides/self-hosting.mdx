@@ -1,0 +1,131 @@
+---
+title: "Self-host with Docker Compose"
+description: "Run your own Webhook Trap instance from compose.yaml: services, secrets as files, TLS modes and the runner token."
+icon: "server"
+---
+
+Webhook Trap is open source (AGPL-3.0). The repository's `compose.yaml` is the self-host profile: one file, started with `docker compose up -d`. This page follows that file and `.env.example`; both are the reference when they change.
+
+<Note>
+  Use the agent with your instance like with the hosted one: pair with `--server https://<your app host>`. An agent paired with one server can also be paired with another; pass `--server` to `webhooktrap agent` when it is paired with several.
+</Note>
+
+## What runs
+
+| Service | Role |
+| ------- | ---- |
+| `migrate` | One-shot: `php artisan migrate --force`, before the app starts. |
+| `app` | The web app (FrankenPHP). Publishes ports 80 and 443 (and 443/udp for HTTP/3). |
+| `ingest` | Stores webhook captures on its own PHP pool. Reached only through `app`. |
+| `haproxy` | Per-address limits on the capture path. Defaults: 20 requests in flight, 1200 per minute, 2 partial bodies per address. |
+| `reverb` | Realtime updates for the browser. |
+| `horizon` | Queue workers. |
+| `scheduler` | Scheduled jobs (retention purges, expiries). |
+| `ssr` | Server-side rendering of the public pages. Without it they render in the browser. |
+| `engine` | The `webhooktrap` engine as a network-free sandbox for the app. |
+| `runner` | The server runner (`serve-run`). Idle: the app doesn't start server runs in 2.0. |
+| `postgres` | PostgreSQL, from the `webhooktrap-postgres` image. |
+| `valkey` | Redis-compatible store for queue, cache and rate limits. `REDIS_HOST` may point at your own Redis or Valkey instead. |
+| `backup` | pgBackRest: a daily full backup and continuous WAL archiving. |
+
+The images are `ghcr.io/jiordiviera/webhooktrap`, `ghcr.io/jiordiviera/webhooktrap-runner` and `ghcr.io/jiordiviera/webhooktrap-postgres`. Every service runs read-only where it can, with all capabilities dropped and `no-new-privileges`. PostgreSQL and Valkey are on an internal network with no internet access.
+
+The reference size is 2 vCPU and 4 GB of memory.
+
+## Before you start
+
+<Steps>
+  <Step title="Pick the image version">
+    Set `WEBHOOKTRAP_VERSION` in `.env`. Compose refuses to start without it, and every image uses it. Images are published for each commit on the `v2` branch, tagged with the commit SHA. Use a fixed tag, never `latest`.
+  </Step>
+
+  <Step title="Choose three host names">
+    The app, the capture host and the realtime host are separate names, for example `app.example.com`, `in.example.com` and `ws.example.com`, all pointing at the server. The capture host serves only `/c/…`; the app host never serves `/c/…`.
+  </Step>
+
+  <Step title="Write the secrets as files">
+    No secret goes in `.env`. Each is a file in `./secrets/`, mounted as a Compose secret and read by the image's entrypoint.
+
+    | File | Content |
+    | ---- | ------- |
+    | `app_key` | `echo base64:$(openssl rand -base64 32)` |
+    | `postgres_password`, `db_password` | The same database password in both. |
+    | `valkey_password` | `openssl rand -hex 32` |
+    | `reverb_app_secret` | `openssl rand -hex 32` |
+    | `identity_email_hmac_key` | `openssl rand -hex 32`. Never change it once the instance is in use. |
+    | `identity_recovery_code_key` | `openssl rand -hex 32`. Rotating it invalidates every recovery code. |
+    | `agent_pairing_hmac_key` | `openssl rand -hex 32` |
+    | `edge_proxy_secret` | `openssl rand -hex 32`. Needed in every TLS mode: `app` signs its hop to `ingest` with it. |
+    | `backup_cipher_pass` | Encryption passphrase for the backup repository. |
+    | `runner_token` | Start with an empty file (see below). |
+
+    These may be empty files: `mail_password`, `pulsesend_api_key`, `github_client_secret`, `google_client_secret`, `error_tracker_dsn`. An empty OAuth secret turns that sign-in method off.
+
+    Ownership: `postgres_password` and `backup_cipher_pass` are `root:999`, mode `0440`. Every other file is `root:33`, mode `0440`.
+  </Step>
+
+  <Step title="Write .env">
+    `.env.example` lists every variable name, without values. For self-host, set at least:
+
+    - `WEBHOOKTRAP_VERSION`;
+    - `WEBHOOKTRAP_INSTANCE=selfhost`;
+    - `APP_URL`, `APP_HOST`, `CAPTURE_HOST`, `WS_HOST`, `CAPTURE_PUBLIC_ORIGIN`, `REVERB_PUBLIC_HOST`;
+    - `POSTGRES_DB`, `POSTGRES_USER` and the matching `DB_*` names;
+    - the TLS variables of the mode you choose, below.
+
+    `GUEST_MODE=false` turns guest sessions off on your instance.
+  </Step>
+</Steps>
+
+## TLS
+
+<Tabs>
+  <Tab title="Built-in TLS (TLS_MODE=auto)">
+    The default. FrankenPHP gets certificates itself.
+
+    - `SERVER_NAME`: your three host names;
+    - `CADDY_AUTO_HTTPS=on`;
+    - `PROXY_TRUST_MODE=none`.
+
+    Ports 80 and 443 are published on `BIND_ADDRESS` (default `0.0.0.0`).
+  </Tab>
+  <Tab title="Behind your proxy (TLS_MODE=off)">
+    Your reverse proxy terminates TLS and forwards to the app.
+
+    - `BIND_ADDRESS=127.0.0.1` and `HTTP_PORT=<port>`;
+    - `CADDY_AUTO_HTTPS=off`;
+    - `PROXY_TRUST_MODE=secret`: the proxy sends the edge secret, and only then are its forwarded headers trusted. `ip`, with `TRUSTED_PROXIES`, is the weaker option.
+
+    If your proxy hides client addresses and you leave `PROXY_TRUST_MODE=none`, every capture shares one rate-limit bucket.
+  </Tab>
+</Tabs>
+
+## Start
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+`migrate` runs first; `app`, `reverb`, `horizon` and `scheduler` wait for it. Then open `APP_URL` and create the first account at `/register`.
+
+### The runner token
+
+`runner` needs a token issued by the app. Once the app is up:
+
+```bash
+docker compose run --rm -T app php artisan runner:token runner > secrets/runner_token
+docker compose up -d runner
+```
+
+`-T` keeps stderr out of the file. `runner:token` also takes `--list` and `--revoke=<name>`; run it again to rotate. With `TLS_MODE=auto`, add `http://app:8080` to `SERVER_NAME`, because the runner reaches the app on that name.
+
+The runner sends to public addresses only (`RUNNER_GUARD_CEILING=public`). `RUNNER_GUARD_CEILING=allowlist` with `RUNNER_ALLOWLIST_FILE` limits it to the `host:port`, `host:from-to` or `cidr:port` lines of a file in `./runner/`.
+
+## Backups and upgrades
+
+- The default backup repository is a volume on the same disk. That is not a disaster backup: set `BACKUP_REPO_TYPE` to `s3` (with the `BACKUP_S3_*` variables) or `sftp`.
+- A full backup runs daily at `BACKUP_FULL_SCHEDULE` (UTC `HH:MM`, default `02:30`), kept `BACKUP_RETENTION_FULL` days (default 14). WAL is archived continuously.
+- With `BACKUP_BEFORE_MIGRATE` on, a backup runs before every migration.
+- Restore into a stopped stack with an empty `pgdata` volume: `docker compose run --rm backup restore`, optionally with `--target-time=…`.
+- To upgrade, change `WEBHOOKTRAP_VERSION` and run `docker compose up -d`. Migrations stay backward-compatible for one release, so rolling the image back needs no schema rollback.

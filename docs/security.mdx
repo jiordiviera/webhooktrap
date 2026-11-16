@@ -1,0 +1,60 @@
+---
+title: "Security and privacy"
+description: "What stays on your machine, how deliveries are signed, what the server stores and for how long."
+icon: "lock"
+---
+
+## Your secrets stay on your machine
+
+Webhook Trap needs your provider's signing secret to sign deliveries, and never takes it.
+
+- `webhooktrap.yml` holds the secret's environment variable name (`secret: env:STRIPE_WEBHOOK_SECRET`), never a value. A value in that key is refused.
+- The agent reads the value when it signs, and tells the server only the variable's name.
+- The agent checks every upload (the plan, each batch of observations, the final run document) for the secret and refuses to send one that contains it. `webhooktrap test` refuses to write such a run document.
+- The secret is masked in everything the agent prints.
+- Probe and reset commands run without the secret, or any secret variable a pack names, in their environment.
+
+That is why the app shows a capture's signature as **Not checked**: only your machine can check it.
+
+<Frame caption="The app can't check a signature: the secret is on your machine.">
+  <img src="/images/delivery-signature-not-checked.webp" alt="Signature section of a delivery: State Not checked. Secrets live on your machine. Connect the agent to check signatures." />
+</Frame>
+
+## Probe values stay on your machine
+
+Probe commands and their raw output never leave your machine. The server receives display forms only: counts up to 9 999 as numbers, other values as short codes such as `#a1f3c0`, which show whether a value changed and nothing else. Finding text is built from templates in the pack and typed parameters, so no free text from your machine reaches the server. `webhooktrap test` sends nothing anywhere.
+
+## The agent's connection
+
+- **Pairing.** A code from your browser, valid 10 minutes, joins one agent to one workspace. Before joining, the agent shows the server, the workspace, its name and its key fingerprint, and asks. A code that replaces an existing agent always asks.
+- **Keys.** One Ed25519 key per server origin, created on your machine, readable by you only. The server holds the public key; the agent authenticates by signing a challenge bound to the server's origin.
+- **Transport.** `https://` only, verified against your system's roots. Redirects are never followed. Plain `http://` is accepted only for a local development server with `--insecure-dev-origin`, and refused for a server that reports itself as hosted.
+- **No listening socket.** The agent connects out and waits for jobs.
+- **Targets.** The agent sends only to the target in `webhooktrap.yml`, after you approve it in the terminal. A non-loopback host must be listed in `targets` in the same file; the server can't add one. Provider domains and cloud metadata addresses are always refused, and host names are resolved once per run so they can't be re-pointed mid-run.
+- **Revocation.** Revoke an agent from **Agents** in the app, or run `webhooktrap agent unpair`. An agent that is never confirmed is revoked 10 minutes after pairing.
+
+Everything the agent prints that came from a capture, the server, a pack or a file is cleaned of control and invisible characters first.
+
+## What the server stores
+
+| Data | Stored | Kept |
+| ---- | ------ | ---- |
+| Captures | Request line, headers (credential headers replaced), source address, body up to 5 MiB | 1 to 30 days, per project (default 30) |
+| Runs | Plan, deliveries, statuses, latencies, display forms of probe readings, findings | 7 to 90 days, per project (default 90) |
+| Guest sessions | A hash of the session token, with its project, captures and runs | 24 hours |
+| Agents | Name, public key, version, OS, last seen | Until revoked |
+
+Runs are private: a run page is visible to the project's owner only.
+
+Passwords are hashed with argon2id. Account security offers passkeys, security keys, an authenticator app and recovery codes, and lists where you are signed in.
+
+<Frame caption="Account › Security.">
+  <img src="/images/account-security.webp" alt="Account security page with password and email, passkeys and security keys, authenticator app, recovery codes, linked accounts and signed-in sessions." />
+</Frame>
+
+## Policies
+
+- [Privacy policy](https://app.webhooktrap.dev/privacy): what is collected, legal bases, processors, backups and your rights.
+- [Terms of service](https://app.webhooktrap.dev/terms).
+
+To report a vulnerability, follow [SECURITY.md](https://github.com/jiordiviera/webhooktrap/blob/v2/SECURITY.md) in the repository. Don't open a public issue.

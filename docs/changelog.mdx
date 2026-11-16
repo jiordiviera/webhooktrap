@@ -1,0 +1,33 @@
+---
+title: "Changelog"
+description: "Releases of Webhook Trap and of the webhooktrap agent."
+icon: "history"
+---
+
+<Update label="16 November 2026" description="Webhook Trap 2.0 and agent 1.0.0">
+  ## Webhook Trap 2.0
+
+  A rewrite. Webhook Trap 1.x captured webhooks and replayed them one at a time; 2.0 proves a handler against the ways providers really deliver.
+
+  <Frame caption="The 2.0 landing page.">
+    <img src="/images/landing.webp" alt="Landing page: Your webhook handler works. Once., with a terminal showing a run with three findings." />
+  </Frame>
+
+  - Capture URLs on a separate capture host, `in.webhooktrap.dev`, that store every request as received.
+  - Guest sessions: a capture URL and runs without an account, for 24 hours.
+  - Provider packs for Stripe, GitHub, Shopify and Standard Webhooks: detection, grouping, signing, budgets and finding text.
+  - Nine scenarios: Once, Twice, Shuffled, Late, Retry after error, Tampered, Unsigned, Burst and Slow budget, judged on status and latency, and on your database state with a probe.
+  - Findings with evidence, likely cause and fix, and an exit code per run.
+  - Accounts with passkeys, security keys, authenticator apps and recovery codes; sign-in with GitHub or Google.
+  - Self-hosting with Docker Compose.
+  - Open source under AGPL-3.0.
+
+  ## Agent 1.0.0
+
+  The first release of `webhooktrap`, tag `agent-v1.0.0`.
+
+  - `pair`, `agent`, `test`, `rejudge` and `version`.
+  - Builds for Linux, macOS and Windows on amd64 and arm64; npm packages `@webhooktrap/agent` with provenance; a signed `SHA256SUMS` and build provenance for every archive.
+
+  Known issue: without `--server`, 1.0.0 pairs with `https://webhooktrap.dev`, which redirects to the app, and the agent never follows redirects. Pass `--server https://app.webhooktrap.dev`.
+</Update>

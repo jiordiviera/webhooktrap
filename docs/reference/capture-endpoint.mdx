@@ -1,0 +1,63 @@
+---
+title: "Capture endpoint"
+description: "How a capture URL answers, what it stores and which limits apply."
+icon: "inbox"
+---
+
+A capture URL is the capture host followed by `/c/` and the project's 12-character key:
+
+```text
+https://in.webhooktrap.dev/c/AJFpjoAJwdS8
+```
+
+## Requests
+
+| | |
+| - | - |
+| Methods | Any, including `HEAD` and `OPTIONS`. The method stored is the one on the request line; `_method` and `X-HTTP-Method-Override` are ignored. |
+| Paths | `/c/<key>` and anything below it, `/c/<key>/<rest…>`. The full path and raw query are stored. |
+| Authentication | None. Anyone who knows the URL can send to it. |
+| Cookies, sessions, CSRF, CORS | None on this host. App pages are not served on the capture host, and the app host doesn't serve `/c/…`. |
+
+## Response
+
+The answer doesn't depend on the key or the project: an unknown key, a rotated key, a project over quota and a stored capture all get the same answer.
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store, private
+
+{"received":true}
+```
+
+`HEAD` gets no body. Only two answers differ, both decided before the key is looked at:
+
+| Status | Body | When |
+| ------ | ---- | ---- |
+| `429` | `{"error":"rate_limited"}`, with `Retry-After: 60` | More than 600 requests per minute from one client address. Requests from documented Stripe and GitHub delivery ranges are counted per address and capture URL, so one tenant can't exhaust another's bucket. |
+| `413` | `{"error":"too_large"}` | The request is over 25 MiB, by its `Content-Length` or the bytes read. |
+
+## What is stored
+
+- Method, path and raw query, the headers in order, the source address, the content type and the time received.
+- The body, byte for byte, when it is 5 MiB or less. For a larger body, only its size and SHA-256.
+- Header values that aren't valid UTF-8 are stored with U+FFFD in place of the bad bytes.
+
+These header values are replaced by a placeholder before storage (names compared case-insensitively): `Authorization`, `Proxy-Authorization`, `Cookie`, `X-Gitlab-Token`, `X-Telegram-Bot-Api-Secret-Token`, `X-Hook-Secret`, `X-Api-Key`, `Api-Key`, `X-Auth-Token`. Signature headers are kept, because they are needed to check and replay a delivery.
+
+<Frame caption="The facts stored with a delivery.">
+  <img src="/images/delivery-detail.webp" alt="Delivery detail with received time, size, content type, source IP, public origin, header fidelity, delivery id and SHA-256." />
+</Frame>
+
+The delivery page shows bodies up to 256 KiB of text (64 KiB binary) inline; **Download raw** always returns every byte.
+
+## Rotating the URL
+
+With an account, **Settings › Capture URL › Rotate URL** gives the project a new key. The old URL stops storing deliveries at once, and still answers `200`. Rotation is limited to 10 per hour per user. Guest sessions can't rotate.
+
+<Frame caption="Project settings: capture URL and retention.">
+  <img src="/images/project-settings-capture.webp" alt="Project settings page with the capture URL, the Rotate URL button, the project name and the retention choices." />
+</Frame>
+
+See [Limits and retention](/reference/limits) for quotas.

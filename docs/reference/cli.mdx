@@ -1,0 +1,148 @@
+---
+title: "CLI"
+description: "Every webhooktrap command, flag, environment variable and exit code."
+icon: "terminal"
+---
+
+```text
+webhooktrap version [--json]
+webhooktrap pair <CODE> [flags]
+webhooktrap agent [flags]
+webhooktrap agent unpair [--server URL]
+webhooktrap test [flags]
+webhooktrap rejudge <run.json>
+```
+
+With npx, put `npx @webhooktrap/agent@1` in place of `webhooktrap`. Every command prints its usage with `--help`. An unknown command exits `2`.
+
+## version
+
+```bash
+webhooktrap version
+webhooktrap version --json
+```
+
+Prints the version, commit, protocol, Go version, OS and architecture. `webhooktrap` with no arguments and `webhooktrap --version` do the same.
+
+## pair
+
+```bash
+webhooktrap pair 7KQ2M-XR9TD --server https://app.webhooktrap.dev
+```
+
+Joins this machine to the workspace that showed the code in its browser. The code is 10 characters, accepted in any case, with or without the hyphen; it expires after 10 minutes. The agent creates a key for the server, sends the code, prints the server, the workspace, the agent name and the key's fingerprint (`SHA256:…`, as the browser shows it), and asks `Join? [y/N]`. When you don't join, it unpairs and deletes the key.
+
+<Frame caption="Agents › Pair a new agent shows the code and the command.">
+  <img src="/images/pairing-code.webp" alt="Pair an agent page with the code and the npx pair command framed." />
+</Frame>
+
+The code can come before or after the flags. `webhooktrap agent pair <CODE>` is the same command.
+
+| Flag | Default | Description |
+| ---- | ------- | ----------- |
+| `--server URL` | `$WEBHOOKTRAP_SERVER`, else the built-in default | Server origin. |
+| `--name NAME` | this machine's name | Agent name shown in the browser: 1 to 48 letters, digits, `.`, `_` or `-`. If the name is taken in the workspace, the server keeps another one (`maya-mbp-2`) and `pair` prints it. |
+| `--yes` | off | Skip the join question for an account workspace. A guest workspace, or a code that replaces an existing agent, always asks. |
+| `--insecure-dev-origin` | off | Allow a plain `http://` server, only for a local development origin (`localhost`, `*.localhost`, `*.test`, loopback). Refused when the server reports itself as hosted. |
+
+<Warning>
+  The built-in default server of agent 1.0.0 is `https://webhooktrap.dev`. Pass `--server https://app.webhooktrap.dev` (or set `WEBHOOKTRAP_SERVER`) until a release changes it.
+</Warning>
+
+`https://` is required and verified against the system roots. Redirects are never followed.
+
+Without a terminal, `pair` can't ask and doesn't join, unless `--yes` applies.
+
+| Exit | When |
+| ---- | ---- |
+| `0` | Joined. |
+| `1` | Not joined, refused by the server, or a local error (no config directory, can't save). |
+| `2` | Usage error: missing or malformed code, bad flag or name. |
+
+## agent
+
+```bash
+webhooktrap agent
+webhooktrap agent --once
+webhooktrap agent unpair
+```
+
+Connects to the server this machine is paired with and runs the scenarios started from the browser against the target declared in `webhooktrap.yml`. It sends a heartbeat every 20 seconds, waits for jobs, and reconnects with backoff (up to 60 s) when the connection drops. Ctrl-C stops it.
+
+Before a run reaches a new target, the agent asks in the terminal whether runs from the browser may send to it, with the side-effect warning. If `webhooktrap.yml` has `cmd:` probes or a `reset`, it lists them and asks again whenever the file changes. Without a terminal it declines the job as needing confirmation, prints one line, and checks again after 5 s, 10 s, 20 s, up to 1 minute.
+
+| Flag | Default | Description |
+| ---- | ------- | ----------- |
+| `--server URL` | the only paired server, or `$WEBHOOKTRAP_SERVER` | Which paired server to connect to. Required when this machine is paired with several. |
+| `--config FILE` | `webhooktrap.yml` | Config file with the target, secret name, probes and reset. |
+| `--once` | off | Exit after the first run job. |
+| `--packs DIR` | embedded packs | Read packs from `DIR`. |
+| `--ascii` | off | ASCII glyphs. |
+
+`webhooktrap agent unpair [--server URL]` removes the agent on the server and deletes its local key.
+
+| Exit | When |
+| ---- | ---- |
+| `0` | Stopped with Ctrl-C, or `--once` finished its job. |
+| `1` | Not paired, revoked by the server, too old for the server, or a confirmation that can't be given. |
+| `2` | Usage error, or paired with several servers and no `--server`. |
+
+## test
+
+```bash
+webhooktrap test --fail-on high
+```
+
+Runs the scenarios against the target in `webhooktrap.yml` with local fixtures, prints the verdict, writes the run document and exits per `--fail-on`. No server is involved. See [Test in CI](/guides/ci).
+
+| Flag | Default | Description |
+| ---- | ------- | ----------- |
+| `--config FILE` | `webhooktrap.yml` | Config file. |
+| `--fail-on LEVEL` | `high` | `critical`, `high`, `medium` or `never`. |
+| `--fail-on-inconclusive` | off | Exit `1` when the run is Inconclusive. |
+| `--scenarios LIST` | all | Comma-separated machine names: `once`, `twice`, `shuffled`, `late`, `retry`, `tampered`, `unsigned`, `burst`, `slow_budget`. Once always runs. |
+| `--seed N` | random | Run seed. The same seed, fixtures and responses give the same plan. |
+| `--out FILE` | `.webhooktrap/runs/<run id>.json` | Run document path. |
+| `--json` | off | Print the run document instead of text. |
+| `--ascii` | off | ASCII glyphs. Also used when `TERM=dumb`. |
+| `--yes` | off | Confirm the probe and reset commands and the side-effect warning without asking. |
+| `--packs DIR` | embedded packs | Read packs from `DIR`. |
+| `--insecure-localhost` | off | Skip TLS verification for a local `https://` target. |
+| `--allow-untrusted-config` | off | Allow `cmd:` probes and `reset` in a GitHub Actions `pull_request_target` run. |
+| `--verbose` | off | Print the seed and absolute times. |
+
+| Exit | When |
+| ---- | ---- |
+| `0` | Passed, Inconclusive without `--fail-on-inconclusive`, or findings below `--fail-on`. |
+| `1` | A finding at or above `--fail-on`, or Inconclusive with `--fail-on-inconclusive`. |
+| `2` | Couldn't start, Aborted, or a target unreachable during the run. |
+| `3` | Invalid run definition. Nothing was sent. |
+
+## rejudge
+
+```bash
+webhooktrap rejudge .webhooktrap/runs/run_01M7JFRDSCE6TSGT4HR8CNFTQX.json
+```
+
+Recomputes the verdict from a local run document's plan and observations, with the pack version named in the document, and checks it matches.
+
+| Exit | When |
+| ---- | ---- |
+| `0` | Identical. |
+| `1` | The verdict differs from the run file. |
+| `3` | Not a readable local run document, or its pack version isn't available. |
+
+## Environment variables
+
+| Variable | Used by | Effect |
+| -------- | ------- | ------ |
+| `WEBHOOKTRAP_SERVER` | `pair`, `agent` | Server origin when `--server` is not given. |
+| `WEBHOOKTRAP_CONFIG_DIR` | `pair`, `agent` | Directory for pairings and keys, in place of `<OS config dir>/webhooktrap`. |
+| `STRIPE_WEBHOOK_SECRET`, `GITHUB_WEBHOOK_SECRET`, `SHOPIFY_API_SECRET`, `WEBHOOK_SECRET` | `test`, `agent` | Signing secrets the packs look for when `webhooktrap.yml` sets no `secret`. |
+| `TERM=dumb` | `test` | ASCII output. |
+| `GITHUB_EVENT_NAME` | `test` | When it is `pull_request_target`, `cmd:` probes and `reset` are refused without `--allow-untrusted-config`. |
+| `WT_<TYPE>_ID` | probe commands | Set by the agent for a `{{type.id}}` template in a `cmd:` probe. See [Configuration](/reference/configuration#probe-templates). |
+
+## Server commands
+
+The image also runs the engine as services: `serve-sandbox` and its health check `sandbox-ping` (the app's network-free sandbox), and `serve-run` (the server runner). They are started by Docker Compose and are not meant to be run by hand. See [Self-host](/guides/self-hosting).

@@ -1,0 +1,58 @@
+---
+title: "Shopify"
+description: "Capture Shopify webhooks and prove your handler against forged and unsigned deliveries, bursts and Shopify's 5-second limit."
+icon: "shopping-bag"
+---
+
+import SecretsLocal from '/snippets/secrets-local.mdx';
+
+## Point Shopify at your capture URL
+
+<Steps>
+  <Step title="Copy your capture URL">
+    It is on **Arrivals**: `https://in.webhooktrap.dev/c/` followed by a 12-character key.
+  </Step>
+  <Step title="Create the webhook">
+    In the Shopify admin, open **Settings › Notifications › Webhooks › Create webhook**. Choose format JSON, set the URL to the capture URL, and pick API version 2025-10.
+  </Step>
+  <Step title="Trigger events">
+    Use **Send test** on the webhook, or create a test order.
+  </Step>
+</Steps>
+
+Webhook Trap recognises a Shopify delivery by its `X-Shopify-Topic` header, takes the event type from that header and the event id from `X-Shopify-Webhook-Id`, and groups events by order and product.
+
+## Configure the agent
+
+```yaml webhooktrap.yml
+target: http://127.0.0.1:3000/webhooks/shopify
+provider: shopify
+secret: env:SHOPIFY_API_SECRET
+```
+
+```bash
+export SHOPIFY_API_SECRET=...
+webhooktrap agent
+```
+
+If you leave out `secret`, the agent looks for `SHOPIFY_API_SECRET`, the name in the Shopify pack.
+
+<SecretsLocal />
+
+Shopify signs no timestamp, so the body and its original `X-Shopify-Hmac-Sha256` still verify later. Without the secret the agent sends valid deliveries with the captured signature header; with it, it re-signs them.
+
+## What the scenarios do for Shopify
+
+| Scenario | For Shopify |
+| -------- | ----------- |
+| Once | Each selected event. |
+| Twice | `n/a (not verified for Shopify)`: the Shopify pack's duplicate rule is not verified yet. |
+| Shuffled | The events in reverse order. Needs 2 or more events. |
+| Late | `n/a (provider signs no timestamp)`. |
+| Retry after error | `n/a (not verified for Shopify)`. |
+| Tampered | The body with one field changed, signed for the original body. For `orders/*` the pack sets `total_price`, then `subtotal_price`, to `"0.00"`. |
+| Unsigned | The first event with `X-Shopify-Hmac-Sha256` removed. |
+| Burst | Every selected event at once (two copies when you select one). |
+| Slow budget | One more delivery, measured against the 5 s budget. |
+
+The 5 s budget comes from Shopify's docs. A `budget:` above it in `webhooktrap.yml` is refused as a configuration error.

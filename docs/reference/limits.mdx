@@ -1,0 +1,49 @@
+---
+title: "Limits and retention"
+description: "Quotas per project and per guest session, run limits, and how long captures and runs are kept."
+icon: "gauge"
+---
+
+These are the values of the hosted service at app.webhooktrap.dev.
+
+## Captures
+
+| Limit | Account project | Guest session |
+| ----- | --------------- | ------------- |
+| Captures | 5 000 per day | 100 in total |
+| Stored size | 512 MiB | 50 MiB |
+| Body kept | up to 5 MiB per request; above that, size and hash only | same |
+| Largest request | 25 MiB (`413` above) | same |
+| Rate | 600 requests per minute per client address (`429`) | same |
+
+Over a quota, the capture URL answers exactly as usual and stores nothing.
+
+## Runs
+
+| Limit | Value |
+| ----- | ----- |
+| Events per run | 1 to 5, from one provider |
+| Deliveries per run | 50 |
+| Run length | 15 minutes, then Aborted (`time_limit`) |
+| Request timeout | 30 s per delivery |
+| Runs per guest session | 10 |
+| Pairing code lifetime | 10 minutes |
+
+## Retention
+
+Each project chooses its retention in **Settings › Capture URL › Retention**.
+
+<Frame caption="Retention settings of a project.">
+  <img src="/images/project-retention.webp" alt="Keep deliveries for 1, 7, 14 or 30 days; keep runs for 7, 30 or 90 days." />
+</Frame>
+
+| Data | Choices | Default |
+| ---- | ------- | ------- |
+| Captures | 1, 7, 14 or 30 days | 30 days |
+| Runs | 7, 30 or 90 days | 90 days |
+| Deleted projects | erased 24 hours after deletion | |
+| Guest sessions | 24 hours from creation, then deleted with everything in them, unless you sign in and keep them | |
+
+Expired captures are deleted daily, and their size is given back to the project's quota.
+
+A self-hosted instance sets its own values. See [Self-host](/guides/self-hosting).

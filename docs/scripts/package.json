@@ -1,0 +1,13 @@
+{
+  "name": "webhooktrap-docs-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Regenerates the screenshots in docs/images (see README.md).",
+  "scripts": {
+    "screenshots": "node screenshots.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.65.1",
+    "sharp": "0.35.5"
+  }
+}

@@ -1,0 +1,87 @@
+---
+title: "Findings and exit codes"
+description: "Finding types and severities, run statuses, and how a run maps to an exit code."
+icon: "triangle-alert"
+---
+
+## Finding types
+
+| Type | Title | Severity | Comes from |
+| ---- | ----- | -------- | ---------- |
+| `accepts_tampered` | Accepts tampered payload | Critical | Tampered |
+| `accepts_unsigned` | Accepts a delivery without a signature | Critical | Unsigned |
+| `accepts_stale` | Accepts a stale signature | High | Late |
+| `duplicate_changed_state` | Duplicate delivery changed `<probe>` again | High | Twice, Retry after error |
+| `order_changed_state` | Out-of-order delivery left a different state | High | Shuffled |
+| `concurrent_changed_state` | Concurrent deliveries left a different state | High | Burst |
+| `partial_side_effect` | Failed delivery kept its write | High | Retry after error |
+| `retry_diverged` | Retry didn't do the work | High | Retry after error |
+| `server_error` | Server error on a valid `<event type>` delivery | High | any valid delivery |
+| `non_2xx_on_valid` | Rejects a valid `<event type>` delivery | Medium | any valid delivery |
+| `error_on_invalid` | Server error on an invalid delivery | Medium | Late, Tampered, Unsigned |
+| `over_budget` | Over the `<n>` s budget for `<provider>` | Medium | any valid delivery |
+| `needs_probe` | State not checked | Info | no probe configured |
+| `order_dependent` | No reset between scenarios | Info | no reset configured |
+| `probe_gap` | Probe doesn't see `<object type>` state | Info | an object type no probe covers |
+| `cold_start` | Slow first delivery | Info | only the first delivery was slow |
+| `async_write` | State changed after the response | Info | the probe changed 1 s after the last reading |
+
+Titles come from the provider's pack. Observations with the same type and event type merge into one finding, with every delivery as evidence. Info findings appear at most once per run.
+
+## Severity
+
+| Severity | Meaning |
+| -------- | ------- |
+| Critical | Forged input had an effect. Anyone who can reach the URL can make the handler act on content the provider never sent. |
+| High | A real provider behaviour corrupts state or loses the delivery: a genuine event was processed again, state diverged, or a valid delivery failed. |
+| Medium | Operational risk, no proven harm: the provider will see failures and retry, alert or disable the endpoint. |
+| Info | Something the run couldn't check, or a suggestion. Never counted, never fails a run. |
+
+Late is High, not Critical: a stale delivery is one the provider really signed, so the worst outcome is a genuine event processed again, which is the same class as a duplicate.
+
+## What a finding contains
+
+<Frame caption="A finding: level, evidence, what happened, why it matters, likely cause and fix.">
+  <img src="/images/finding-detail.webp" alt="Critical finding F1 Accepts tampered payload with its sections and an Express snippet." />
+</Frame>
+
+- **Level** 1 (judged on status and latency) or 2 (judged on a probe reading), and the evidence deliveries.
+- **What happened**, with the measurements.
+- **Why it matters**, with a link to the provider's docs.
+- **Likely cause**, only when the run's own results show it. For example: Late was rejected, so the timestamp is checked, but Tampered was accepted, so the signature check probably fails into a log line.
+- **Fix**: one instruction and what the next run should show. For Express, Next.js route handlers and Laravel, some findings come with a code snippet.
+
+Findings are numbered F1, F2… when the run ends, by severity, then by first evidence delivery.
+
+<Frame caption="Deliveries of a run. D12, the tampered delivery, is the evidence for F1.">
+  <img src="/images/run-deliveries.webp" alt="Deliveries table grouped by scenario, with D12 invoice.paid body changed framed, 200, 0 → 1 expected 0, Critical F1." />
+</Frame>
+
+## Run status
+
+The first matching row is the status.
+
+| Status | When | Reasons |
+| ------ | ---- | ------- |
+| Couldn't start | Nothing beyond Once was judged: a preflight failed, Once's first delivery was rejected or unreachable. | `target_not_allowed`, `target_unreachable`, `baseline_rejected`, `reset_failed`, `probe_unstable`, `needs_secret`, `agent_too_old` |
+| Aborted | Started, but the plan didn't finish. Completed deliveries and proven findings are kept. | `agent_lost`, `user_abort`, `target_lost`, `reset_failed`, `time_limit` (15 minutes) |
+| N findings | At least one finding at Medium or above. N counts Critical, High and Medium. | |
+| Inconclusive | No finding at Medium or above, and a scenario was inconclusive or unreachable, or every scenario was `n/a`. | `needs_probe`, `needs_reset`, `probe_failed`, `not_simultaneous`, `redirected`, `unsettled`, `unreachable`, `nothing_judged` |
+| Passed | Otherwise. | |
+
+<Frame caption="The verdict line: status, counts and the exit code CI would get.">
+  <img src="/images/run-verdict.webp" alt="Verdict: 2 findings, Critical 1, High 1, Info 1, exit 1, 9 scenarios, 17 deliveries." />
+</Frame>
+
+A Passed run says only what it checked, and lists what it didn't: state without a probe, object types no probe reads, state between scenarios without a reset, and side effects outside your database such as emails.
+
+## Exit codes
+
+| Exit | When |
+| ---- | ---- |
+| `3` | The run definition is invalid. Nothing was sent. |
+| `2` | Couldn't start, Aborted, or a scenario was unreachable. |
+| `1` | A finding at or above `--fail-on` (default `high`), or Inconclusive with `--fail-on-inconclusive`. |
+| `0` | Otherwise. |
+
+The rows are checked top to bottom: `2` wins over `1`, because a run that didn't finish shouldn't be read as a full verdict. A run started from the browser shows the exit code it would have had with `--fail-on high`, or with the level picked in **Fail the run on**.

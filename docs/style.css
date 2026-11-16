@@ -1,392 +1,153 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300..600&display=swap');
+/*
+ * Webhook Trap theme for the docs, from the app (resources/css/app.css, decision 57):
+ * warm neutral greys instead of Mintlify's tinted ones, condensed Archivo for titles,
+ * Martian Mono for interface text and code, magenta for the active state, sharp 3 px corners.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400;500;600&display=swap');
 
 :root {
-    /* Override Mintlify gray palette with zinc */
-    --gray-50: 250 250 250;
-    --gray-100: 244 244 245;
-    --gray-200: 228 228 231;
-    --gray-300: 212 212 216;
-    --gray-400: 161 161 170;
-    --gray-500: 113 113 122;
-    --gray-600: 82 82 91;
-    --gray-700: 63 63 70;
-    --gray-800: 39 39 42;
-    --gray-900: 24 24 27;
-    --gray-950: 9 9 11;
+  --gray-50: 247 247 244;
+  --gray-100: 239 239 235;
+  --gray-200: 226 225 221;
+  --gray-300: 210 209 205;
+  --gray-400: 166 165 159;
+  --gray-500: 133 132 126;
+  --gray-600: 92 91 85;
+  --gray-700: 57 56 51;
+  --gray-800: 42 41 37;
+  --gray-900: 30 29 25;
+  --gray-950: 12 12 10;
+  --wt-ink: #1c1b15;
+  --wt-muted: #5c5b55;
+  --wt-rule: #d2d1cd;
+  --wt-panel: #ffffff;
+  --wt-now: #b12083;
+  --wt-mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
-body {
-    font-family: 'Instrument Sans';
-    font-weight: 400;
+html.dark {
+  --wt-ink: #e9e8e3;
+  --wt-muted: #a6a59f;
+  --wt-rule: #393833;
+  --wt-panel: #0c0c0a;
+  --wt-now: #e977bb;
 }
 
+/* Titles: condensed Archivo, as on the landing and in the app headers. */
 h1,
 h2,
 h3,
-h4 {
-    font-weight: 500 !important;
-    letter-spacing: -0.025rem !important;
+h4,
+#page-title {
+  font-family: 'Archivo', sans-serif !important;
+  font-stretch: 75%;
+  letter-spacing: -0.01em;
+  color: var(--wt-ink);
 }
 
+#page-title {
+  font-weight: 700;
+}
+
+/* Interface text in Martian Mono: navigation, eyebrows, table of contents, buttons. */
+#navbar a,
+#navbar button,
+#sidebar,
+#table-of-contents,
+.eyebrow,
+#topbar-cta-button,
+#footer,
+.prose th {
+  font-family: var(--wt-mono) !important;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.eyebrow {
+  color: var(--wt-now) !important;
+  text-transform: lowercase;
+}
+
+/* Sidebar: a magenta rule and ink for the page you are on, no pill. */
+#sidebar li[data-active='true'] > a {
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--wt-ink) !important;
+  box-shadow: inset 2px 0 0 var(--wt-now);
+}
+
+#sidebar a:hover {
+  color: var(--wt-ink) !important;
+}
+
+/* Body copy in ink-muted, like the app's descriptions. */
+.prose {
+  color: var(--wt-muted);
+}
+
+.prose strong,
+.prose a {
+  color: var(--wt-ink);
+}
+
+.prose a {
+  text-decoration-color: var(--wt-now);
+  text-underline-offset: 3px;
+}
+
+/* Code, in Martian Mono on the app's terminal panel. */
 code,
+pre,
+kbd {
+  font-family: var(--wt-mono) !important;
+  font-size: 0.86em;
+}
+
+.prose :not(pre) > code {
+  border: 1px solid var(--wt-rule);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--wt-ink);
+  padding: 1px 5px;
+}
+
+.code-block,
+.code-group,
 pre {
-    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
-        Consolas, 'Liberation Mono', 'Courier New', monospace;
+  border-radius: 3px !important;
 }
 
-b,
-strong,
-.font-semibold {
-    font-weight: 500 !important;
+html.dark .code-block,
+html.dark .code-group {
+  background: var(--wt-panel) !important;
+  border-color: var(--wt-rule) !important;
 }
 
-.prose :where(a):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-    font-weight: 500 !important;
-    color: rgb(var(--primary-light)) !important;
+/* Sharp corners and thin rules everywhere else. */
+.card,
+.callout,
+.prose img,
+.prose figure,
+.prose table,
+#topbar-cta-button,
+#topbar-cta-button a,
+#topbar-cta-button *,
+#page-context-menu-button,
+
+#search-bar-entry,
+[data-component-part='callout-content'] {
+  border-radius: 3px !important;
 }
 
-.codeblock-dark div:not(:last-child) {
-    color: #fafafa;
+.card,
+.prose table {
+  border-color: var(--wt-rule) !important;
 }
 
-/* Component Preview Classes */
-.sh-preview {
-    border: 1px solid rgb(var(--gray-200));
-    border-radius: 0.75rem;
-    overflow: hidden;
+#topbar-cta-button a {
+  font-weight: 500;
 }
 
-.sh-preview-content {
-    background-color: #ffffff;
-    padding: 1rem;
-}
-
-.dark .sh-preview {
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark .sh-preview-content {
-    background-color: rgb(var(--gray-950));
-}
-
-/* Card */
-.sh-card-outer {
-    padding: 0.375rem;
-    background-color: rgb(var(--gray-50));
-    border-radius: 0.5rem;
-    box-shadow: inset 0 0 0 1px rgb(var(--gray-200));
-}
-
-.sh-card-header {
-    padding: 0.75rem 0.5rem;
-}
-
-.sh-card-title {
-    display: block;
-    font-weight: 600;
-    color: rgb(var(--gray-950));
-}
-
-.sh-card-description {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    color: rgb(var(--gray-500));
-}
-
-.sh-card-inner {
-    background-color: #ffffff;
-    box-shadow: inset 0 0 0 1px rgb(var(--gray-200));
-    border-radius: 0.5rem;
-    padding: 1rem;
-}
-
-.dark .sh-card-outer {
-    background-color: rgb(var(--gray-950));
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-.dark .sh-card-title {
-    color: #ffffff;
-}
-
-.dark .sh-card-description {
-    color: rgb(var(--gray-400));
-}
-
-.dark .sh-card-inner {
-    background-color: rgb(var(--gray-900));
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-/* Alert */
-.sh-alert {
-    border-radius: 0.5rem;
-    padding: 1rem;
-}
-
-.sh-alert-info {
-    background-color: #eff6ff;
-    box-shadow: inset 0 0 0 1px #bfdbfe;
-}
-
-.sh-alert-danger {
-    background-color: #fef2f2;
-    box-shadow: inset 0 0 0 1px #fecaca;
-}
-
-.sh-alert-success {
-    background-color: #f0fdf4;
-    box-shadow: inset 0 0 0 1px #bbf7d0;
-}
-
-.sh-alert-warning {
-    background-color: #fffbeb;
-    box-shadow: inset 0 0 0 1px #fde68a;
-}
-
-.dark .sh-alert-info {
-    background-color: rgba(59, 130, 246, 0.15);
-    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3);
-}
-
-.dark .sh-alert-danger {
-    background-color: rgba(239, 68, 68, 0.15);
-    box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.3);
-}
-
-.dark .sh-alert-success {
-    background-color: rgba(34, 197, 94, 0.15);
-    box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.3);
-}
-
-.dark .sh-alert-warning {
-    background-color: rgba(245, 158, 11, 0.15);
-    box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.3);
-}
-
-/* Heading */
-.sh-heading {
-    font-size: 1.875rem;
-    font-weight: 700;
-    color: rgb(var(--gray-900));
-}
-
-.dark .sh-heading {
-    color: #ffffff;
-}
-
-/* Section Heading */
-.sh-section-title {
-    display: block;
-    font-weight: 600;
-    color: rgb(var(--gray-950));
-}
-
-.sh-section-description {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    color: rgb(var(--gray-500));
-}
-
-.dark .sh-section-title {
-    color: #ffffff;
-}
-
-.dark .sh-section-description {
-    color: rgb(var(--gray-400));
-}
-
-/* Empty State */
-.sh-empty-icon-bg {
-    width: 10rem;
-    height: 10rem;
-    border-radius: 0.75rem;
-    background-color: rgb(var(--gray-100));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sh-empty-icon {
-    width: 4rem;
-    height: 4rem;
-    color: rgb(var(--gray-400));
-}
-
-.sh-empty-title {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: rgb(var(--gray-900));
-}
-
-.sh-empty-content {
-    display: block;
-    margin-top: 1rem;
-    font-size: 1rem;
-    color: rgb(var(--gray-500));
-}
-
-.dark .sh-empty-icon-bg {
-    background-color: rgb(var(--gray-800));
-}
-
-.dark .sh-empty-title {
-    color: #ffffff;
-}
-
-.dark .sh-empty-content {
-    color: rgb(var(--gray-400));
-}
-
-/* Button */
-.sh-btn {
-    display: inline-flex;
-    align-items: center;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-}
-
-.sh-btn-primary {
-    color: #ffffff;
-    background-color: #2563eb;
-    border: none;
-}
-
-.sh-btn-secondary {
-    color: rgb(var(--gray-700));
-    background-color: #ffffff;
-    border: 1px solid rgb(var(--gray-300));
-}
-
-.dark .sh-btn-secondary {
-    color: rgb(var(--gray-300));
-    background-color: rgb(var(--gray-800));
-    border-color: rgb(var(--gray-700));
-}
-
-/* Empty Card */
-.sh-empty-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2.5rem 2rem;
-    text-align: center;
-}
-
-.sh-empty-card-icon {
-    display: flex;
-    width: 3rem;
-    height: 3rem;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    background-color: rgb(var(--gray-100));
-    color: rgb(var(--gray-700));
-}
-
-.sh-empty-card-heading {
-    display: block;
-    font-weight: 500;
-    color: rgb(var(--gray-900));
-}
-
-.sh-empty-card-description {
-    display: block;
-    margin-top: 0.25rem;
-    max-width: 32rem;
-    font-size: 0.875rem;
-    color: rgb(var(--gray-500));
-}
-
-.dark .sh-empty-card-icon {
-    background-color: rgb(var(--gray-900));
-    color: #ffffff;
-}
-
-.dark .sh-empty-card-heading {
-    color: #ffffff;
-}
-
-.dark .sh-empty-card-description {
-    color: rgb(var(--gray-400));
-}
-
-/* Stock Badge */
-.sh-stock-badge {
-    display: inline-flex;
-    border-radius: 9999px;
-    padding: 0 0.375rem;
-    font-size: 0.75rem;
-    line-height: 1.25rem;
-    font-weight: 600;
-}
-
-.sh-stock-badge-low {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-.sh-stock-badge-ok {
-    background-color: #dcfce7;
-    color: #166534;
-}
-
-/* Loader */
-.sh-loader {
-    width: 1.25rem;
-    height: 1.25rem;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Label */
-.sh-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: rgb(var(--gray-700));
-}
-
-.sh-label-required {
-    color: #ef4444;
-}
-
-.dark .sh-label {
-    color: rgb(var(--gray-300));
-}
-
-/* User Avatar */
-.sh-user-avatar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.sh-user-avatar-img {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 9999px;
-    object-fit: cover;
-}
-
-.sh-user-avatar-name {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: rgb(var(--gray-700));
-}
-
-.dark .sh-user-avatar-name {
-    color: rgb(var(--gray-300));
+::selection {
+  background: color-mix(in srgb, var(--wt-now) 30%, transparent);
 }

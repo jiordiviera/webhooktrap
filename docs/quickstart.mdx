@@ -1,100 +1,149 @@
 ---
-title: "Quickstart: Capture and Replay Webhooks in Minutes"
-sidebarTitle: "Quickstart"
-description: "Create your first Webhooktrap inbox, capture a webhook payload, and replay it to your local server in minutes — no account required."
+title: "Quickstart"
+description: "Get a capture URL without signing up, capture a webhook, pair the agent, run the scenarios against your handler and read a finding."
+icon: "rocket"
 ---
 
-This guide walks you through the full Webhooktrap workflow — from a blank slate to a captured webhook replayed against your local server — using nothing but `curl`. You don't need an account to follow along.
+This walkthrough takes a Stripe handler running on your machine from a first captured event to a first finding. You need Node.js (for `npx`) or the [installed binary](/install), and a handler listening on localhost.
 
 <Steps>
-  <Step title="Create an inbox">
-    Send a `POST` request to the inboxes endpoint. No authentication is required for anonymous inboxes.
+  <Step title="Get a capture URL">
+    Open the [example run](https://app.webhooktrap.dev/r/example) and press **Get a URL**. This starts a guest session: no account, no email.
 
-    ```bash
-    curl -X POST https://api.webhooktrap.dev/api/v1/inboxes
-    ```
+    <Frame caption="The example run page. Get a URL starts a guest session.">
+      <img src="/images/quickstart-example-get-url.webp" alt="Example run page with the Get a URL button framed in magenta." />
+    </Frame>
 
-    Webhooktrap returns a JSON object containing your inbox ID and the ingest URL to give your webhook provider:
+    You land on **Arrivals** with your capture URL. Copy it.
 
-    ```json
-    {
-      "id": "ibx_01hq8xkz2fgr7bt9vpwcn3md6e",
-      "ingestUrl": "https://webhooktrap.dev/i/ibx_01hq8xkz2fgr7bt9vpwcn3md6e",
-      "expiresAt": "2024-06-17T14:32:00Z",
-      "saved": false
-    }
-    ```
+    <Frame caption="Your capture URL, on the capture host in.webhooktrap.dev.">
+      <img src="/images/quickstart-capture-url.webp" alt="Arrivals page waiting for the first delivery, with the capture URL framed." />
+    </Frame>
 
-    Copy the `ingestUrl` value — you'll use it as the destination in your webhook provider's settings (for example, Stripe's "Endpoint URL" field or GitHub's "Payload URL" field).
-
-    <Tip>
-      You can also create an inbox from the [Webhooktrap dashboard](https://webhooktrap.dev/dashboard) if you prefer a visual interface.
-    </Tip>
+    A guest session lasts 24 hours and holds up to 100 deliveries and 10 runs. Sign in from the session bar to keep it: the session moves into your account.
   </Step>
 
-  <Step title="Send a test webhook">
-    With the ingest URL in hand, simulate a webhook by posting a JSON payload directly to it. This is exactly what a real provider would do.
+  <Step title="Send a webhook to it">
+    The waiting panel has instructions per provider. For Stripe: in test mode, open **Developers › Webhooks › Add destination**, paste the URL, pick the events you handle, save, then trigger a test checkout.
+
+    <Frame caption="Provider instructions on the waiting panel.">
+      <img src="/images/quickstart-provider-tabs.webp" alt="Waiting panel with tabs for Stripe, GitHub, Shopify, Standard Webhooks and curl." />
+    </Frame>
+
+    Any HTTP request works too:
 
     ```bash
-    curl -X POST https://webhooktrap.dev/i/ibx_01hq8xkz2fgr7bt9vpwcn3md6e \
-      -H "Content-Type: application/json" \
-      -H "Stripe-Signature: t=1718624400,v1=abc123" \
-      -d '{"type": "checkout.session.completed", "data": {"object": {"id": "cs_test_abc123", "amount_total": 4999}}}'
+    curl -X POST https://in.webhooktrap.dev/c/YOUR_KEY \
+      -H 'Content-Type: application/json' \
+      -d '{"hello":"world"}'
     ```
 
-    Webhooktrap responds with `200 OK` and stores the full request — method, headers, and body — for you to inspect. Open the dashboard or query the events endpoint to see the captured payload.
-
-    <Note>
-      The `authorization` and `cookie` headers are redacted before storage to protect credentials. All other headers, including provider-specific signature headers like `Stripe-Signature`, are stored and replayed as-is.
-    </Note>
+    The capture URL always answers `200` with `{"received":true}`. See [Capture endpoint](/reference/capture-endpoint).
   </Step>
 
-  <Step title="Replay to localhost">
-    Before replaying, fetch the event ID from your inbox. Replace `ibx_01hq8xkz2fgr7bt9vpwcn3md6e` with your own inbox ID from Step 1:
+  <Step title="See it arrive">
+    Deliveries appear live. Webhook Trap recognises the provider from its headers and groups related events, here three Stripe events about one subscription.
+
+    <Frame caption="Three Stripe events, grouped by subscription.">
+      <img src="/images/quickstart-captures-arrived.webp" alt="Arrivals list with invoice.paid, payment_intent.succeeded and customer.subscription.updated, and the detail of the selected delivery." />
+    </Frame>
+
+    The signature shows **Not checked**: your signing secret stays on your machine, so only the agent can check it.
+  </Step>
+
+  <Step title="Pair the agent">
+    Open **Agent** and press **Pair an agent**. The page shows a code, valid for 10 minutes, and the command to run.
+
+    <Frame caption="A pairing code and its command.">
+      <img src="/images/guest-pairing-code.webp" alt="Pair an agent panel with a 10-character code and the npx pair command framed." />
+    </Frame>
+
+    Run it in a terminal on the machine where your handler runs:
 
     ```bash
-    curl https://api.webhooktrap.dev/api/v1/inboxes/ibx_01hq8xkz2fgr7bt9vpwcn3md6e/events
+    npx @webhooktrap/agent@1 pair 7KQ2M-XR9TD --server https://app.webhooktrap.dev
     ```
 
-    Webhooktrap returns an array of captured events. Copy the `id` of the event you want to replay:
+    The agent prints the server, the workspace, its name and its key fingerprint, then asks `Join? [y/N]`. Answer `y` only if you created the code in your own browser just now.
 
-    ```json
-    [
-      {
-        "id": "evt_01hq9yz3aghs4cu0wrxdp5nf7t",
-        "receivedAt": "2024-06-17T14:33:12Z",
-        "method": "POST",
-        "path": "/i/ibx_01hq8xkz2fgr7bt9vpwcn3md6e"
-      }
-    ]
+    <Warning>
+      Agent 1.0.0 defaults to `https://webhooktrap.dev` when you leave out `--server`. Always pass `--server https://app.webhooktrap.dev` with 1.0.0. The default changes to the app host in a later release.
+    </Warning>
+  </Step>
+
+  <Step title="Declare your handler">
+    In your project, create `webhooktrap.yml`. The agent only sends to the target declared here.
+
+    ```yaml webhooktrap.yml
+    target: http://127.0.0.1:4242/webhooks/stripe
+    provider: stripe
+    secret: env:STRIPE_WEBHOOK_SECRET
+    probe:
+      - as: orders.count
+        cmd: psql "$DATABASE_URL" -Atc "select count(*) from orders"
+    reset: npm run db:reset:webhooks
     ```
 
-    With the event ID in hand and your local server running, send the replay request:
+    `secret` names an environment variable; the value never goes in the file. `probe` and `reset` are optional but turn on the state checks (Level 2). See [Configuration](/reference/configuration).
+
+    Start the agent from the same directory, with the secret in its environment:
 
     ```bash
-    curl -X POST https://api.webhooktrap.dev/api/v1/events/evt_01hq9yz3aghs4cu0wrxdp5nf7t/replay \
-      -H "Content-Type: application/json" \
-      -d '{"destination": "http://localhost:3000/webhooks"}'
+    export STRIPE_WEBHOOK_SECRET=whsec_...
+    npx @webhooktrap/agent@1 agent
+    ```
+  </Step>
+
+  <Step title="Start a run">
+    Select a delivery in **Arrivals** and press **Prove**, or **Prove group** to take every event of the group.
+
+    <Frame caption="Prove one delivery, or the whole group.">
+      <img src="/images/prove-group-button.webp" alt="The Prove and Prove group buttons on a delivery, Prove group framed." />
+    </Frame>
+
+    Check the scenarios (1), the agent and target (2), and press **Run** (3).
+
+    <Frame caption="The run draft.">
+      <img src="/images/run-draft.webp" alt="Prove page with the scenario checklist, the connected agent and its target, and the Run button, numbered 1 to 3." />
+    </Frame>
+
+    The first time, the agent asks in your terminal before it sends anything:
+
+    ```text
+    Run from the browser
+      server     https://app.webhooktrap.dev
+      workspace  Account workspace · Maya Demo
+      requested  Account workspace · Maya Demo
+      target     http://127.0.0.1:4242/webhooks/stripe
+    This run sends the same events several times. If your handler sends emails or charges cards, honour the Webhooktrap-Dry-Run header first.
+    Allow runs started from the browser to send to this target? [y/N] y
     ```
 
-    Webhooktrap's servers perform the outbound request and return everything your handler responded with:
+    If `webhooktrap.yml` has `cmd:` probes or a `reset`, it lists those commands and asks once more.
+  </Step>
 
-    ```json
-    {
-      "statusCode": 200,
-      "latencyMs": 43,
-      "responseBody": "{\"received\": true}"
-    }
-    ```
+  <Step title="Read the finding">
+    The run page fills in as deliveries complete. The verdict line counts Critical, High and Medium findings and shows the exit code CI would get.
 
-    A `statusCode` in the `2xx` range confirms your handler received and processed the event correctly. If you see a `4xx` or `5xx`, check the `responseBody` field for error details from your application.
+    <Frame caption="The verdict and the scenario strip of a finished run.">
+      <img src="/images/run-result.webp" alt="Run page with 2 findings, exit 1, and one cell per scenario." />
+    </Frame>
 
-    <Tip>
-      You can replay the same event as many times as you like — useful for iterating on your handler logic without waiting for your provider to re-send the webhook.
-    </Tip>
+    Each finding says what happened, why it matters for this provider, and what to change. The fix names the deliveries that should behave differently on the next run.
+
+    <Frame caption="F1: the handler accepted a body it should have rejected.">
+      <img src="/images/finding-detail.webp" alt="Critical finding Accepts tampered payload with What happened, Why it matters, Likely cause, Fix and an Express snippet." />
+    </Frame>
   </Step>
 </Steps>
 
-<Tip>
-  Anonymous inboxes expire after **48 hours**. [Create a free account](https://webhooktrap.dev/dashboard) to save your inboxes permanently, retain full replay history, and share events with teammates using read-only links.
-</Tip>
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Test in CI" icon="git-branch" href="/guides/ci">
+    Commit fixtures and run `webhooktrap test` on every pull request.
+  </Card>
+  <Card title="Scenarios" icon="list-checks" href="/reference/scenarios">
+    What each scenario sends and what makes it fail.
+  </Card>
+</Columns>

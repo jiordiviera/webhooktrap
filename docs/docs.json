@@ -1,135 +1,108 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Webhook T.",
   "theme": "mint",
-  "favicon": "/favicon.ico",
+  "name": "Webhook Trap",
+  "description": "Capture real webhooks, replay them against your handler the way providers deliver them, and fail the build when your database ends up wrong.",
   "colors": {
-    "primary": "#ac754e",
-    "light": "#ccb49c"
+    "primary": "#b12083",
+    "light": "#e977bb",
+    "dark": "#b12083"
   },
-  "logo": "/logo.png",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://app.webhooktrap.dev"
+  },
+  "favicon": {
+    "light": "/favicon-light.svg",
+    "dark": "/favicon-dark.svg"
+  },
+  "appearance": {
+    "default": "dark"
+  },
+  "background": {
+    "color": {
+      "light": "#f7f7f4",
+      "dark": "#141411"
+    }
+  },
   "fonts": {
-    "body": {
-      "family": "Raleway"
-    },
     "heading": {
-      "family": "Bricolage Grotesque"
+      "family": "Archivo",
+      "weight": 700
+    },
+    "body": {
+      "family": "Archivo",
+      "weight": 400
     }
   },
   "icons": {
-    "library": "tabler"
-  },
-  "background": {
-    "decoration": "grid"
+    "library": "lucide"
   },
   "styling": {
-    "codeblocks": {
-      "theme": {
-        "dark": "github-dark",
-        "light": "github-light"
-      }
-    }
+    "codeblocks": "system"
   },
   "navbar": {
     "links": [
       {
-        "type": "github",
-        "href": "https://github.com/jiordiviera/hookscope"
+        "label": "GitHub",
+        "icon": "github",
+        "href": "https://github.com/jiordiviera/webhooktrap"
+      },
+      {
+        "label": "Status",
+        "href": "https://status.webhooktrap.dev"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Open app",
+      "href": "https://app.webhooktrap.dev"
+    }
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get started",
+        "pages": ["index", "quickstart", "concepts", "install"]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/stripe",
+          "guides/github",
+          "guides/shopify",
+          "guides/standard-webhooks",
+          "guides/ci",
+          "guides/self-hosting",
+          "guides/verify-download"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/cli",
+          "reference/configuration",
+          "reference/fixtures",
+          "reference/scenarios",
+          "reference/findings",
+          "reference/capture-endpoint",
+          "reference/limits"
+        ]
+      },
+      {
+        "group": "Trust",
+        "pages": ["security", "changelog"]
       }
     ]
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
+    "options": ["copy", "view", "chatgpt", "claude"]
   },
   "footer": {
     "socials": {
       "x": "https://x.com/jiordiviera",
-      "github": "https://github.com/jiordiviera"
+      "github": "https://github.com/jiordiviera/webhooktrap"
     }
-  },
-  "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Open App",
-          "icon": "link",
-          "href": "https://webhooktrap.dev/?utm_source=docs"
-        },
-        {
-          "anchor": "Sponsor",
-          "href": "https://webhooktrap.dev/sponsor"
-        }
-      ]
-    },
-    "tabs": [
-      {
-        "tab": "Documentation",
-        "groups": [
-          {
-            "group": "Get Started",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "account-setup"
-            ],
-            "icon": "rocket",
-            "tag": ""
-          },
-          {
-            "group": "Core Concepts",
-            "pages": [
-              "concepts/inboxes",
-              "concepts/capture",
-              "concepts/replay",
-              "concepts/sharing"
-            ]
-          },
-          {
-            "group": "Integrations",
-            "pages": [
-              "integrations/overview",
-              "integrations/stripe",
-              "integrations/github",
-              "integrations/shopify",
-              "integrations/other-providers"
-            ]
-          },
-          {
-            "group": "Guides",
-            "pages": [
-              "guides/debug-locally",
-              "guides/team-debugging",
-              "guides/anonymous-vs-saved"
-            ]
-          },
-          {
-            "group": "Security & Privacy",
-            "pages": ["security/overview", "security/data-storage"]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": ["api/overview", "api/authentication"]
-          },
-          {
-            "group": "Endpoints",
-            "pages": ["api/inboxes", "api/events", "api/replay"]
-          }
-        ]
-      }
-    ]
   }
 }

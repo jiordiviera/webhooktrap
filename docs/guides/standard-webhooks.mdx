@@ -1,0 +1,48 @@
+---
+title: "Standard Webhooks"
+description: "Capture webhooks from any sender that follows the Standard Webhooks spec and prove your handler against every scenario."
+icon: "webhook"
+---
+
+import SecretsLocal from '/snippets/secrets-local.mdx';
+
+[Standard Webhooks](https://www.standardwebhooks.com) is a common format for signed webhooks: a `webhook-id`, a `webhook-timestamp` and a `webhook-signature` header. Webhook Trap's Standard Webhooks pack covers any sender that follows it.
+
+## Point your provider at your capture URL
+
+Paste the capture URL (`https://in.webhooktrap.dev/c/` followed by a 12-character key) as the endpoint in your provider's webhook settings. Webhook Trap recognises a delivery when it has both `webhook-id` and `webhook-signature` headers, reads the event type from the body's `type` field and the event id from `webhook-id`, and names the sender from its `User-Agent`.
+
+## Configure the agent
+
+```yaml webhooktrap.yml
+target: http://127.0.0.1:3000/webhooks
+provider: standard_webhooks
+secret: env:WEBHOOK_SECRET
+```
+
+```bash
+export WEBHOOK_SECRET=whsec_...
+webhooktrap agent
+```
+
+If you leave out `secret`, the agent looks for `WEBHOOK_SECRET`, the name in the Standard Webhooks pack.
+
+<SecretsLocal />
+
+The signature covers a timestamp, with a 300-second tolerance. Without the secret the agent can't send a valid delivery, and the run stops as **Couldn't start** with the reason `needs_secret`.
+
+## What the scenarios do for Standard Webhooks
+
+| Scenario | For Standard Webhooks |
+| -------- | --------------------- |
+| Once | Each selected event, re-signed now. |
+| Twice | The first event again, 500 ms later. `webhook-id` is kept; `webhook-timestamp` and `webhook-signature` are new. |
+| Shuffled | The events in reverse order. Needs 2 or more events. |
+| Late | The first event signed for a timestamp 360 s in the past (tolerance 300 s + 60 s). |
+| Retry after error | The first event, then the same event 2 s after the first attempt completes, with the same `webhook-id`. |
+| Tampered | The body with one field changed, signed for the original body: the first numeric field whose name contains `amount`, `total`, `price` or `quantity`, else `"_webhooktrap_tampered":true` is added. |
+| Unsigned | The first event with `webhook-signature` removed; `webhook-id` and `webhook-timestamp` stay. |
+| Burst | Every selected event at once (two copies when you select one). |
+| Slow budget | One more delivery, measured against the 10 s budget. |
+
+The 10 s budget is the Webhook Trap default. The spec's 15 to 30 seconds is guidance for senders, not a limit for your handler.
