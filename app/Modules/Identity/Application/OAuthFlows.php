@@ -97,7 +97,13 @@ final readonly class OAuthFlows
             return $context + ['error' => $error === 'access_denied' ? 'oauth_cancelled' : 'oauth_failed'];
         }
         try {
-            $profile = Socialite::driver($provider)->user();
+            $driver = Socialite::driver($provider);
+            // The exchange must send the code_verifier the redirect's challenge was made from;
+            // a fresh driver has PKCE off, and the provider then refuses the code.
+            if ($driver instanceof AbstractProvider) {
+                $driver->enablePKCE();
+            }
+            $profile = $driver->user();
         } catch (Throwable $exception) {
             // Class and a short message: enough to tell state, PKCE and token-exchange failures
             // apart. The code, the state and any token never reach the log.
