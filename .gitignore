@@ -47,3 +47,6 @@ coverage
 /.playwright-mcp/
 /project/validation/raw/
 /.claude/settings.local.json
+
+# Self-host runner allow-list (compose.yaml mounts ./runner read-only)
+/runner/

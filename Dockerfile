@@ -106,9 +106,13 @@ COPY --chmod=755 docker/reverb-boot.sh /usr/local/bin/reverb-boot
 # deploy.sh extracts this file from the signed image and checks it against the on-box policy
 # before using it (ci-cd.md §4 step 3).
 COPY compose.production.yaml /app/deploy/compose.production.yaml
+# /run/engine: Docker seeds a new `engine_sock` volume with this owner and mode, so `engine`
+# (10001:10001) can create its socket (0660) and `app` reaches it through group_add 10001.
+# An existing volume keeps its old owner: chown it or re-create it (compose-profile.md §2 notes).
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache /data /config \
     && mkdir -p /status && chown 999:999 /status \
+    && mkdir -p /run/engine && chown 10001:10001 /run/engine && chmod 0770 /run/engine \
     && webhooktrap version
 USER www-data
 EXPOSE 8080 8443

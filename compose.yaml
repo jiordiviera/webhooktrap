@@ -19,6 +19,8 @@
 #   docker compose run --rm -T app php artisan runner:token runner > secrets/runner_token
 #   (-T keeps stderr out of the file; `--list`, `--revoke=<name>`; rerun to rotate), then
 #   `docker compose up -d runner`. The hosted profile has no runner; a hosted token needs --cidr.
+#   The runner reaches the app as http://app:8080. With TLS_MODE=auto, add `http://app:8080` to
+#   SERVER_NAME so the app answers that name on its plain port (TLS_MODE=off already does).
 # secrets/edge_proxy_secret is needed in every TLS mode (`openssl rand -hex 32`): `app` signs the
 # internal hop to `ingest` with it, and gives it to your proxy only in mode secret.
 
@@ -222,12 +224,24 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 30s
+      start_interval: 5s
 
   runner: # server runs (ADR-010 §12); idle while server runs are off. Never joins `internal` (S-11).
     <<: *hardening
     image: ghcr.io/jiordiviera/webhooktrap-runner:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
     command: ["serve-run"]
-    environment: [RUNNER_SERVER_ORIGIN, RUNNER_CONCURRENCY, RUNNER_TOKEN_FILE]
+    environment:
+      # The app on the `runner` network: plain http only to a single-label Compose name.
+      RUNNER_SERVER_ORIGIN: http://app:8080
+      RUNNER_TOKEN_FILE: /run/secrets/runner_token
+      RUNNER_CONCURRENCY: ${RUNNER_CONCURRENCY:-1}
+      # public (default), or allowlist with RUNNER_ALLOWLIST_FILE, e.g.
+      # /etc/webhooktrap-runner/allowlist (./runner/allowlist on the host, world-readable;
+      # one host:port, host:from-to or cidr:port per line).
+      RUNNER_GUARD_CEILING: ${RUNNER_GUARD_CEILING:-public}
+      RUNNER_ALLOWLIST_FILE: ${RUNNER_ALLOWLIST_FILE:-}
+    volumes: ["./runner:/etc/webhooktrap-runner:ro"] # optional allow-list; empty directory otherwise
     secrets: [runner_token] # issued with `runner:token` (header above)
     read_only: true
     networks: [runner]
