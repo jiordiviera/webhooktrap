@@ -719,3 +719,14 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
 - **Host Caddy (C7, PO GO):** the provisional blocks are replaced by the Webhook Trap site file (private ops note). Certificates are issued, and the post-reload checks pass. The other apps answer.
 - **OAuth:** the GitHub OAuth app and the Google client "Webhook Trap" exist (the Google client in an existing GCP project, because the project quota is reached). Client ids are in `.env.production`, and the PO wrote the secrets on the box. The Google consent screen is in production, with no logo, so no verification is needed. The home, privacy and terms links point to app.
 - **Next deploy is blocked by R2:** the pre-migrate backup needs it. The OAuth settings and the new /privacy and /terms pages wait for that deploy.
+
+## 72. Transactional email through PulseSend (2026-11-16)
+
+- **Provider:** the PO chooses **PulseSend**, the PO's own service, through the PO's package `pulsesend/pulsesend-laravel` (`^0.1`, MIT; it pulls `pulsesend/pulsesend-php`). The PO approves this new package.
+- **Guzzle:** the released `pulsesend-php` v0.1.0 requires Guzzle `^7.8`, so the lock moves from Guzzle 8.5 to 7.16 (no app code uses Guzzle directly). The SDK's Guzzle 8 support is in the PulseSend repo but not released; once `pulsesend-php` v0.1.1 is tagged, `composer update` restores Guzzle 8.
+- **Mailer:** `config/mail.php` has a `pulsesend` mailer. The default stays `log`. Production sets `MAIL_MAILER=pulsesend`; `MAIL_FROM_ADDRESS` stays `no-reply@webhooktrap.dev`.
+- **Key as a file:** `PULSESEND_API_KEY` comes from the Compose secret `pulsesend_api_key`, optional like `mail_password`. While it is empty, the default mailer falls back to `log`, so nothing is sent and nothing fails.
+  - Mounted on `horizon`, which sends the queued mail, and on `app`, which builds the mailer when it queues a mailable (the queued job keeps that mailer's name). Not on `scheduler`: it only dispatches jobs.
+  - In the entrypoint's `_FILE` list, the policy (P-5, P-14, P-20), CI, `c3-finish.sh` and `.env.example` (names only).
+- **Webhook route off:** the package's `POST /pulsesend/webhook` is not used. `config/pulsesend.php` sets `routes` to false by default; a test checks that the path answers 404.
+- **Before the next deploy (host, PO go):** reinstall the on-box policy (`c3-finish.sh --install-bin`), write `secrets/pulsesend_api_key`, and set `MAIL_MAILER=pulsesend` in the box's `.env.production` (private ops note, C3 log).

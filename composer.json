@@ -19,6 +19,7 @@
         "laravel/socialite": "^5.32",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
+        "pulsesend/pulsesend-laravel": "^0.1",
         "web-auth/webauthn-lib": "~5.3.12"
     },
     "require-dev": {

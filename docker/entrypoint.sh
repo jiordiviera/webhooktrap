@@ -20,7 +20,7 @@ fi
 #    holding the same value as postgres_password (readable by postgres, uid 999); REDIS_PASSWORD
 #    shares valkey's file (valkey reads it as root).
 for pair in APP_KEY:app_key DB_PASSWORD:db_password REDIS_PASSWORD:valkey_password \
-    REVERB_APP_SECRET:reverb_app_secret MAIL_PASSWORD:mail_password \
+    REVERB_APP_SECRET:reverb_app_secret MAIL_PASSWORD:mail_password PULSESEND_API_KEY:pulsesend_api_key \
     GITHUB_CLIENT_SECRET:github_client_secret GOOGLE_CLIENT_SECRET:google_client_secret \
     ERROR_TRACKER_DSN:error_tracker_dsn IDENTITY_EMAIL_HMAC_KEY:identity_email_hmac_key \
     IDENTITY_RECOVERY_CODE_KEY:identity_recovery_code_key \

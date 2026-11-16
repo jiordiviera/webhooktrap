@@ -127,7 +127,7 @@ fi
 
 # --- 3. .env.production (settings only, P-20) -------------------------------------------------
 [ -f "$template" ] || fail "template not found: $template (pass --template)"
-secret_names='^(APP_KEY|APP_PREVIOUS_KEYS|DB_PASSWORD|REDIS_PASSWORD|REVERB_APP_SECRET|MAIL_PASSWORD|GITHUB_CLIENT_SECRET|GOOGLE_CLIENT_SECRET|ERROR_TRACKER_DSN|IDENTITY_EMAIL_HMAC_KEY|IDENTITY_RECOVERY_CODE_KEY|AGENT_PAIRING_HMAC_KEY|POSTGRES_PASSWORD|VALKEY_PASSWORD|EDGE_PROXY_SECRET|BACKUP_CIPHER_PASS|BACKUP_S3_KEY|BACKUP_S3_SECRET)='
+secret_names='^(APP_KEY|APP_PREVIOUS_KEYS|DB_PASSWORD|REDIS_PASSWORD|REVERB_APP_SECRET|MAIL_PASSWORD|PULSESEND_API_KEY|GITHUB_CLIENT_SECRET|GOOGLE_CLIENT_SECRET|ERROR_TRACKER_DSN|IDENTITY_EMAIL_HMAC_KEY|IDENTITY_RECOVERY_CODE_KEY|AGENT_PAIRING_HMAC_KEY|POSTGRES_PASSWORD|VALKEY_PASSWORD|EDGE_PROXY_SECRET|BACKUP_CIPHER_PASS|BACKUP_S3_KEY|BACKUP_S3_SECRET)='
 ! grep -Eq "$secret_names" "$template" || fail "the template sets a secret name (P-20)"
 env_file="$APP_DIR/.env.production"
 if [ -f "$env_file" ]; then
@@ -182,7 +182,7 @@ printf '  slice: %s\n' "$(systemctl show webhooktrap.slice -p MemoryMax -p CPUQu
 echo "  secrets (owner, mode, set or empty):"
 for s in app_key db_password postgres_password valkey_password reverb_app_secret identity_email_hmac_key \
     identity_recovery_code_key agent_pairing_hmac_key edge_proxy_secret backup_cipher_pass backup_s3_key \
-    backup_s3_secret mail_password github_client_secret google_client_secret error_tracker_dsn; do
+    backup_s3_secret mail_password pulsesend_api_key github_client_secret google_client_secret error_tracker_dsn; do
     p="$APP_DIR/secrets/$s"
     if [ -f "$p" ]; then
         state="empty"; [ -s "$p" ] && state="set"

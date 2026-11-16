@@ -48,7 +48,7 @@ services:
       INGEST_UPSTREAM: haproxy:8080 # decision 61: per-address limits before ingest
       APP_NUM_THREADS: ${APP_NUM_THREADS:-12} # FrankenPHP pool of the front (compose-profile §3)
       LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-12} # always the same value: long-poll slots leave 2 workers free
-    secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret, pulsesend_api_key] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
     mem_limit: 1200m
     memswap_limit: 1200m
     cpus: 1.5
@@ -150,7 +150,7 @@ services:
   horizon:
     <<: *app
     command: ["php", "artisan", "horizon"]
-    secrets: [app_key, db_password, valkey_password, reverb_app_secret, mail_password, error_tracker_dsn]
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, mail_password, pulsesend_api_key, error_tracker_dsn]
     volumes: [storage:/app/storage/app, backup_status:/status:ro, ledger:/ledger] # DL-3a: only writer of the deletion ledger
     networks: [internal, egress] # sends mail
     stop_grace_period: 60s
@@ -296,6 +296,7 @@ secrets: # files under $APP_DIR/secrets; owners in compose-profile §5
   app_key: { file: ./secrets/app_key } # APP_KEY (base64:…), root:<runtime gid> 0440 like every file the app reads
   reverb_app_secret: { file: ./secrets/reverb_app_secret } # REVERB_APP_SECRET
   mail_password: { file: ./secrets/mail_password } # MAIL_PASSWORD (may be empty)
+  pulsesend_api_key: { file: ./secrets/pulsesend_api_key } # PULSESEND_API_KEY (may be empty: mail goes to the log; decision 72)
   github_client_secret: { file: ./secrets/github_client_secret } # GITHUB_CLIENT_SECRET (may be empty: GitHub sign-in off)
   google_client_secret: { file: ./secrets/google_client_secret } # GOOGLE_CLIENT_SECRET (may be empty)
   error_tracker_dsn: { file: ./secrets/error_tracker_dsn } # ERROR_TRACKER_DSN (may be empty)

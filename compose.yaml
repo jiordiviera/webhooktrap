@@ -13,8 +13,8 @@
 #   same value: one file readable by postgres, uid 999, one by the app, uid 33), valkey_password,
 #   reverb_app_secret, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key
 #   (each `openssl rand -hex 32`), backup_cipher_pass, edge_proxy_secret (below), runner_token.
-#   Optional, may be empty files: mail_password, github_client_secret, google_client_secret,
-#   error_tracker_dsn. Owners: postgres_password, backup_* root:999 0440; the rest root:33 0440.
+#   Optional, may be empty files: mail_password, pulsesend_api_key, github_client_secret,
+#   google_client_secret, error_tracker_dsn. Owners: postgres_password, backup_* root:999 0440; the rest root:33 0440.
 # runner_token is issued by the app once it is up (start with an empty file, then):
 #   docker compose run --rm -T app php artisan runner:token runner > secrets/runner_token
 #   (-T keeps stderr out of the file; `--list`, `--revoke=<name>`; rerun to rotate), then
@@ -88,7 +88,7 @@ services:
       INGEST_UPSTREAM: haproxy:8080
       APP_NUM_THREADS: ${APP_NUM_THREADS:-8}
       LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-8} # always the app's thread count
-    secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret, pulsesend_api_key] # read by the entrypoint from /run/secrets (ci-cd.md P-14, P-20); edge: SV-2
     volumes: [storage:/app/storage/app, engine_sock:/run/engine, backup_status:/status:ro, caddy_data:/data]
     group_add: ["10001"]
     depends_on:
@@ -179,7 +179,7 @@ services:
   horizon:
     <<: *app
     command: ["php", "artisan", "horizon"]
-    secrets: [app_key, db_password, valkey_password, reverb_app_secret, mail_password, error_tracker_dsn]
+    secrets: [app_key, db_password, valkey_password, reverb_app_secret, mail_password, pulsesend_api_key, error_tracker_dsn]
     volumes: [storage:/app/storage/app, backup_status:/status:ro, ledger:/ledger]
     networks: [internal, egress]
     stop_grace_period: 60s
@@ -327,6 +327,7 @@ secrets:
   app_key: { file: ./secrets/app_key } # APP_KEY (base64:…), root:<runtime gid> 0440 like every file the app reads
   reverb_app_secret: { file: ./secrets/reverb_app_secret } # REVERB_APP_SECRET
   mail_password: { file: ./secrets/mail_password } # MAIL_PASSWORD (may be empty)
+  pulsesend_api_key: { file: ./secrets/pulsesend_api_key } # PULSESEND_API_KEY (may be empty: mail goes to the log; decision 72)
   github_client_secret: { file: ./secrets/github_client_secret } # GITHUB_CLIENT_SECRET (may be empty: GitHub sign-in off)
   google_client_secret: { file: ./secrets/google_client_secret } # GOOGLE_CLIENT_SECRET (may be empty)
   error_tracker_dsn: { file: ./secrets/error_tracker_dsn } # ERROR_TRACKER_DSN (may be empty)

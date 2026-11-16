@@ -1,6 +1,7 @@
 # Compose profile · Webhook Trap 2.0
 
-**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-15 (rev. 15)
+**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-16 (rev. 16)
+**Rev. 16 (2026-11-16):** decision 72: mail through PulseSend (`MAIL_MAILER=pulsesend`); its key is the optional file secret `pulsesend_api_key` on `app` and `horizon` (§5). Change table at the end.
 **Scope:** decision 32 §4 (one self-host profile, Redis-compatible store required, no minimal profile), decision 43 (template `jiordiviera/laravel-inertia-vps-template`), HD-4, HD-5, HD-8, HD-10, ADR-008.
 **Derived from:** the template's `compose.production.yaml` (read with `gh api` on 2026-11-14) plus Reverb, Valkey, Postgres + pgBackRest (the private hosted deployment plan §5, option A), healthchecks and limits.
 **Rev. 3:** A09 re-check §12.5: SV-2 (proof header and in-image trust, `APP_PORT`, set in the private plan), RD-1 (no share tokens in logs), CI-2 (policy the file must satisfy, §2.2), ENG-1 (`engine` sandbox service). Change table at the end.
@@ -86,7 +87,7 @@ services:
       INGEST_UPSTREAM: haproxy:8080     # rev. 9: through the per-address limits (§2.4)
       APP_NUM_THREADS: ${APP_NUM_THREADS:-8}          # rev. 12: the front's FrankenPHP pool (8 GB: 8, 16 GB: 12)
       LONGPOLL_HTTP_WORKERS: ${APP_NUM_THREADS:-8}    # rev. 12: always the same value (§3.2)
-    secrets: [app_key, postgres_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret]   # rev. 13: per-service list, §5
+    secrets: [app_key, postgres_password, valkey_password, reverb_app_secret, github_client_secret, google_client_secret, error_tracker_dsn, identity_email_hmac_key, identity_recovery_code_key, agent_pairing_hmac_key, edge_proxy_secret, pulsesend_api_key]   # rev. 13: per-service list, §5; rev. 16: pulsesend_api_key
     mem_limit: 768m                     # CI-2/P-8: every service carries mem_limit, memswap_limit, cpus, pids_limit (8 GB column of §3; 16 GB values in §3)
     memswap_limit: 768m
     cpus: 1.0
@@ -753,6 +754,7 @@ Secrets also accept `<NAME>_FILE`. The template's names are kept where they exis
 | `REDIS_PASSWORD` | `valkey_password` (shared with `valkey`) | app, ingest, reverb, horizon, scheduler | cache, queue, limiter; `migrate` does not use Valkey |
 | `REVERB_APP_SECRET` | `reverb_app_secret` | app, reverb, horizon | channel auth signing on `app`; every broadcast is sent from the `broadcasts` queue |
 | `MAIL_PASSWORD` | `mail_password` (may be empty) | horizon | mail is only ever queued |
+| `PULSESEND_API_KEY` (rev. 16, decision 72) | `pulsesend_api_key` (may be empty: mail then goes to the log) | app, horizon | `horizon` sends the queued mail; `app` builds the mailer when it queues a mailable, and the queued job keeps that mailer's name, so `app` must resolve `pulsesend` too. Not `scheduler`: it only dispatches jobs |
 | `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_SECRET` | `github_client_secret`, `google_client_secret` (may be empty) | app | OAuth sign-in |
 | `ERROR_TRACKER_DSN` | `error_tracker_dsn` (may be empty) | every Laravel process | reporting (no config reads it yet: A05/A06) |
 | `IDENTITY_EMAIL_HMAC_KEY`, `IDENTITY_RECOVERY_CODE_KEY` | `identity_email_hmac_key`, `identity_recovery_code_key` | app | used only on the HTTP path of `app` (account deletion, recovery codes); `ingest` does not get them: the app's serve check skips `WT_ROLE=ingest` (A06, 9224c67), which Compose sets explicitly (P-17) |
@@ -772,7 +774,7 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | Valkey (template names kept) | `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD(_FILE)`, `VALKEY_MAXMEMORY` |
 | Laravel drivers (template) | `QUEUE_CONNECTION`, `CACHE_STORE`, `SESSION_DRIVER`, `BROADCAST_CONNECTION` |
 | Reverb | `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET(_FILE)`, `REVERB_HOST`, `REVERB_PORT`, `REVERB_SCHEME`, `REVERB_SERVER_HOST`, `REVERB_SERVER_PORT`, `REVERB_SCALING_ENABLED`, `REVERB_PUBLIC_HOST` (sent to the browser at runtime, see note); rev. 7: `REVERB_APP_MAX_CONNECTIONS` (proposed 1500), `REVERB_ACCEPT_CLIENT_EVENTS_FROM` (fixed `none`, no override in `.env.example`), `REALTIME_MAX_CONNECTIONS_PER_PRINCIPAL`, `REALTIME_MAX_CONNECTION_LIFETIME_SECONDS` (A05's own code in the Reverb process, decision 50), `REVERB_MIN_NOFILE` (4096), `LONGPOLL_AGENT_SLOTS`, `LONGPOLL_RUNNER_SLOTS`, `LONGPOLL_MAX_WAIT_SECONDS`, `LONGPOLL_RETRY_AFTER_SECONDS` |
-| Mail | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD(_FILE)`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` |
+| Mail | `MAIL_MAILER` (hosted: `pulsesend`), `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD(_FILE)`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`; rev. 16: `PULSESEND_API_KEY(_FILE)`, `PULSESEND_BASE_URL`; `PULSESEND_ROUTES` stays unset (the package's webhook route is off by default, decision 72) |
 | OAuth | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET(_FILE)`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET(_FILE)` |
 | Server runs | `SERVER_REPLAY_PUBLIC`, `WEBHOOKTRAP_ALLOW_PRIVATE_REPLAY_TARGETS` |
 | Runner | `RUNNER_SERVER_ORIGIN` (fixed `http://app:8080` in `compose.yaml`: plain http only to a single-label Compose name), `RUNNER_TOKEN_FILE` (fixed `/run/secrets/runner_token`), `RUNNER_CONCURRENCY`, rev. 16: `RUNNER_GUARD_CEILING` (`public` default, or `allowlist`), `RUNNER_ALLOWLIST_FILE` (required with `allowlist`; `./runner/` is mounted read-only at `/etc/webhooktrap-runner`) |
@@ -960,3 +962,9 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | C2 | Backups | stubs | pgBackRest with a WAL queue, ledger shipping, status, restore; proven locally | §7 |
 | (found here) | Postgres 18 volume | `/var/lib/postgresql/data`, refused by the image | `/var/lib/postgresql` | §7 |
 | (found here) | DB password file | one file for postgres and the app | `postgres_password` (uid 999) and `db_password` (uid 33), same value | §5 |
+
+## Change table (rev. 15 → rev. 16, decision 72)
+
+| ID | Area | Rev. 15 | Rev. 16 | Where |
+| -- | ---- | ------- | ------- | ----- |
+| Decision 72 | Mail | `MAIL_MAILER=log` until a mail account exists | `MAIL_MAILER=pulsesend`; key in `secrets/pulsesend_api_key` (optional, empty = log) on `app` and `horizon`; in the entrypoint's `_FILE` list; the package's webhook route off | §5 |

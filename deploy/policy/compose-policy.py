@@ -30,19 +30,20 @@ DIGEST = re.compile(r"@sha256:[0-9a-f]{64}$")
 SECRET_FILES = {
     "valkey_password", "postgres_password", "db_password", "backup_cipher_pass", "backup_s3_key",
     "backup_s3_secret", "edge_proxy_secret", "agent_pairing_hmac_key", "app_key",
-    "reverb_app_secret", "mail_password", "github_client_secret", "google_client_secret",
-    "error_tracker_dsn", "identity_email_hmac_key", "identity_recovery_code_key",
+    "reverb_app_secret", "mail_password", "pulsesend_api_key", "github_client_secret",
+    "google_client_secret", "error_tracker_dsn", "identity_email_hmac_key",
+    "identity_recovery_code_key",
 }
 SECRETS_PER_SERVICE = {
     "app": {"app_key", "db_password", "valkey_password", "reverb_app_secret",
             "github_client_secret", "google_client_secret", "error_tracker_dsn",
             "identity_email_hmac_key", "identity_recovery_code_key", "agent_pairing_hmac_key",
-            "edge_proxy_secret"},
+            "edge_proxy_secret", "pulsesend_api_key"},
     "ingest": {"app_key", "db_password", "valkey_password", "error_tracker_dsn",
                "edge_proxy_secret"},
     "reverb": {"app_key", "valkey_password", "reverb_app_secret", "error_tracker_dsn"},
     "horizon": {"app_key", "db_password", "valkey_password", "reverb_app_secret",
-                "mail_password", "error_tracker_dsn"},
+                "mail_password", "pulsesend_api_key", "error_tracker_dsn"},
     "scheduler": {"app_key", "db_password", "valkey_password", "error_tracker_dsn"},
     "haproxy": {"edge_proxy_secret"},
     "valkey": {"valkey_password"},
@@ -82,9 +83,10 @@ INGEST_COMMAND = ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile.in
                   "--adapter", "caddyfile"]
 HAPROXY_COMMAND = ["haproxy", "-f", "/wt-haproxy/haproxy.cfg"]
 PLAIN_SECRETS = ("APP_KEY", "APP_PREVIOUS_KEYS", "DB_PASSWORD", "REDIS_PASSWORD",
-                 "REVERB_APP_SECRET", "MAIL_PASSWORD", "GITHUB_CLIENT_SECRET",
-                 "GOOGLE_CLIENT_SECRET", "ERROR_TRACKER_DSN", "IDENTITY_EMAIL_HMAC_KEY",
-                 "IDENTITY_RECOVERY_CODE_KEY", "AGENT_PAIRING_HMAC_KEY", "POSTGRES_PASSWORD")
+                 "REVERB_APP_SECRET", "MAIL_PASSWORD", "PULSESEND_API_KEY",
+                 "GITHUB_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET", "ERROR_TRACKER_DSN",
+                 "IDENTITY_EMAIL_HMAC_KEY", "IDENTITY_RECOVERY_CODE_KEY", "AGENT_PAIRING_HMAC_KEY",
+                 "POSTGRES_PASSWORD")
 POOLERS = ("pgbouncer", "pgcat", "odyssey", "supavisor")
 FALSY = {"", "0", "false", "False", "FALSE", "(false)"}
 

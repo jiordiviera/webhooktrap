@@ -16,7 +16,11 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    // Decision 72: production sets MAIL_MAILER=pulsesend. The PulseSend key is an optional file
+    // secret (pulsesend_api_key); while it is empty, mail goes to the log instead of failing.
+    'default' => env('MAIL_MAILER', 'log') === 'pulsesend' && (string) env('PULSESEND_API_KEY', '') === ''
+        ? 'log'
+        : env('MAIL_MAILER', 'log'),
 
     /*
     |--------------------------------------------------------------------------
@@ -33,7 +37,7 @@ return [
     |
     | Supported: "smtp", "sendmail", "mailgun", "ses", "ses-v2",
     |            "postmark", "resend", "log", "array",
-    |            "failover", "roundrobin"
+    |            "failover", "roundrobin", "pulsesend" (decision 72)
     |
     */
 
@@ -65,6 +69,10 @@ return [
 
         'resend' => [
             'transport' => 'resend',
+        ],
+
+        'pulsesend' => [
+            'transport' => 'pulsesend',
         ],
 
         'sendmail' => [

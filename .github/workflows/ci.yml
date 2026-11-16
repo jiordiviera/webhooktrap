@@ -136,7 +136,7 @@ jobs:
         run: |
           mkdir -p secrets
           for s in valkey_password postgres_password backup_cipher_pass backup_s3_key backup_s3_secret edge_proxy_secret runner_token agent_pairing_hmac_key db_password \
-            app_key reverb_app_secret mail_password github_client_secret google_client_secret \
+            app_key reverb_app_secret mail_password pulsesend_api_key github_client_secret google_client_secret \
             error_tracker_dsn identity_email_hmac_key identity_recovery_code_key; do
             : > "secrets/$s"
           done
@@ -151,7 +151,7 @@ jobs:
           d="$RUNNER_TEMP/app"
           mkdir -p "$d/secrets"
           for s in valkey_password postgres_password db_password backup_cipher_pass backup_s3_key backup_s3_secret \
-            edge_proxy_secret agent_pairing_hmac_key app_key reverb_app_secret mail_password \
+            edge_proxy_secret agent_pairing_hmac_key app_key reverb_app_secret mail_password pulsesend_api_key \
             github_client_secret google_client_secret error_tracker_dsn identity_email_hmac_key \
             identity_recovery_code_key; do : > "$d/secrets/$s"; done
           cp compose.production.yaml "$d/"
