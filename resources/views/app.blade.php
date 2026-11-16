@@ -38,6 +38,32 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+        {{-- Link previews (Open Graph, X). No SSR, so crawlers only see these server-rendered tags.
+             Images are exports of the "Webhook Trap — OG images" Claude Design canvas. --}}
+        @php
+            $ogPages = [
+                'welcome' => ['Your webhook handler works. Once.', 'Webhook Trap replays your real webhook events twice, out of order and late against your handler, and fails the build when your database ends up wrong.', 'og/landing.png'],
+                'Legal/Privacy' => ['Privacy policy · Webhook Trap', 'What Webhook Trap collects, how long it keeps it, and who processes it.', 'og/privacy.png'],
+                'Legal/Terms' => ['Terms of service · Webhook Trap', 'The terms for using Webhook Trap.', 'og/terms.png'],
+            ];
+            [$ogTitle, $ogDescription, $ogImage] = $ogPages[$page['component']] ?? ['Webhook Trap', 'Capture webhooks, prove your handler against real provider scenarios, and replay them.', 'og/default.png'];
+            $ogBase = rtrim((string) config('app.url'), '/');
+        @endphp
+        <meta name="description" content="{{ $ogDescription }}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Webhook Trap">
+        <meta property="og:title" content="{{ $ogTitle }}">
+        <meta property="og:description" content="{{ $ogDescription }}">
+        <meta property="og:url" content="{{ $ogBase.'/'.ltrim(request()->path(), '/') }}">
+        <meta property="og:image" content="{{ $ogBase.'/'.$ogImage }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="{{ $ogTitle }}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $ogTitle }}">
+        <meta name="twitter:description" content="{{ $ogDescription }}">
+        <meta name="twitter:image" content="{{ $ogBase.'/'.$ogImage }}">
+
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
