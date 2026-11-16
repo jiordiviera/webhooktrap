@@ -9,7 +9,6 @@ import { terms } from '@/routes';
  *
  * Open points for the PO:
  * - TODO(PO): confirm the contact address privacy@webhooktrap.dev exists.
- * - TODO(PO): name the transactional email provider (not chosen for 2.0).
  * - TODO(PO): confirm the Contabo region (EU, Germany) of the production VPS.
  * - TODO(PO): no self-service data export exists yet; export is on request.
  * - TODO(PO): confirm the minimum age (16), the 30-day answer time and the
@@ -216,10 +215,9 @@ export default function Privacy() {
                         and R2 storage for encrypted backups.
                     </li>
                     <li>
-                        {/* TODO(PO): name the transactional email provider once chosen. */}
-                        <strong>A transactional email provider</strong>: sends
-                        account emails. It receives your email address and the
-                        message.
+                        <strong>PulseSend</strong> (delivering through Amazon
+                        SES): sends account emails. It receives your email
+                        address and the message.
                     </li>
                     <li>
                         <strong>GitHub and Google</strong>: only if you choose
