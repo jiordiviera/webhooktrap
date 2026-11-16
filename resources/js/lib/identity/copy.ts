@@ -161,6 +161,7 @@ const FIRST: Record<string, string> = {
     webauthn: 'Passkey',
     reset_link: 'Password reset link',
     recovery_finish: 'Account recovery',
+    operator_handoff: 'Operator panel handoff',
 };
 
 const SECOND: Record<string, string> = {

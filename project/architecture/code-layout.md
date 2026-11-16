@@ -48,6 +48,7 @@ project/             planning record (decisions, ADRs, specs)
 | Sharing | visibility, scrubbed share rendering |
 | Instance | self-host administration |
 | Retention | retention and quotas (maintenance jobs, deletion ledger) |
+| Admin | operator panel on ADMIN_HOST (decision 74): Filament pages and widgets, read-only |
 
 Inside a module, folders are created on first use:
 
@@ -82,6 +83,20 @@ foundation: `Clock` (`Clock` contract, `SystemClock`, bound in
 | No static properties in modules and adapters | ADR-005 amendment 1 §7 (worker mode) | `tests/Architecture/WorkerModeStateTest.php` |
 | Reverb client events are `none`, not env-overridable | decision 50 | `tests/Feature/Config/RealtimeConfigTest.php` |
 | Hashing is argon2id, not env-overridable | domain-model §2.1 rev. 6 | `tests/Feature/Config/HashingConfigTest.php` |
+
+**Admin (decision 74).** The operator panel is a module like the others and
+falls under the same cross-module rules: its Filament pages are custom pages
+with array-backed tables (`Table::records()`), fed by read models in each
+module's public `Application` layer (`Identity\Application\OperatorDirectory`,
+`Workspace\Application\OperatorProjects`, `Agent\Application\OperatorFleet`,
+`Capture\Application\CaptureVolume`, `Proving\Application\RunActivity`,
+`Instance\Application\Health`). There are no Filament resources, so no Eloquent
+model crosses a module. Configuration goes through static method overrides,
+never static properties (worker mode). Two documented couplings: Identity's
+`User` implements Filament's `FilamentUser` and `HasName` contracts (the
+access rule must live on the guard's model), and `App\Providers\AdminPanelProvider`,
+the composition root, wires Identity's handoff controller like
+`bootstrap/app.php` wires Identity's middleware.
 
 Rules 5 and 6 (Proving never formats probe values; finding prose rendered by
 the server) get their tests with the Proving slice. Adding a module means

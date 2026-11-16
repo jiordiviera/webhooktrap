@@ -10,7 +10,7 @@ function webhooktrapModules(): array
 {
     return [
         'Identity', 'Workspace', 'Capture', 'Agent', 'Proving',
-        'Packs', 'Fixtures', 'Sharing', 'Instance', 'Retention',
+        'Packs', 'Fixtures', 'Sharing', 'Instance', 'Retention', 'Admin',
     ];
 }
 

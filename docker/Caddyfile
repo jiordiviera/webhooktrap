@@ -152,6 +152,9 @@ import /etc/frankenphp/caddy/trust-site-*.caddy
 		handle @capture_path {
 			import ingest-{$INGEST_MODE:local}
 		}
+		# Everything else reaches PHP: the app host, and ADMIN_HOST (decision 74), whose panel routes
+		# Laravel binds to that host; app routes answer 404 there (IsolateAdminHost). The trust snippet
+		# above runs for every host, so X-WT-Edge is verified on the admin host exactly as on the app's.
 		handle {
 			request_body {
 				max_size {$APP_MAX_BODY:10MiB}
@@ -167,7 +170,8 @@ import /etc/frankenphp/caddy/trust-site-*.caddy
 			}
 			header @static_immutable Cache-Control "public, max-age=31536000, immutable"
 			@static_daily {
-				path /og/* /brand/* /favicon.ico /favicon.svg /apple-touch-icon.png /manifest.webmanifest
+				# Filament's published assets (admin host) carry a ?v= version query.
+				path /og/* /brand/* /favicon.ico /favicon.svg /apple-touch-icon.png /manifest.webmanifest /js/filament/* /css/filament/* /fonts/filament/*
 				file
 			}
 			header @static_daily Cache-Control "public, max-age=86400"

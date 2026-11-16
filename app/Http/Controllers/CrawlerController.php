@@ -20,7 +20,7 @@ final class CrawlerController
         '/s/', '/r/', '/p/', '/c/', '/projects', '/account', '/agent', '/runner', '/pairing-codes',
         '/health', '/up', '/horizon', '/broadcasting', '/settings', '/dashboard',
         '/sign-in', '/register', '/forgot-password', '/reset-password', '/two-factor', '/confirm-auth',
-        '/verify-email', '/email-change', '/set-password', '/auth/', '/expired', '/webauthn',
+        '/verify-email', '/email-change', '/set-password', '/auth/', '/expired', '/webauthn', '/operator/',
     ];
 
     public function robots(): Response

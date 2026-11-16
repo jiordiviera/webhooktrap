@@ -11,6 +11,8 @@ use App\Modules\Identity\Application\IdentityBootChecks;
 use App\Modules\Identity\Application\SecurityViews;
 use App\Modules\Identity\Console\ApplyDeletionLedger;
 use App\Modules\Identity\Console\ImportLegacyAccounts;
+use App\Modules\Identity\Console\OperatorGrant;
+use App\Modules\Identity\Console\OperatorRevoke;
 use App\Modules\Identity\Domain\GuestGuard;
 use App\Modules\Identity\Domain\LiveUserProvider;
 use App\Modules\Identity\Events\GuestSessionClaimed;
@@ -77,7 +79,7 @@ final class IdentityServiceProvider extends ServiceProvider
         Event::listen(GuestSessionEnded::class, [WorkspaceIdentityListener::class, 'ended']);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ImportLegacyAccounts::class, ApplyDeletionLedger::class]);
+            $this->commands([ImportLegacyAccounts::class, ApplyDeletionLedger::class, OperatorGrant::class, OperatorRevoke::class]);
         }
     }
 }

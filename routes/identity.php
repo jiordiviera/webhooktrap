@@ -10,6 +10,7 @@ use App\Modules\Identity\Http\Controllers\ConfirmAuthController;
 use App\Modules\Identity\Http\Controllers\EmailChangeController;
 use App\Modules\Identity\Http\Controllers\GuestSessionController;
 use App\Modules\Identity\Http\Controllers\OAuthController;
+use App\Modules\Identity\Http\Controllers\OperatorHandoffController;
 use App\Modules\Identity\Http\Controllers\PasswordResetController;
 use App\Modules\Identity\Http\Controllers\RegisterController;
 use App\Modules\Identity\Http\Controllers\SignInController;
@@ -87,6 +88,8 @@ Route::middleware('auth:web')->group(function () use ($provider): void {
 
     // F1: an unverified account changes no credential, factor or identity.
     Route::middleware('verified-email')->group(function () use ($provider): void {
+        // Operator panel handoff (decision 74): app host only; the admin host redeems it.
+        Route::get('/operator/handoff', [OperatorHandoffController::class, 'issue'])->name('operator.handoff');
         Route::get('/account/security/review', [AccountSecurityController::class, 'review'])->name('account.security.review');
         Route::patch('/account/security/keys/{keyId}', [AccountSecurityController::class, 'renameKey'])->name('account.keys.rename');
         Route::get('/account/delete', [AccountDeletionController::class, 'show'])->name('account.delete');

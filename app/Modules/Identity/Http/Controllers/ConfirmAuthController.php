@@ -35,7 +35,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 final readonly class ConfirmAuthController
 {
-    public const array ACTIONS = ['confirm', 'change_email', 'delete_account', 'security'];
+    public const array ACTIONS = ['confirm', 'change_email', 'delete_account', 'security', 'operator'];
 
     public function __construct(private Clock $clock, private Throttle $throttle) {}
 
@@ -217,7 +217,8 @@ final readonly class ConfirmAuthController
 
     private function secondFactorRequired(User $user, string $action): bool
     {
-        return in_array($action, ['change_email', 'delete_account'], true) && $user->hasSecondFactor();
+        // `operator`: entering the admin panel (decision 74) needs a second factor too.
+        return in_array($action, ['change_email', 'delete_account', 'operator'], true) && $user->hasSecondFactor();
     }
 
     private function heldUntil(User $user): ?CarbonImmutable

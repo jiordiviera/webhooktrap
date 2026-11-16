@@ -36,6 +36,8 @@
         <env name="IDENTITY_RECOVERY_CODE_KEY" value="test-recovery-code-key-0123456789abcdef"/>
         <!-- SSR is off unless a test turns it on (tests/Feature/Shell/SsrTest.php). -->
         <env name="INERTIA_SSR_ENABLED" value="false"/>
+        <!-- Operator panel host (decision 74); tests address it as https://admin.webhooktrap.test. -->
+        <env name="ADMIN_HOST" value="admin.webhooktrap.test"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="CACHE_FAILURE_REPORT_STORE" value="array"/>
         <!-- PostgreSQL, like production. Host, port and credentials come from .env or CI. -->

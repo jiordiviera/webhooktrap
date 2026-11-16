@@ -6,6 +6,7 @@ use App\Http\Controllers\CrawlerController;
 use App\Http\ErrorPages;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\IsolateAdminHost;
 use App\Http\Middleware\PreventRequestForgery;
 use App\Http\Middleware\SecurityHeaders;
 use App\Modules\Identity\Http\Middleware\EnsureEmailIsVerified;
@@ -51,6 +52,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         // `__Host-XSRF-TOKEN` instead of `XSRF-TOKEN` (TM-T4, A09 F4).
         $middleware->web(replace: [BasePreventRequestForgery::class => PreventRequestForgery::class]);
+
+        // Decision 74: app routes 404 on ADMIN_HOST; Livewire's update endpoint is served there only.
+        $middleware->web(prepend: [IsolateAdminHost::class]);
 
         $middleware->web(append: [
             EnsureUserSessionIsLive::class,

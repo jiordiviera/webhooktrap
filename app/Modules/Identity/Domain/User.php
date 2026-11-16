@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Modules\Identity\Domain;
 
 use App\Infrastructure\Persistence\Bytea;
+use App\Infrastructure\Persistence\EmailMask;
 use App\Infrastructure\Persistence\HasUuidV7;
 use App\Modules\Identity\Database\Factories\UserFactory;
 use Carbon\CarbonImmutable;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -20,6 +24,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property string $email
  * @property string|null $name
  * @property bool $is_instance_admin
+ * @property bool $is_operator
  * @property bool $can_private_replay
  * @property CarbonImmutable|null $email_verified_at
  * @property CarbonImmutable|null $disabled_at
@@ -36,7 +41,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property CarbonImmutable $updated_at
  * @property-read TotpFactor|null $totp
  */
-final class User extends Authenticatable
+final class User extends Authenticatable implements FilamentUser, HasName
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUuidV7;
@@ -45,7 +50,11 @@ final class User extends Authenticatable
 
     protected $table = 'users';
 
-    protected $guarded = [];
+    /**
+     * `is_operator` is set only by `operator:grant` / `operator:revoke`
+     * (forceFill), never by mass assignment (decision 74).
+     */
+    protected $guarded = ['is_operator'];
 
     protected $hidden = ['password_hash', 'webauthn_user_handle'];
 
@@ -55,6 +64,7 @@ final class User extends Authenticatable
     {
         return [
             'is_instance_admin' => 'boolean',
+            'is_operator' => 'boolean',
             'can_private_replay' => 'boolean',
             'email_verified_at' => 'immutable_datetime',
             'disabled_at' => 'immutable_datetime',
@@ -152,5 +162,29 @@ final class User extends Authenticatable
             && ! $this->webauthnCredentials()->exists()
             && ! $this->totp()->exists()
             && $this->identities()->exists();
+    }
+
+    /**
+     * The operator panel (decision 74): the operator flag, a verified email,
+     * a live account and a second factor (TOTP or an unflagged passkey or
+     * security key). Checked on every panel request, Livewire updates too.
+     */
+    public function isEligibleOperator(): bool
+    {
+        return $this->is_operator === true
+            && $this->isLive()
+            && $this->isVerified()
+            && $this->hasSecondFactor();
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'admin' && $this->isEligibleOperator();
+    }
+
+    /** Shown in the panel's user menu: never the full address. */
+    public function getFilamentName(): string
+    {
+        return $this->name !== null && $this->name !== '' ? $this->name : EmailMask::mask($this->email);
     }
 }

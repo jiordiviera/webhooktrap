@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Providers\AdminPanelProvider;
 use App\Providers\AgentServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\CaptureServiceProvider;
@@ -22,4 +23,5 @@ return [
     AgentServiceProvider::class,
     ProvingServiceProvider::class,
     InstanceServiceProvider::class,
+    AdminPanelProvider::class,
 ];

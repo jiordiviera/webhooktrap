@@ -3,6 +3,10 @@
 /bootstrap/ssr
 /node_modules
 /public/build
+# Filament assets: published by `php artisan filament:assets` in the image build (decision 74)
+/public/css/filament
+/public/fonts/filament
+/public/js/filament
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage

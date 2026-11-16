@@ -111,6 +111,22 @@ final readonly class SignInSessions
         });
     }
 
+    /**
+     * The `user_sessions` row of this browser's signed-in session is live
+     * (and is touched); false without one. For hosts that do not run the
+     * `web` group, such as the admin panel (decision 74).
+     */
+    public function browserSessionIsLive(Request $request): bool
+    {
+        $id = $request->session()->get(SessionKeys::USER_SESSION);
+        if (! is_string($id) || ! $this->isLive($id)) {
+            return false;
+        }
+        $this->touch($id);
+
+        return true;
+    }
+
     public function touch(string $sessionId): void
     {
         $now = $this->clock->now();

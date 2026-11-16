@@ -23,7 +23,12 @@ import confirmAuth from '@/routes/confirm-auth';
 type Props = {
     methods: string[];
     secondFactorRequired: boolean;
-    action: 'confirm' | 'change_email' | 'delete_account' | 'security';
+    action:
+        | 'confirm'
+        | 'change_email'
+        | 'delete_account'
+        | 'security'
+        | 'operator';
     next: string;
     retryAt?: string | null;
     /** Allow-listed reason code of a generic recent-auth bounce. */
@@ -39,6 +44,7 @@ const ACTION_VERBS: Record<Props['action'], string | null> = {
     security: null,
     change_email: 'change your email',
     delete_account: 'delete your account',
+    operator: 'open the operator panel',
 };
 
 /** S-28 · Confirm it's you (recent authentication). */
@@ -134,7 +140,9 @@ export default function ConfirmAuth({
                 <p>
                     {action === 'delete_account'
                         ? "Deleting your account can't be undone, so confirm with a passkey, security key or authenticator code."
-                        : 'Your email is how you’d recover this account, so confirm with a passkey, security key or authenticator code.'}
+                        : action === 'operator'
+                          ? 'The operator panel needs a passkey, security key or authenticator code.'
+                          : 'Your email is how you’d recover this account, so confirm with a passkey, security key or authenticator code.'}
                 </p>
             )}
             <ErrorSummary message={summary} />
