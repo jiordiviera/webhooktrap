@@ -286,7 +286,7 @@ export type RunsDraftProps = {
 export type PairingCodeView = {
     code: string;
     expiresAt: string;
-    /** `webhooktrap pair <CODE> --server <origin>` (AC-14). */
+    /** `npx @webhooktrap/agent@1 pair <CODE> --server <origin>` (AC-14, ADR-010). */
     command: string;
     /**
      * AC-3: set when the owner asked `POST /pairing-codes {replace: agentId}`.

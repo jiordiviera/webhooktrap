@@ -7,7 +7,7 @@ import type { AgentRow, AgentSummary, PairingCodeView } from '@/types/run';
 
 /*
  * S-06/S-08 pair panel: a one-time code from `POST /pairing-codes`, the
- * command to run (`webhooktrap pair <CODE>`), a countdown, then "Confirm in
+ * command to run (`npx @webhooktrap/agent@1 pair <CODE>`), a countdown, then "Confirm in
  * your terminal" until the agent is confirmed. Pages that carry agent props
  * pass `reloadOnly` so the panel can see the agent arrive (no channel for it
  * yet); elsewhere the panel shows the code and the next step only.
@@ -21,12 +21,14 @@ function mmss(ms: number): string {
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-/** The command people type. Off the hosted origin it names this server. */
+/**
+ * The command people type (ADR-010 item 6: npx, major version pinned). It always names this
+ * server, so it works on hosted (app.) and on any self-hosted origin.
+ */
 export function pairCommand(code: string): string {
     const origin = typeof window === 'undefined' ? '' : window.location.origin;
-    const hosted = origin === 'https://webhooktrap.dev';
 
-    return `webhooktrap pair ${code}${hosted || !origin ? '' : ` --server ${origin}`}`;
+    return `npx @webhooktrap/agent@1 pair ${code}${origin ? ` --server ${origin}` : ''}`;
 }
 
 const errorCopy: Record<string, string> = {

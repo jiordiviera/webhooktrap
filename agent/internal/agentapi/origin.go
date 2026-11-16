@@ -22,7 +22,7 @@ var ErrInsecureOrigin = errors.New("the server must use https://; plain http:// 
 func NormalizeOrigin(raw string, allowHTTP bool) (string, error) {
 	u, err := url.Parse(strings.TrimSpace(raw))
 	if err != nil || u.Host == "" || u.Opaque != "" {
-		return "", errors.New("the server must be a URL such as https://webhooktrap.dev")
+		return "", errors.New("the server must be a URL such as https://app.webhooktrap.dev")
 	}
 	if u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
 		return "", errors.New("the server must be an origin only (scheme and host, no path, query or credentials)")

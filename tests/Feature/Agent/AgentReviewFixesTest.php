@@ -426,13 +426,13 @@ it('caps provisional finding keys and checks their severity (AC-12)', function (
 
 // ---- AC-14, dev builds, server kind ---------------------------------------
 
-it('shows the pairing command as `webhooktrap pair <CODE>` (AC-14)', function (): void {
+it('shows the pairing command as `npx @webhooktrap/agent@1 pair <CODE>` (AC-14, ADR-010)', function (): void {
     $user = makeUser();
     userProject($user);
     actAs($user);
     $view = $this->postJson('/pairing-codes')->assertCreated()->assertJsonPath('replaces', null)->json();
 
-    expect($view['command'])->toBe('webhooktrap pair '.$view['code'].' --server '.TEST_ORIGIN);
+    expect($view['command'])->toBe('npx @webhooktrap/agent@1 pair '.$view['code'].' --server '.TEST_ORIGIN);
 });
 
 it('refuses 0.0.0-dev agents unless the switch is on in local or testing, with a warning (decision 3)', function (): void {

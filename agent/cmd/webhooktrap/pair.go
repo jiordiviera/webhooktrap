@@ -18,7 +18,7 @@ import (
 	"github.com/jiordiviera/webhooktrap/agent/scrub"
 )
 
-const defaultServer = "https://webhooktrap.dev"
+const defaultServer = "https://app.webhooktrap.dev"
 
 const usagePair = `usage: webhooktrap pair <CODE> [flags]
 
@@ -27,7 +27,7 @@ browser. The agent creates a key for the server, sends the code, prints the
 server it connected to and the workspace, and asks before it joins.
 
 flags:
-  --server URL            server origin (default $WEBHOOKTRAP_SERVER or https://webhooktrap.dev)
+  --server URL            server origin (default $WEBHOOKTRAP_SERVER or https://app.webhooktrap.dev)
   --name NAME             agent name shown in the browser (default: this machine's name)
   --yes                   skip the join question for an account workspace; a guest
                           workspace always asks

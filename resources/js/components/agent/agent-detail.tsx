@@ -86,6 +86,7 @@ export function AgentDetailView({
                                 <span className="tt-muted">
                                     {' '}
                                     · update: npm i -g @webhooktrap/agent@latest
+                                    (or rerun install.sh)
                                 </span>
                             )}
                         </dd>

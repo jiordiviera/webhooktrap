@@ -28,8 +28,8 @@ return [
     'probe_display_policy' => env('AGENT_PROBE_DISPLAY_POLICY', 'strict'),
 
     // The `pair` command shown with a code (PairingCodeView.command).
-    // AC-14: the CLI is `webhooktrap pair`, not `webhooktrap agent pair`.
-    'pair_command' => env('AGENT_PAIR_COMMAND', 'webhooktrap pair {code} --server {origin}'),
+    // AC-14 and ADR-010 item 6: npx with the major version pinned, so it works without an install.
+    'pair_command' => env('AGENT_PAIR_COMMAND', 'npx @webhooktrap/agent@1 pair {code} --server {origin}'),
 
     'pairing' => [
         'code_ttl_seconds' => 600,

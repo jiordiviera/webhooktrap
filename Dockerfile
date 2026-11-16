@@ -63,6 +63,7 @@ COPY . .
 # build variables, so the image carries no domain (compose-profile §5, note for A05).
 RUN cp .env.example .env \
     && composer dump-autoload --optimize --classmap-authoritative --no-dev --no-interaction \
+    && php artisan filament:assets --no-interaction \
     && php artisan key:generate --no-interaction \
     && pnpm run build \
     && test -f bootstrap/ssr/ssr.js \

@@ -80,7 +80,7 @@ export function reasonLine(
             "Your probe isn't stable: its value changed with no delivery. Remove time-based values such as updated_at or now().",
         reset_failed: `The reset failed on ${a} before the first delivery. Nothing was sent. The command and its output are in the agent's terminal.`,
         needs_secret: `This provider signs a timestamp, so nothing can be replayed without its signing secret on ${a}.`,
-        agent_too_old: `${a} is too old for this run. Update it: npm i -g @webhooktrap/agent@latest`,
+        agent_too_old: `${a} is too old for this run. Update it: npx @webhooktrap/agent@latest, npm i -g @webhooktrap/agent@latest, or rerun the install script.`,
         target_not_allowed: `${a} refused the job: this target isn't declared in its webhooktrap.yml.`,
         busy: `${a} was busy with another run. Run again when it's free.`,
         // Aborted (RD `aborted_*`).
