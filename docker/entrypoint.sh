@@ -126,7 +126,9 @@ webhooktrap version --json | grep -q '"protocol":"v1"' || fail "engine binary mi
 # 6. Template: cache config, routes, events and views (to the /tmp tmpfs, see Dockerfile ENV).
 mkdir -p /tmp/laravel/views
 if [ "${APP_ENV:-production}" != local ]; then
-    php artisan optimize --no-interaction >/dev/null
+    # blade-icons and Filament register optimize steps that write to bootstrap/cache, a hard-coded
+    # path on the read-only root filesystem; both work without their cache (decision 74).
+    php artisan optimize --except=blade-icons,filament --no-interaction >/dev/null
 fi
 
 # FrankenPHP (CMD) or any artisan command (Compose `command:`).
