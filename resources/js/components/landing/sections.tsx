@@ -691,10 +691,11 @@ export const FooterCta = forwardRef<HTMLElement>(function FooterCta(_, ref) {
 });
 
 const footerLinks = [
-    ['Docs', 'docs'],
-    ['GitHub', 'github'],
-    ['Self-host', 'self-host'],
-    ['Status', 'status'],
+    ['Docs', 'https://docs.webhooktrap.dev'],
+    ['GitHub', 'https://github.com/jiordiviera/webhooktrap'],
+    ['Self-host', 'https://github.com/jiordiviera/webhooktrap#self-hosting'],
+    // Hosted on OpenStatus, reached through a Cloudflare redirect: it stays up when the VPS is down.
+    ['Status', 'https://status.webhooktrap.dev'],
 ] as const;
 
 const legalLinks = [
@@ -709,11 +710,11 @@ export function LandingFooter() {
                 aria-label="Footer"
                 className="flex flex-wrap gap-6 border-t border-lp-rule-soft pt-6 pb-24 text-[13px] sm:pb-16"
             >
-                {footerLinks.map(([label, todo]) => (
+                {footerLinks.map(([label, href]) => (
                     <a
                         key={label}
-                        href="#"
-                        data-todo={todo}
+                        href={href}
+                        rel="noopener"
                         className="text-lp-muted no-underline hover:text-lp-ink"
                     >
                         {label}
