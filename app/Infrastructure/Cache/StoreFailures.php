@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Cache;
 
+use App\Infrastructure\Clock\Clock;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Factory;
+use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -20,10 +23,18 @@ use Throwable;
  * The throttle lives in a local store (`cache.failure_reports.store`, the
  * file store by default), never in the store that is failing. If that one
  * fails too, the failure is reported unthrottled.
+ *
+ * Each line also adds its failures (this one plus the suppressed ones) to a
+ * per-minute row in `store_failure_minutes`, in the database, so `/health`
+ * (`store_failures_5m`, hosted plan §6.8) sees the counts of `app` and
+ * `ingest` while the failing store is Valkey. Counts only: no key, path or
+ * address. Rows older than an hour are pruned on the way.
  */
 final readonly class StoreFailures
 {
-    public function __construct(private Factory $caches, private LoggerInterface $log) {}
+    public const array KINDS = ['rate_limit', 'cache'];
+
+    public function __construct(private Factory $caches, private LoggerInterface $log, private Clock $clock) {}
 
     public function report(string $kind, Throwable $e): void
     {
@@ -41,6 +52,46 @@ final readonly class StoreFailures
         }
 
         $this->log->warning('wt.store_failure', ['kind' => $kind, 'suppressed' => $suppressed, 'error' => $e::class]);
+        $this->count($kind, 1 + $suppressed);
         report($e);
+    }
+
+    /**
+     * Failures per kind in the last `$minutes` minutes (the current minute
+     * included). Every known kind is present.
+     *
+     * @return array<string, int>
+     */
+    public function recent(int $minutes): array
+    {
+        $since = $this->minute($this->clock->now())->subMinutes(max(1, $minutes) - 1);
+        $counts = array_fill_keys(self::KINDS, 0);
+        $rows = DB::table('store_failure_minutes')->where('minute', '>=', $since)
+            ->groupBy('kind')->selectRaw('kind, sum(failures) as failures')->get();
+        foreach ($rows as $row) {
+            $counts[(string) $row->kind] = (int) $row->failures;
+        }
+
+        return $counts;
+    }
+
+    private function count(string $kind, int $failures): void
+    {
+        $minute = $this->minute($this->clock->now());
+        try {
+            DB::table('store_failure_minutes')->upsert(
+                [['kind' => $kind, 'minute' => $minute, 'failures' => $failures]],
+                ['kind', 'minute'],
+                ['failures' => DB::raw('store_failure_minutes.failures + excluded.failures')],
+            );
+            DB::table('store_failure_minutes')->where('minute', '<', $minute->subHour())->delete();
+        } catch (Throwable) {
+            // The log line above is the signal; the count is best effort.
+        }
+    }
+
+    private function minute(CarbonImmutable $at): CarbonImmutable
+    {
+        return $at->utc()->startOfMinute();
     }
 }

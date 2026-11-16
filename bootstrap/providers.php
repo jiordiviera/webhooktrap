@@ -7,6 +7,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\CaptureServiceProvider;
 use App\Providers\HorizonServiceProvider;
 use App\Providers\IdentityServiceProvider;
+use App\Providers\InstanceServiceProvider;
 use App\Providers\PacksServiceProvider;
 use App\Providers\ProvingServiceProvider;
 use App\Providers\WorkspaceServiceProvider;
@@ -20,4 +21,5 @@ return [
     CaptureServiceProvider::class,
     AgentServiceProvider::class,
     ProvingServiceProvider::class,
+    InstanceServiceProvider::class,
 ];

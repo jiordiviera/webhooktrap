@@ -6,6 +6,7 @@ use App\Modules\Agent\Jobs\RunAgentMaintenance;
 use App\Modules\Capture\Jobs\PurgeExpiredCaptures;
 use App\Modules\Identity\Jobs\PurgeDeletedAccounts;
 use App\Modules\Identity\Jobs\RunIdentityMaintenance;
+use App\Modules\Instance\Application\Heartbeats;
 use App\Modules\Proving\Jobs\ExpireRunJobs;
 use App\Modules\Workspace\Jobs\PurgeDeletedProjects;
 use Illuminate\Foundation\Inspiring;
@@ -36,3 +37,8 @@ Schedule::job(new RunAgentMaintenance)->everyMinute()->withoutOverlapping();
 
 // Proving: runs whose job expired end Aborted `agent_lost` (domain §6).
 Schedule::job(new ExpireRunJobs)->everyMinute()->withoutOverlapping();
+
+// Instance: the scheduler's heartbeat, written inline by `schedule:work` (not
+// queued), read by `app:heartbeat-check` (its Compose healthcheck) and `/health`.
+Schedule::call(fn (Heartbeats $heartbeats) => $heartbeats->beat(Heartbeats::SCHEDULER))
+    ->everyMinute()->name('instance:heartbeat');

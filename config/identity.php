@@ -96,6 +96,15 @@ return [
         'recovery_codes' => env('IDENTITY_RECOVERY_CODE_KEY'),
     ],
 
+    // Failed sign-in alert (hosted plan §6.6): instance-wide counts only,
+    // read by `/health` (`signin_failures_5m`, `signin_alert_level`).
+    'signin_alert' => [
+        'window_seconds' => (int) env('SIGNIN_ALERT_WINDOW_SECONDS', 300),
+        'warn_failures' => (int) env('SIGNIN_ALERT_WARN_FAILURES', 50),
+        'warn_throttled' => (int) env('SIGNIN_ALERT_WARN_THROTTLED', 10),
+        'crit_failures' => (int) env('SIGNIN_ALERT_CRIT_FAILURES', 250),
+    ],
+
     'webauthn' => [
         'rp_id' => env('WEBAUTHN_RP_ID'),
         'rp_name' => env('WEBAUTHN_RP_NAME'),

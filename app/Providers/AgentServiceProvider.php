@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Modules\Agent\Application\AgentAccountDeletion;
 use App\Modules\Agent\Application\AgentWorkspaceMove;
+use App\Modules\Agent\Console\RunnerToken;
 use App\Modules\Agent\Domain\JsonSchema;
 use App\Modules\Agent\Events\AgentPaired;
 use App\Modules\Agent\Http\Middleware\AuthenticateAgent;
@@ -25,7 +26,7 @@ use Illuminate\Support\ServiceProvider;
  * Agent wiring (decision 64): the protocol schemas (`contracts/agent/v1`),
  * the `/agent/v1` routes outside the web group, the agent middleware, the
  * claim move and account deletion participants, and the listeners on
- * Identity, Proving and its own events.
+ * Identity, Proving and its own events; the host command `runner:token`.
  */
 final class AgentServiceProvider extends ServiceProvider
 {
@@ -47,6 +48,10 @@ final class AgentServiceProvider extends ServiceProvider
         Event::listen(GuestSessionEnded::class, [AgentReactions::class, 'guestEnded']);
         Event::listen(AccountDeleted::class, [AgentReactions::class, 'accountDeleted']);
         Event::listen(AccountRecoveryCompleted::class, [AgentReactions::class, 'recoveryCompleted']);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([RunnerToken::class]);
+        }
 
         if (! $this->app->routesAreCached()) {
             Route::prefix('agent/v1')->group(base_path('routes/agent.php'));

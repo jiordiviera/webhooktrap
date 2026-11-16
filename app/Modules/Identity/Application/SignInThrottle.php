@@ -20,7 +20,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class SignInThrottle
 {
-    public function __construct(private Throttle $throttle, private Audit $audit) {}
+    public function __construct(private Throttle $throttle, private Audit $audit, private SignInAlerts $alerts) {}
 
     public function emailKey(string $email): string
     {
@@ -50,6 +50,11 @@ final readonly class SignInThrottle
      * then verified (TH-1a).
      */
     public function reservePassword(string $emailKey, string $addressKey): ?CarbonImmutable
+    {
+        return $this->countThrottled($this->reservePasswordSlots($emailKey, $addressKey));
+    }
+
+    private function reservePasswordSlots(string $emailKey, string $addressKey): ?CarbonImmutable
     {
         $c = config('identity.throttle');
         if ($until = $this->addressBlockedUntil($addressKey)) {
@@ -101,11 +106,12 @@ final readonly class SignInThrottle
     public function reserveAccount(string $emailKey): bool
     {
         $c = config('identity.throttle.account');
-        if ($this->accountHeldUntil($emailKey) !== null) {
-            return false;
+        if ($this->accountHeldUntil($emailKey) === null && $this->throttle->reserve("signin:acct:{$emailKey}", $c['max'], $c['decay'])) {
+            return true;
         }
+        $this->alerts->throttled();
 
-        return $this->throttle->reserve("signin:acct:{$emailKey}", $c['max'], $c['decay']);
+        return false;
     }
 
     public function refundAccount(string $emailKey): void
@@ -116,6 +122,7 @@ final readonly class SignInThrottle
     /** After a failed (already reserved) password check: places the hold at the limit. */
     public function accountFailed(string $emailKey, ?User $user, ?RequestContext $context): void
     {
+        $this->alerts->failed();
         $c = config('identity.throttle');
         $key = "signin:acct:{$emailKey}";
         if ($this->throttle->attempts($key) >= $c['account']['max'] && $this->throttle->heldUntil($key) === null) {
@@ -133,13 +140,19 @@ final readonly class SignInThrottle
     {
         $c = config('identity.throttle');
         if ($until = $this->addressBlockedUntil($addressKey)) {
-            return $until;
+            return $this->countThrottled($until);
         }
         $this->throttle->hit("signin:addr:req:{$addressKey}", $c['address_requests']['decay']);
         $key = "signin:addr:fail:{$addressKey}";
 
-        return $this->throttle->reserve($key, $c['address_failures']['max'], $c['address_failures']['decay'])
-            ? null : $this->throttle->availableAt($key);
+        return $this->countThrottled($this->throttle->reserve($key, $c['address_failures']['max'], $c['address_failures']['decay'])
+            ? null : $this->throttle->availableAt($key));
+    }
+
+    /** A passkey assertion that did not verify (its address slot stays counted). */
+    public function passkeyFailed(): void
+    {
+        $this->alerts->failed();
     }
 
     public function refundAddressFailure(string $addressKey): void
@@ -164,6 +177,16 @@ final readonly class SignInThrottle
     {
         // Reserve-then-check (F2): the request is counted before it is acted on.
         return $this->throttle->reserve($key, $max, $decay) ? null : $this->throttle->availableAt($key);
+    }
+
+    /** Counts a `throttled` answer for the instance-wide alert (hosted plan §6.6). */
+    private function countThrottled(?CarbonImmutable $until): ?CarbonImmutable
+    {
+        if ($until !== null) {
+            $this->alerts->throttled();
+        }
+
+        return $until;
     }
 
     /** @param  list<CarbonImmutable>  $ends */

@@ -9,6 +9,7 @@ use App\Modules\Identity\Application\AccountDeletion;
 use App\Modules\Identity\Application\GuestSessionChannel;
 use App\Modules\Identity\Application\IdentityBootChecks;
 use App\Modules\Identity\Application\SecurityViews;
+use App\Modules\Identity\Console\ApplyDeletionLedger;
 use App\Modules\Identity\Console\ImportLegacyAccounts;
 use App\Modules\Identity\Domain\GuestGuard;
 use App\Modules\Identity\Domain\LiveUserProvider;
@@ -76,7 +77,7 @@ final class IdentityServiceProvider extends ServiceProvider
         Event::listen(GuestSessionEnded::class, [WorkspaceIdentityListener::class, 'ended']);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ImportLegacyAccounts::class]);
+            $this->commands([ImportLegacyAccounts::class, ApplyDeletionLedger::class]);
         }
     }
 }

@@ -254,6 +254,8 @@ final readonly class WebAuthnCeremonies
         $user = $used?->user;
         // DL-2: a tombstoned or disabled account answers as unknown.
         if ($used === null || $user === null || ! $user->isLive() || ! $user->isVerified()) {
+            $this->signInThrottle->passkeyFailed();
+
             return new SignInOutcome(SignInOutcome::FAILED);
         }
         $this->signInThrottle->refundAddressFailure($context->addressKey);

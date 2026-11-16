@@ -22,6 +22,7 @@ use App\Modules\Identity\Events\AccountDeleted;
 use App\Modules\Identity\Events\AccountDeletionCancelled;
 use App\Modules\Identity\Events\AccountDeletionRequested;
 use App\Modules\Retention\Application\DeletionLedger;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -193,18 +194,75 @@ final readonly class AccountDeletion
 
                 continue;
             }
-            DB::transaction(function () use ($user): void {
-                $this->auditLog->maskEmailsFor($user->id);
-                DB::table('password_reset_tokens')->where('email', $user->email)->delete();
-                foreach ($this->participants as $participant) {
-                    $participant->purge($user->id);
-                }
-                $user->delete();
-            });
+            DB::transaction(fn () => $this->purgeTree($user));
             $purged++;
         }
 
         return $purged;
+    }
+
+    /**
+     * DL-3c, after a restore (`accounts:apply-ledger`): an account in the
+     * deletion ledger that exists again is purged at once with the same
+     * ownership-tree purge as phase 2, whether or not the restored row carries
+     * its tombstone. No mail, no event, no queue: nothing else runs during a
+     * restore, and the purge deletes the sessions, tokens and agents with the
+     * tree. The ledger row is written again first (the restored table may
+     * predate it). Idempotent: false when the account is not there.
+     */
+    public function purgeLedgered(string $subject, CarbonImmutable $deletedAt): bool
+    {
+        $id = User::uuidFromPublicId($subject);
+        if ($id === null) {
+            return false;
+        }
+        $this->ledger->record($subject, $deletedAt);
+
+        return DB::transaction(function () use ($id): bool {
+            $user = User::query()->lockForUpdate()->find($id);
+            if ($user === null) {
+                return false;
+            }
+            $this->purgeTree($user);
+
+            return true;
+        });
+    }
+
+    /**
+     * The `usr_` ids among `$subjects` whose `users` row exists.
+     *
+     * @param  list<string>  $subjects
+     * @return list<string>
+     */
+    public function present(array $subjects): array
+    {
+        $ids = [];
+        foreach ($subjects as $subject) {
+            if (($id = User::uuidFromPublicId($subject)) !== null) {
+                $ids[$id] = $subject;
+            }
+        }
+        $found = [];
+        foreach (array_chunk(array_keys($ids), 500) as $chunk) {
+            foreach (User::query()->whereKey($chunk)->pluck('id') as $id) {
+                $found[] = $ids[(string) $id];
+            }
+        }
+        sort($found);
+
+        return $found;
+    }
+
+    /** Phase 2 of one account, inside the caller's transaction. */
+    private function purgeTree(User $user): void
+    {
+        $this->auditLog->maskEmailsFor($user->id);
+        DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+        foreach ($this->participants as $participant) {
+            $participant->purge($user->id);
+        }
+        $user->delete();
     }
 
     /** Hourly job: pending deletion requests past their hour close as `expired`. */

@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
  */
 final readonly class SecondFactorFailures
 {
-    public function __construct(private Clock $clock, private Audit $audit, private Notifier $notifier) {}
+    public function __construct(private Clock $clock, private Audit $audit, private Notifier $notifier, private SignInAlerts $alerts) {}
 
     public function heldUntil(User $user): ?CarbonImmutable
     {
@@ -66,6 +66,7 @@ final readonly class SecondFactorFailures
             ->count();
 
         $this->audit->record('second_factor_failed', $user, $context, ['kind' => $kind]);
+        $this->alerts->failed();
         SecondFactorFailed::dispatch($user->id, $kind, $count);
 
         if ($count >= (int) $c['max'] && $this->heldUntil($user) === null) {
