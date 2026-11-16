@@ -1,7 +1,8 @@
 import { usePage } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import AppLogoWordmark from '@/components/app-logo-wordmark';
-import { dashboard, home, login } from '@/routes';
+import { home, login } from '@/routes';
+import { index as projects } from '@/routes/projects';
 import { GetUrlButton, LandingButton } from './landing-button';
 
 const links = [
@@ -39,8 +40,8 @@ export function LandingHeader() {
                     </a>
                 ))}
                 {signedIn ? (
-                    <LandingButton href={dashboard().url} size="sm">
-                        Dashboard
+                    <LandingButton href={projects().url} size="sm">
+                        Open app
                     </LandingButton>
                 ) : (
                     <>

@@ -11,9 +11,12 @@ Route::inertia('/', 'welcome')->name('home');
 Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
 Route::inertia('/terms', 'Legal/Terms')->name('terms');
 
+// Starter-kit URLs that may still be bookmarked: the signed-in home is
+// /projects, and appearance lives in Account › Preferences (decision 59).
+Route::permanentRedirect('dashboard', '/projects');
+Route::permanentRedirect('settings/appearance', '/account/preferences');
+
 Route::middleware(['auth:web', 'verified-email'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
-    Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
     // Per-device preferences (decision 59): layout and appearance, stored in cookies.
     Route::inertia('account/preferences', 'Account/Preferences')->name('account.preferences');
 });
