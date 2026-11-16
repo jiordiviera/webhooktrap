@@ -22,7 +22,7 @@ import { useClientValidation } from '@/hooks/use-client-validation';
 import { useWebAuthnSupport } from '@/hooks/use-webauthn-support';
 import { copy, providerLabel } from '@/lib/identity/copy';
 import { retryLabel } from '@/lib/identity/format';
-import { register } from '@/routes';
+import { privacy, register, terms } from '@/routes';
 import password from '@/routes/password';
 import { password as signInPassword } from '@/routes/sign-in';
 
@@ -226,6 +226,11 @@ export default function SignIn({
                         </Link>
                     </p>
                 )}
+                <p className="tt-hint">
+                    By signing in you agree to the{' '}
+                    <Link href={terms()}>Terms of service</Link> and the{' '}
+                    <Link href={privacy()}>Privacy policy</Link>.
+                </p>
             </div>
         </BareShell>
     );

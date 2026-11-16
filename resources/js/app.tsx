@@ -22,6 +22,7 @@ void createInertiaApp({
             case name === 'welcome':
             case name === 'Expired':
             case name === 'Error':
+            case name.startsWith('Legal/'):
             case name.startsWith('Auth/'):
             case name.startsWith('Account/'):
             case name.startsWith('TwoFactor/'):

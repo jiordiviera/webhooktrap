@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import {
     forwardRef,
     useEffect,
@@ -9,6 +10,7 @@ import {
 } from 'react';
 import { SupportLink } from '@/components/brand/support-link';
 import { cn } from '@/lib/utils';
+import { privacy, terms } from '@/routes';
 import { findings, type DiffLine, type Finding } from './findings';
 import { CopyCommand, GetUrlButton } from './landing-button';
 import {
@@ -693,8 +695,12 @@ const footerLinks = [
     ['GitHub', 'github'],
     ['Self-host', 'self-host'],
     ['Status', 'status'],
-    ['Privacy', 'privacy'],
 ] as const;
+
+const legalLinks = [
+    { label: 'Privacy', href: privacy().url },
+    { label: 'Terms', href: terms().url },
+];
 
 export function LandingFooter() {
     return (
@@ -712,6 +718,15 @@ export function LandingFooter() {
                     >
                         {label}
                     </a>
+                ))}
+                {legalLinks.map(({ label, href }) => (
+                    <Link
+                        key={label}
+                        href={href}
+                        className="text-lp-muted no-underline hover:text-lp-ink"
+                    >
+                        {label}
+                    </Link>
                 ))}
                 <SupportLink className="text-lp-muted no-underline hover:text-lp-ink sm:ml-auto" />
             </nav>

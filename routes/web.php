@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
+// Public legal pages (Google and GitHub OAuth apps link them): no session
+// state of their own, the same for anonymous visitors, guests and users.
+Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
+Route::inertia('/terms', 'Legal/Terms')->name('terms');
+
 Route::middleware(['auth:web', 'verified-email'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
