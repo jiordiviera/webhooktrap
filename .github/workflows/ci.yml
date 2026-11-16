@@ -155,15 +155,19 @@ jobs:
             github_client_secret google_client_secret error_tracker_dsn identity_email_hmac_key \
             identity_recovery_code_key; do : > "$d/secrets/$s"; done
           cp compose.production.yaml "$d/"
-          printf '%s\n' APP_ENV=production APP_URL=https://app.example.test DB_HOST=postgres \
-            DB_DATABASE=webhooktrap DB_USERNAME=webhooktrap REDIS_HOST=valkey POSTGRES_DB=webhooktrap \
-            POSTGRES_USER=webhooktrap POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password \
-            VALKEY_MAXMEMORY=192mb > "$d/.env.production"
+          # The hosted template, as c3-finish.sh writes it (Reverb id and key stand-ins).
+          sed 's/=__GENERATE__$/=1/' deploy/hosted/env.production.template > "$d/.env.production"
           printf '%s\n' "APP_IMAGE=ghcr.io/$GITHUB_REPOSITORY" "APP_DIGEST=sha256:$(printf 'a%.0s' $(seq 64))" \
             "PG_IMAGE=ghcr.io/$GITHUB_REPOSITORY-postgres" "PG_DIGEST=sha256:$(printf 'b%.0s' $(seq 64))" \
             APP_PORT=18999 > "$d/.env.deploy"
-          docker compose --project-directory "$d" --env-file "$d/.env.deploy" -f "$d/compose.production.yaml" \
-            config --format json > "$d/resolved.json"
+          # Same env files, same order as deploy.sh's compose().
+          docker compose --project-directory "$d" --env-file "$d/.env.production" --env-file "$d/.env.deploy" \
+            -f "$d/compose.production.yaml" config --format json > "$d/resolved.json"
+          # Bare `environment: [NAME]` entries must resolve (postgres, valkey and backup have no env_file).
+          python3 -I -c 'import json, sys
+          s = json.load(open(sys.argv[1]))["services"]
+          for svc, key in (("postgres", "POSTGRES_USER"), ("postgres", "POSTGRES_PASSWORD_FILE"), ("valkey", "VALKEY_MAXMEMORY"), ("backup", "BACKUP_REPO_TYPE")):
+              assert s[svc]["environment"].get(key), svc + " " + key' "$d/resolved.json"
           python3 -I -B deploy/policy/test_compose_policy.py "$d/resolved.json" "$d"
       - name: Caddyfile is valid in every trust mode
         run: |

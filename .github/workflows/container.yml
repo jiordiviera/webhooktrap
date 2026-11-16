@@ -124,6 +124,8 @@ jobs:
 
       - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
         if: github.event_name == 'push'
+        with:
+          cosign-release: v3.1.4 # same pin as deploy/bin/c3-finish.sh (the box's cosign)
       - name: Sign images (keyless)
         if: github.event_name == 'push'
         env:
@@ -179,6 +181,24 @@ jobs:
               --certificate-github-workflow-sha "$GITHUB_SHA" "$ref" > /dev/null
             docker buildx imagetools inspect "$ref" --format '{{json .Provenance}}' | grep -q '"SLSA"'
             docker buildx imagetools inspect "$ref" --format '{{json .SBOM}}' | grep -q '"SPDX"'
+          done
+      - name: The box's verify line (deploy.sh step 2, TM-T147) with the pinned trusted root
+        if: github.event_name == 'push'
+        env:
+          APP_DIGEST: ${{ steps.app.outputs.digest }}
+          PG_DIGEST: ${{ steps.pg.outputs.digest }}
+          CERT_ID: https://github.com/${{ github.repository }}/.github/workflows/container.yml@${{ github.ref }}
+          # Same pins as deploy/bin/c3-finish.sh (cosign v3.1.4 comes from the installer above).
+          TRUSTED_ROOT_URL: https://raw.githubusercontent.com/sigstore/root-signing/c9bda74ad2221f938f7d2e0295ca3aad2da710a8/targets/trusted_root.json
+          TRUSTED_ROOT_SHA256: 6494e21ea73fa7ee769f85f57d5a3e6a08725eae1e38c755fc3517c9e6bc0b66
+        run: |
+          cosign version | grep -q 'v3.1.4'
+          curl -fsSL -o "$RUNNER_TEMP/trusted_root.json" "$TRUSTED_ROOT_URL"
+          echo "$TRUSTED_ROOT_SHA256  $RUNNER_TEMP/trusted_root.json" | sha256sum -c -
+          for ref in "$APP_REPO@$APP_DIGEST" "$PG_REPO@$PG_DIGEST"; do
+            cosign verify --trusted-root "$RUNNER_TEMP/trusted_root.json" \
+              --certificate-identity "$CERT_ID" --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              --certificate-github-workflow-sha "$GITHUB_SHA" "$ref" > /dev/null
           done
       - name: Record digests
         if: github.event_name == 'push'

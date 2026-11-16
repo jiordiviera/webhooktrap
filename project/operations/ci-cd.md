@@ -1,6 +1,6 @@
 # CI/CD · Webhook Trap 2.0
 
-**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-15 (rev. 13)
+**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-15 (rev. 14)
 **Rev. 13 (2026-11-15, step C2):** the repo is on GitHub, private, default branch `v2` (decisions 65-66; `main` deleted, 1.x on `v1`). CI and container run on `v2` and are green. The Compose policy (`deploy/policy`), `deploy.sh` and `deploy-gate` (`deploy/bin`) exist and are tested in CI. GitHub artifact attestations wait for the repo to go public. §1.3 lists the GitHub settings and secrets (names only). Change table at the end.
 **Rev. 12 (2026-11-15):** every app secret is a Compose file secret (CLAUDE.md rule), mounted only where read: P-5 file list, P-14 per service, P-17 without `_FILE` routing, new P-20 (no secret as a plain value in any resolved environment). Change table at the end.
 **Rev. 11 (2026-11-15):** agent follow-ups (A06, commits `13f7443`, `0a088b4`): the `agent_pairing_hmac_key` secret in the policy (P-5, P-14), `APP_NUM_THREADS` = `LONGPOLL_HTTP_WORKERS` on `app` (P-17), `AGENT_ALLOW_DEV_BUILDS` refused (new P-18), no transaction-pooled database connection (new P-19). Change table at the end.
@@ -160,7 +160,7 @@ Constants in the script (installed at C3, changed only by a PO-approved reinstal
 
 1. Validate the arguments against the grammar above; refuse otherwise. `flock` against concurrent runs. Re-exec under `env -i` with a fixed `PATH`; refuse if a `.env` file exists in `$APP_DIR` (Compose would read it); never read `COMPOSE_*` or `DOCKER_*` from the caller. `cd "$APP_DIR"`; require `.env.production` and `secrets/`. Refuse while `$APP_DIR`'s `backup_status` volume holds `restore.pending` (a restore is half done: the deletion ledger has not been re-applied, DL-3c; `docker run --rm -v webhooktrap_backup_status:/s:ro <pinned busybox digest> test -e /s/restore.pending`, read-only, no 2.0 code run). **Nothing is copied or written** (CI-1).
 2. **Verify on the box, then pull.** For each of `APP_REPO@<app-digest>` and `PG_REPO@<pg-digest>`: `cosign verify --certificate-identity "$CERT_ID" --certificate-oidc-issuer "$OIDC_ISSUER" --certificate-github-workflow-sha <sha> --trusted-root <pinned root> <ref>`, then the provenance check with the same identity flags and the SLSA provenance v1 predicate type. **The exact command is not assumed:** `actions/attest-build-provenance` pushes a Sigstore bundle as an OCI referrer of the image, and older `cosign` releases do not discover referrers. The pinned `cosign` version and the verify-attestation (or bundle-based) command line are therefore fixed by test TM-T147 on a real image built by `container.yml`, and `deploy.sh` runs exactly the line the test proved; no manual bypass is documented or provided. The `--certificate-github-workflow-sha` flag binds the digest to the commit named in the argument. Any failure: exit, nothing pulled, nothing changed. Only after both pass, pull by the verified references (registry login from the root-only file if private; `docker logout` after). (`rollback`: the same checks on the digests and SHA recorded in `.env.deploy.previous`.) Needs egress to the registry and to Sigstore's transparency log; offline verification from the signature bundle is an option once the bundles carry inclusion proofs (decide at implementation).
-3. **Extract and check the Compose file.** `docker create --pull=never` on the app reference (no code runs), `docker cp <id>:/app/deploy/compose.production.yaml` to a candidate path (regular file, ≤ 64 KiB, in a root-only directory under `$APP_DIR`), `docker rm`. Write the candidate `.env.deploy` beside it (not at its final path). Run the policy (§4.2) on `docker compose --project-directory "$APP_DIR" --env-file <candidate .env.deploy> -f <candidate> config --format json`. Fail: exit, nothing changed. Pass: log the candidate's SHA-256. **Rev. 5 (CI-1a): neither the candidate Compose file nor the candidate env file is installed yet;** the installed `$APP_DIR/compose.production.yaml`, `.env.deploy` and `.env.deploy.previous` stay byte-identical until step 6.
+3. **Extract and check the Compose file.** `docker create --pull=never` on the app reference (no code runs), `docker cp <id>:/app/deploy/compose.production.yaml` to a candidate path (regular file, ≤ 64 KiB, in a root-only directory under `$APP_DIR`), `docker rm`. Write the candidate `.env.deploy` beside it (not at its final path). Run the policy (§4.2) on `docker compose --project-directory "$APP_DIR" --env-file .env.production --env-file <candidate .env.deploy> -f <candidate> config --format json` (rev. 14: both files, in this order, in every Compose call). Fail: exit, nothing changed. Pass: log the candidate's SHA-256. **Rev. 5 (CI-1a): neither the candidate Compose file nor the candidate env file is installed yet;** the installed `$APP_DIR/compose.production.yaml`, `.env.deploy` and `.env.deploy.previous` stay byte-identical until step 6.
 4. **Pre-migrate backup**, run with the candidate files (`-f <candidate> --env-file <candidate .env.deploy>`): `docker compose … run --rm backup backup-now --type=incr` (skipped only when the database is empty, i.e. first deploy; skipped for `rollback`). Fail = stop, nothing changed.
 5. **Migrate** (template), same candidate files: `docker compose … run --rm app php artisan migrate --force --no-interaction` (skipped for `rollback`). Fail = stop; the installed files are still the previous deployment's, so nothing needs restoring (the migration itself is not reverted, see step 9).
 6. **Only now, after steps 2, 3, 4 and 5 passed (CI-1, CI-1a):** copy `.env.deploy` to `.env.deploy.previous` and the installed `compose.production.yaml` to `compose.production.yaml.previous` (template's "save the previous tag", automated; skipped on the first deploy, when neither exists; for `rollback` the two pairs are swapped instead), then write the new `.env.deploy` (`APP_IMAGE`, `APP_DIGEST`, `IMAGE_TAG`, `PG_IMAGE`, `PG_DIGEST`, `APP_PORT`) **and install the checked Compose file** as `$APP_DIR/compose.production.yaml` (root, `0644`) from the SHA-256 logged at step 3. Each write is atomic (temp file in the same directory, `mv`); the Compose file is installed before the env file, so the pair is never new-env with old-file for longer than one `mv`. A refused or failed deploy (any exit before this step, including backup and migrate) leaves `.env.deploy`, `.env.deploy.previous`, `compose.production.yaml` and its `.previous` untouched; test TM-T147 checks that too.
@@ -225,6 +225,57 @@ Run in the `conformance` job and again at C6 on the box before the first deploy,
 | Any refusal above | nothing pulled, `.env.deploy`, `.env.deploy.previous` and `compose.production.yaml` byte-identical before and after (hash compared), a later `rollback` still targets the older deployment |
 
 ### 4.3 Files on the box that deploy depends on
+
+**Rev. 14, `deploy/bin/c3-finish.sh` (C3, run once as root on the box; idempotent; prints no secret).** It completes the layout the PO prepared (`/etc/webhooktrap/deploy.conf`, `bin/deploy.sh`, `bin/deploy-gate`, `bin/compose-policy.py`, `secrets/`). Run it from a checkout of the reviewed commit.
+
+**0. `bin/` against the checkout.** `deploy.sh`, `deploy-gate` and `compose-policy.py` are compared byte for byte with the checkout. A difference is reported; `--install-bin` replaces the file (root, 0755, 0755, 0644). Copies installed before rev. 14 differ (`deploy.sh` rollback and env files, below).
+
+**1. cosign and the trusted root.**
+
+| File | Source | How it is checked |
+| ---- | ------ | ----------------- |
+| `bin/cosign` | `https://github.com/sigstore/cosign/releases/download/v3.1.4/cosign-linux-<arch>` | SHA-256 pinned in the script, not fetched beside the binary: amd64 `424e2c97…f4bbfa`, arm64 `ade83b7a…dedad2`. The values come from the release's `cosign_checksums.txt` |
+| `bin/trusted_root.json` | `sigstore/root-signing` at commit `c9bda74`, the last change to `targets/trusted_root.json` (2025-09-22) | SHA-256 pinned: `6494e21e…6b0c66` |
+
+- **Why v3.1.4:** it is the version CI signs with (the pinned `cosign-installer` default).
+- **Proof in CI:** `container.yml` runs `deploy.sh`'s exact `cosign verify --trusted-root …` line against the images it has just signed, with the same version and the same pinned root. This is TM-T147's line, proven before the box uses it.
+- **When Sigstore rotates its root:** the pin changes in the script and in `container.yml` together. CI fails first if the new root is needed.
+
+**2. The slice.** `webhooktrap.slice`: `MemoryHigh=5632M`, `MemoryMax=6G`, `MemorySwapMax=0`, `CPUQuota=300%`, `TasksMax=4096`, `IOWeight=50`, then `daemon-reload`.
+
+**3. `.env.production`.**
+- **Source:** written from `deploy/hosted/env.production.template` (settings only).
+- **Generated on first write:** the Reverb app id and key (public identifiers).
+- **Re-runs:** an existing file is kept, and the run reports names missing from it.
+- **P-20:** the script refuses if the template or the file sets any secret name.
+- **Values the PO confirms before C6:**
+  - `GUEST_MODE`;
+  - `WEBAUTHN_RP_ID` (`app.webhooktrap.dev`, or the apex; it can never change once users have passkeys);
+  - `MAIL_MAILER` and `MAIL_FROM_ADDRESS`;
+  - the OAuth client ids;
+  - `BACKUP_S3_ENDPOINT` and `BACKUP_S3_BUCKET` (R2);
+  - `LEDGER_AGE_RECIPIENT`.
+- **Blocker before the second deploy:** with `BACKUP_REPO_TYPE=s3` and no endpoint, bucket or key files, `backup` fails, and so does step 4 (the pre-migrate backup) of every deploy after the first.
+- **CI:** the `infra` job resolves `compose.production.yaml` with this template and runs the policy on it.
+
+**4. GHCR access.**
+- **Recommended:** make the three packages (`webhooktrap`, `webhooktrap-postgres`, `webhooktrap-runner`) public. The repo is public, the images contain only public code and no secret, the runner image is pulled by users anyway, and the box then needs no registry token to store or rotate.
+- **Alternative:** a token scoped `read:packages` only, passed as a file with `--ghcr-user` and `--ghcr-token-file`, used for root's `docker login ghcr.io`.
+- **Check:** the script tests anonymous access first and reports the mode it found.
+
+**5. Summary.** It prints:
+- each `bin/` file's owner, mode and hash, to compare with `sha256sum deploy/bin/* deploy/policy/compose-policy.py` from the deployed commit;
+- the cosign version;
+- the slice values;
+- for each secret: owner and mode against the expected ones, and whether it is set or empty;
+- whether `db_password` and `postgres_password` hold the same value;
+- the edge secret's shape;
+- for `webhooktrap-deploy`: sudoers parses, its only sudo rule is `NOPASSWD` on `bin/deploy.sh`, the password is locked, it is not in `docker`, every key is forced to `deploy-gate` with `restrict`.
+
+**Rev. 14, `deploy.sh` rollback.** It now re-verifies the previous digests (signature, with the commit from `IMAGE_TAG`) and re-runs the policy on the previous Compose file before swapping, as this section says. Copies installed before rev. 14 must be replaced.
+
+**Rev. 14, `deploy.sh` env files.** Every `docker compose` call passes `--env-file .env.production` and then `--env-file <.env.deploy>` (the later wins). `postgres`, `valkey` and `backup` have no `env_file` and list bare names (`environment: [POSTGRES_USER, …]`), which Compose resolves only from these files: with `.env.deploy` alone they were unset, and Postgres would not have initialised nor Valkey started. The policy (step 3) runs on the same resolution.
+
 
 `$APP_DIR/bin/deploy.sh`, `bin/deploy-gate`, `bin/compose-policy.py`, `bin/cosign` (pinned version, SHA-256 recorded; fetched and checked by the PO at C3, updated the same way), `trusted_root.json` (Sigstore trust root, refreshed by the PO quarterly or when verification fails for a reason other than the signature). All root-owned, none writable by `webhooktrap-deploy`.
 
@@ -393,3 +444,13 @@ The template has **no licence** (`gh api` reports `license: null`; its README as
 | C2 | Policy, deploy | drafts | `deploy/policy/compose-policy.py` (+ 34 fixtures in CI), `deploy/bin/deploy.sh`, `deploy-gate` | §4, §4.2 |
 | C2 | Attestations | always | only when the repo is public; until then signed BuildKit provenance and SBOM, checked in `container.yml` | §1.3, §3 |
 | C2 | CI test job | overrode `phpunit.xml` drivers (182 failures on GitHub) | no override; `APP_URL` as the tests expect | §2 |
+
+## Change table (rev. 14, C3 finish)
+
+| ID | Area | Rev. 13 | Rev. 14 | Where |
+| -- | ---- | ------- | ------- | ----- |
+| C3 | Box completion | manual | `deploy/bin/c3-finish.sh`: pinned cosign and trusted root, slice, `.env.production` from a template, GHCR mode, summary | §4.3 |
+| TM-T147 | Verify line | proven at C6 | proven in `container.yml` with the box's pins | §3, §4.3 |
+| §4.3 | Rollback | swap only | re-verifies signatures and policy first | §4.3 |
+| §4 | Compose env files | `.env.deploy` only (postgres, valkey, backup got no values) | `.env.production` then `.env.deploy` in every call; CI resolves with the hosted template | §4, §4.3 |
+| CI | cosign version | installer default | `cosign-release: v3.1.4` explicit, same pin as the box | §4.3 |

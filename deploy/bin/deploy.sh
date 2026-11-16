@@ -67,7 +67,9 @@ if docker volume inspect "${PROJECT}_backup_status" >/dev/null 2>&1 \
     fail "restore.pending is present: finish the restore (accounts:apply-ledger, restore-finish) first" 75
 fi
 
-compose() { docker compose -p "$PROJECT" --project-directory "$APP_DIR" "$@"; }
+# .env.production first, then the caller's .env.deploy (the later file wins): bare names in the
+# Compose file (postgres, valkey, backup `environment: [NAME]`) resolve from these two files only.
+compose() { docker compose -p "$PROJECT" --project-directory "$APP_DIR" --env-file "$APP_DIR/.env.production" "$@"; }
 installed() { compose --env-file .env.deploy -f compose.production.yaml "$@"; }
 
 # Step 8: /up answers and every long-running service is healthy (the one-shot is excluded).
@@ -83,8 +85,39 @@ healthy() {
     return 1
 }
 
+work=$(mktemp -d "$APP_DIR/.deploy.XXXXXX")
+trap 'rm -rf "$work"' EXIT
+
+# Step 2: the box verifies each image itself (signature by container.yml on v2, for that commit).
+verify_refs() { # sha app_ref pg_ref
+    for ref in "$2" "$3"; do
+        "$COSIGN" verify --trusted-root "$TRUSTED_ROOT" \
+            --certificate-identity "$CERT_ID" --certificate-oidc-issuer "$OIDC_ISSUER" \
+            --certificate-github-workflow-sha "$1" "$ref" >/dev/null \
+            || fail "signature check failed for $ref" 1
+    done
+}
+# Step 3: the on-box policy on the resolved configuration (P-11: the JSON is deleted at once).
+policy_check() { # compose_file env_file app_ref pg_ref
+    compose --env-file "$2" -f "$1" config --format json > "$work/resolved.json"
+    if ! python3 -I "$POLICY" --config "$work/resolved.json" --app-ref "$3" --pg-ref "$4" \
+        --app-dir "$APP_DIR" --app-port "$APP_PORT"; then
+        rm -f "$work/resolved.json"
+        fail "Compose policy refused the file" 1
+    fi
+    rm -f "$work/resolved.json"
+}
+
 if [ "$action" = rollback ]; then
     [ -f .env.deploy.previous ] && [ -f compose.production.yaml.previous ] || fail "nothing to roll back to" 1
+    # The previous deployment is verified again, as a new one would be (ci-cd.md §4.3).
+    prev_sha=$(sed -n 's/^IMAGE_TAG=\([0-9a-f]\{40\}\)$/\1/p' .env.deploy.previous)
+    prev_app=$(sed -n 's/^APP_DIGEST=\(sha256:[0-9a-f]\{64\}\)$/\1/p' .env.deploy.previous)
+    prev_pg=$(sed -n 's/^PG_DIGEST=\(sha256:[0-9a-f]\{64\}\)$/\1/p' .env.deploy.previous)
+    [ -n "$prev_sha" ] && [ -n "$prev_app" ] && [ -n "$prev_pg" ] || fail ".env.deploy.previous is not a deploy.sh file" 1
+    verify_refs "$prev_sha" "$APP_REPO@$prev_app" "$PG_REPO@$prev_pg"
+    policy_check compose.production.yaml.previous .env.deploy.previous "$APP_REPO@$prev_app" "$PG_REPO@$prev_pg"
+    log "rollback to $prev_sha: signatures and policy checked again"
     for f in .env.deploy compose.production.yaml; do
         mv "$f" "$f.swap" && mv "$f.previous" "$f" && mv "$f.swap" "$f.previous"
     done
@@ -94,18 +127,11 @@ if [ "$action" = rollback ]; then
     exit 0
 fi
 
-work=$(mktemp -d "$APP_DIR/.deploy.XXXXXX")
-trap 'rm -rf "$work"' EXIT
 app_ref="$APP_REPO@$app_digest"
 pg_ref="$PG_REPO@$pg_digest"
 
 # --- 2. Verify on the box, then pull ---------------------------------------------------------
-for ref in "$app_ref" "$pg_ref"; do
-    "$COSIGN" verify --trusted-root "$TRUSTED_ROOT" \
-        --certificate-identity "$CERT_ID" --certificate-oidc-issuer "$OIDC_ISSUER" \
-        --certificate-github-workflow-sha "$sha" "$ref" >/dev/null \
-        || fail "signature check failed for $ref" 1
-done
+verify_refs "$sha" "$app_ref" "$pg_ref"
 log "verified $app_ref and $pg_ref for $sha"
 docker pull -q "$app_ref" >/dev/null
 docker pull -q "$pg_ref" >/dev/null
@@ -124,10 +150,7 @@ PG_IMAGE=$PG_REPO
 PG_DIGEST=$pg_digest
 APP_PORT=$APP_PORT
 EOF
-compose --env-file "$work/.env.deploy" -f "$work/compose.production.yaml" config --format json > "$work/resolved.json"
-python3 -I "$POLICY" --config "$work/resolved.json" --app-ref "$app_ref" --pg-ref "$pg_ref" \
-    --app-dir "$APP_DIR" --app-port "$APP_PORT" || fail "Compose policy refused the file" 1
-rm -f "$work/resolved.json" # it inlines .env.production (P-11)
+policy_check "$work/compose.production.yaml" "$work/.env.deploy" "$app_ref" "$pg_ref"
 candidate_hash=$(sha256sum "$work/compose.production.yaml" | cut -d' ' -f1)
 log "policy passed, Compose file sha256 $candidate_hash"
 

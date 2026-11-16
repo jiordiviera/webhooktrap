@@ -135,6 +135,17 @@ import /etc/frankenphp/caddy/trust-site-*.caddy
 		handle @ws {
 			reverse_proxy reverb:8080
 		}
+		# Decision 62: the browser opens its socket on its own origin (resources/js/lib/realtime/
+		# echo.ts), so a WebSocket upgrade to Reverb's client path on the app host goes to Reverb
+		# too. Only the upgrade: Reverb's HTTP API (/apps/...) is never routed from outside.
+		@ws_app {
+			path /app/*
+			header_regexp Connection (?i)\bupgrade\b
+			header_regexp Upgrade (?i)^websocket$
+		}
+		handle @ws_app {
+			reverse_proxy reverb:8080
+		}
 		handle @capture {
 			import ingest-{$INGEST_MODE:local}
 		}
