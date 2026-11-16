@@ -730,3 +730,10 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
   - In the entrypoint's `_FILE` list, the policy (P-5, P-14, P-20), CI, `c3-finish.sh` and `.env.example` (names only).
 - **Webhook route off:** the package's `POST /pulsesend/webhook` is not used. `config/pulsesend.php` sets `routes` to false by default; a test checks that the path answers 404.
 - **Before the next deploy (host, PO go):** reinstall the on-box policy (`c3-finish.sh --install-bin`), write `secrets/pulsesend_api_key`, and set `MAIL_MAILER=pulsesend` in the box's `.env.production` (private ops note, C3 log).
+
+## 73. The app stays on app.webhooktrap.dev; the apex redirects (2026-11-16)
+
+- The PO keeps `app.webhooktrap.dev` as the app host. `in.` and `ws.` stay separate hosts (HD-7, TM-04).
+- `webhooktrap.dev` and `www` answer with a 301 to `https://app.webhooktrap.dev{uri}` on the host Caddy. There is no HSTS on the apex, because `includeSubDomains` would break plain-http captures on `in.`.
+- Moving the app to the apex later stays possible: the WebAuthn RP ID is already the apex (decision 70).
+- Also on 2026-11-16: BIMI is ready (DMARC `p=quarantine`, `default._bimi`, an SVG Tiny PS logo; no VMC, so Gmail and Apple Mail show no logo). The 1.x GitHub OAuth app, R2 bucket `hookscope` (with `cdn.jiordiviera.me`) and its admin token are deleted. Neon and Resend wait for the PO's sign-in.
