@@ -696,3 +696,19 @@ Locally, `main` is renamed to `v1`. Workflows and docs refer to `v2`.
 ## 69. No accepted residuals on the shared host; deploy now (2026-11-15)
 
 The PO accepts no risks in writing. G-2: the monitoring agent's host user is removed from the `docker` group. Its system metrics keep working; container metrics from it stop until a read-only socket proxy is proposed. The PO asks for the 2.0 deploy now. The database is created by the deploy itself: the Postgres container plus migrations.
+
+## 70. First-deploy readiness; passkeys on the apex (2026-11-16)
+
+- **Deploy blockers closed** (A06 8855d9e, 48c37ac; A08 8ab6e92; A10 cac3086, 0cc98c6, 3f80c2c):
+  - app health commands, `/health` fields, ledger re-apply and runner tokens;
+  - engine `serve-sandbox`, `sandbox-ping` and `serve-run`;
+  - the C3 finish script, the hosted env template, the deploy env-file fix and the engine socket directory.
+- **GHCR:** the three images (`webhooktrap`, `-runner`, `-postgres`) are public (PO). The box needs no registry token.
+- **DNS:** `in` and `ws` A records, DNS only, like `app`.
+- **WebAuthn RP ID:** the PO chooses the apex `webhooktrap.dev`, so passkeys survive a change of app subdomain. The allowed origin stays `APP_URL` only.
+- **A00 sign-off:** `backup` is left out of deploy.sh's final health gate. The pre-migrate backup already gates on it, and `/health` watches it.
+- **Open after the deploy:**
+  - the PHP EngineProcess adapter;
+  - runner contracts (executor `server`, a decline/abort route, the secrets response);
+  - the self-host runner origin under TLS_MODE=auto;
+  - R2 and the ledger age recipient (they block the second deploy), mail and OAuth.
