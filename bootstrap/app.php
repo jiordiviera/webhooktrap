@@ -29,6 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // The guest cookie carries a random token stored hashed; it is read raw.
         $middleware->encryptCookies(except: ['appearance', 'layout', 'layout_sidebar', 'sidebar_state', '__Host-wt_guest']);
 
+        // The image's Caddy is the only peer PHP ever sees, and it decides what reaches PHP: in mode
+        // `secret` the forwarded headers survive only when the host proxy's X-WT-Edge proof matched,
+        // in mode `none` they are always stripped (docker/caddy/trust-site-*.caddy). So PHP trusts
+        // them as Caddy left them: the client address and the https scheme for URLs and cookies.
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
+
         $middleware->redirectGuestsTo('/sign-in');
         $middleware->redirectUsersTo('/');
         $middleware->alias([
