@@ -1,8 +1,8 @@
 import { Link, router } from '@inertiajs/react';
+import { notify } from '@/lib/notify';
 import * as Menu from '@radix-ui/react-dropdown-menu';
 import type { RefObject } from 'react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { AccountShell } from '@/components/identity/account-shell';
 import { PageHeading } from '@/components/identity/bare-shell';
 import { Button, Note, StatusBadge } from '@/components/identity/form';
@@ -1126,7 +1126,7 @@ function Dialogs({
                     kind={dialog.keyKind}
                     returnFocus={returnTo}
                     onAdded={(row) => {
-                        toast(
+                        notify.success(
                             `${row.kind === 'passkey' ? 'Passkey' : 'Security key'} added: ${row.name}.`,
                         );
                         router.reload({ only: ['security'] });

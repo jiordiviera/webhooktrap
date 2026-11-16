@@ -1,7 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
+import { notify } from '@/lib/notify';
 import type { FormEvent, RefObject } from 'react';
 import { useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { useClientValidation } from '@/hooks/use-client-validation';
 import { copy as words, lockLine, providerLabel } from '@/lib/identity/copy';
 import { formatDay, formatFull } from '@/lib/identity/format';
@@ -587,7 +587,7 @@ export function TotpSetupDialog({
     const close = () => {
         if (!saved.current) {
             // The secret is shown once; closing discards it.
-            toast('Nothing was saved.');
+            notify.info('Nothing was saved.');
         }
         onClose();
     };

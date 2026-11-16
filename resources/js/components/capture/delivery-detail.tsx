@@ -1,8 +1,8 @@
 import { Link, router } from '@inertiajs/react';
+import { notify } from '@/lib/notify';
 import * as Menu from '@radix-ui/react-dropdown-menu';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import CaptureStream from '@/actions/App/Modules/Capture/Http/Controllers/CaptureStreamController';
 import RunPage from '@/actions/App/Modules/Proving/Http/Controllers/RunPageController';
 import { Note } from '@/components/identity/form';
@@ -91,7 +91,7 @@ function curlFor(capture: CaptureDetail, url: string | null): string {
 async function copy(text: string, done: string) {
     try {
         await navigator.clipboard.writeText(text);
-        toast(done);
+        notify.brief(done);
     } catch {
         // Clipboard unavailable: the values stay selectable text.
     }

@@ -1,6 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { toast } from 'sonner';
 import { Hero } from '@/components/landing/hero';
 import { LandingHeader } from '@/components/landing/landing-header';
 import {
@@ -16,6 +15,7 @@ import {
 import { StickyCta } from '@/components/landing/sticky-cta';
 import { Toaster } from '@/components/ui/sonner';
 import { flashCopy } from '@/lib/identity/copy';
+import { notify } from '@/lib/notify';
 import type { Flash } from '@/types/identity';
 
 /** The landing's own toaster: it renders inside the dark landing root. */
@@ -36,7 +36,7 @@ export default function Welcome() {
         const text = flashCopy(current);
 
         if (text) {
-            toast(text, { toasterId: LANDING_TOASTER });
+            notify.flash(current, text, LANDING_TOASTER);
         }
     });
 

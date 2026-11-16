@@ -1293,19 +1293,230 @@
 
 /* ---- Toasts (sonner) -------------------------------------------------------- */
 
-.tt-toast {
+/* Toasts (lib/notify.tsx, canvas "Webhook Trap — Toasts"). The kind sets
+   --tone; the 2 px top line is the timer and pauses while the stack is hovered. */
+.wt-toast {
+    --tone: var(--now);
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    width: 100%;
-    padding: 12px 16px;
+    width: min(380px, calc(100vw - 32px));
+    box-sizing: border-box;
+    padding: 14px 10px 14px 14px;
+    overflow: hidden;
     border: 1px solid var(--rule);
-    border-top: 2px solid var(--now);
     border-radius: 3px;
     background: var(--win);
     color: var(--ink);
-    font: 400 13px/1.45 var(--font-ui);
-    font-stretch: 87.5%;
+    box-shadow: 0 6px 20px rgb(28 27 21 / 0.1);
+    font: 400 13px/18px var(--font-archivo);
+    animation: wt-toast-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+:is(.dark, [data-theme='dark']) .wt-toast {
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+.wt-toast[data-kind='success'] {
+    --tone: var(--pass);
+}
+.wt-toast[data-kind='warning'] {
+    --tone: var(--sev-high);
+}
+.wt-toast[data-kind='error'] {
+    --tone: var(--conflict);
+    border-color: color-mix(in srgb, var(--conflict) 50%, var(--rule));
+}
+.wt-toast[data-kind='undo'] {
+    --tone: var(--ink);
+    align-items: center;
+}
+.wt-toast[data-kind='brief'] {
+    --tone: var(--ink-muted);
+    width: auto;
+    max-width: min(380px, calc(100vw - 32px));
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px 9px 10px;
+}
+
+.wt-toast-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--tone);
+    transform-origin: left;
+    animation: wt-countdown linear both;
+}
+.wt-toast[data-kind='error'] .wt-toast-bar {
+    animation: none;
+}
+.wt-toast[data-loading] .wt-toast-bar {
+    width: 34%;
+    animation: wt-toast-scan 1.2s ease-in-out infinite;
+}
+[data-sonner-toaster]:hover .wt-toast-bar {
+    animation-play-state: paused;
+}
+
+.wt-toast-chip {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    box-sizing: border-box;
+    border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--tone) 12%, transparent);
+    color: var(--tone);
+}
+.wt-toast[data-kind='undo'] .wt-toast-chip {
+    border-color: var(--rule);
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.wt-toast-chip svg,
+.wt-toast-tick {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2;
+}
+.wt-toast[data-loading] .wt-toast-chip svg {
+    animation: wt-spin 0.9s linear infinite;
+}
+.wt-toast-tick {
+    flex: none;
+    color: var(--pass);
+}
+
+.wt-toast-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 2px;
+}
+.wt-toast[data-kind='undo'] .wt-toast-body {
+    padding-top: 0;
+}
+.wt-toast-title {
+    margin: 0;
+    font-weight: 600;
+}
+.wt-toast[data-kind='brief'] .wt-toast-title {
+    font-weight: 500;
+    white-space: nowrap;
+}
+.wt-toast-desc {
+    margin: 0;
+    color: var(--ink-muted);
+}
+.wt-toast-meta {
+    margin: 2px 0 0;
+    overflow: hidden;
+    color: var(--ink-dim);
+    font: 400 11px/16px var(--font-mono);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.wt-toast[data-kind='brief'] .wt-toast-meta {
+    margin: 0;
+}
+
+.wt-toast-acts {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+.wt-toast-btn {
+    flex: none;
+    padding: 5px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--ground);
+    color: var(--ink);
+    font: 500 11px/16px var(--font-mono);
+    cursor: pointer;
+}
+.wt-toast-btn[data-strong] {
+    border-color: var(--ink);
+}
+.wt-toast-btn:hover {
+    border-color: var(--ink-muted);
+}
+.wt-toast-x {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    border: 0;
+    border-radius: 2px;
+    background: none;
+    color: var(--ink-dim);
+    cursor: pointer;
+}
+.wt-toast[data-kind='undo'] .wt-toast-x {
+    margin-top: 0;
+}
+.wt-toast-x svg {
+    width: 14px;
+    height: 14px;
+}
+.wt-toast-x:hover {
+    background: var(--rule);
+    color: var(--ink);
+}
+.wt-toast-btn:focus-visible,
+.wt-toast-x:focus-visible {
+    outline: 2px solid var(--now);
+    outline-offset: 2px;
+}
+
+@keyframes wt-toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+@keyframes wt-countdown {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+@keyframes wt-toast-scan {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(300%);
+    }
+}
+@keyframes wt-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wt-toast,
+    .wt-toast[data-loading] .wt-toast-chip svg,
+    .wt-toast[data-loading] .wt-toast-bar {
+        animation: none;
+    }
 }
 
 @media print {

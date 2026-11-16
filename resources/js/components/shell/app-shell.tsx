@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { notify } from '@/lib/notify';
 import * as Menu from '@radix-ui/react-dropdown-menu';
 import * as Tip from '@radix-ui/react-tooltip';
 import type { LucideIcon } from 'lucide-react';
@@ -13,7 +14,6 @@ import {
 } from 'lucide-react';
 import type { ReactElement, ReactNode } from 'react';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { toast } from 'sonner';
 import { index as showProject } from '@/actions/App/Modules/Capture/Http/Controllers/CaptureStreamController';
 import AgentPage from '@/actions/App/Modules/Agent/Http/Controllers/AgentPageController';
 import RunPage from '@/actions/App/Modules/Proving/Http/Controllers/RunPageController';
@@ -695,7 +695,7 @@ export function AppShell({
         const text = toastFor?.(current) ?? workspaceFlashCopy(current);
 
         if (text) {
-            toast(text);
+            notify.flash(current, text);
         }
     });
 

@@ -1,6 +1,7 @@
-import { useAppearance } from '@/hooks/use-appearance';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
+import { useAppearance } from '@/hooks/use-appearance';
 
+/* Toasts are drawn by lib/notify.tsx; this only places the stack. */
 function Toaster({ ...props }: ToasterProps) {
     const { appearance } = useAppearance();
 
@@ -10,14 +11,9 @@ function Toaster({ ...props }: ToasterProps) {
             className="toaster group"
             position="bottom-left"
             visibleToasts={2}
-            toastOptions={{ unstyled: true, classNames: { toast: 'tt-toast' } }}
-            style={
-                {
-                    '--normal-bg': 'var(--popover)',
-                    '--normal-text': 'var(--popover-foreground)',
-                    '--normal-border': 'var(--border)',
-                } as React.CSSProperties
-            }
+            gap={10}
+            toastOptions={{ unstyled: true }}
+            style={{ '--width': '380px' } as React.CSSProperties}
             {...props}
         />
     );

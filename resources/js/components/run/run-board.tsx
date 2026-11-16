@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
+import { notify } from '@/lib/notify';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { StripeLogo } from '@/components/brand/provider-logos';
 import { EscText } from '@/components/capture/bits';
 import {
@@ -587,7 +587,7 @@ export function DeliveriesTable({
 async function copyText(text: string, done: string) {
     try {
         await navigator.clipboard.writeText(text);
-        toast(done);
+        notify.brief(done);
     } catch {
         // Clipboard unavailable: the text stays selectable.
     }
