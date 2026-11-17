@@ -112,6 +112,21 @@ export const captureCopy = {
         `${n} new ${n === 1 ? 'delivery' : 'deliveries'} arrived.`,
 };
 
+/**
+ * A synthetic event for curl and Send a test request (issue #18): shaped like
+ * a real webhook, with made-up ids and no personal data.
+ */
+export const SAMPLE_BODY = JSON.stringify({
+    id: 'evt_test_0001',
+    type: 'order.paid',
+    created: '2026-11-18T09:30:00Z',
+    data: { order_id: 'ord_1042', amount: 2500, currency: 'eur' },
+});
+
+/** COPY PROPOSAL (A07): how to send from your own app, and where to look (issue #18). */
+export const fromYourApp =
+    'From your own app: set its webhook or callback URL (often an environment variable such as WEBHOOK_URL) to this address and trigger the event. Each request appears here within a second; open it to see the headers, the exact body and the signature check.';
+
 /** Waiting-panel provider instructions (RD `copy.capture.waiting`). */
 export function providerInstructions(id: string, url: string): string {
     switch (id) {
@@ -124,7 +139,7 @@ export function providerInstructions(id: string, url: string): string {
         case 'standard_webhooks':
             return "Paste the URL as the endpoint in your provider's webhook settings. We detect webhook-id / webhook-signature headers automatically.";
         default:
-            return `curl -X POST ${url} -H 'Content-Type: application/json' -d '{"hello":"world"}'`;
+            return `curl -X POST ${url} \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-Event-Type: order.paid' \\\n  -d '${SAMPLE_BODY}'`;
     }
 }
 

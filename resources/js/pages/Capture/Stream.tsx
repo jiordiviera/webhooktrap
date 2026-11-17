@@ -11,6 +11,10 @@ import type { DetailTab } from '@/components/capture/delivery-detail';
 import { DeliveryDetail } from '@/components/capture/delivery-detail';
 import { StreamList } from '@/components/capture/stream-list';
 import { WaitingPanel } from '@/components/capture/waiting-panel';
+import {
+    GuestNextStep,
+    GuestQuotaBanner,
+} from '@/components/capture/guest-guide';
 import { AppShell, CaptureUrlChip } from '@/components/shell/app-shell';
 import { captureCopy, clock } from '@/lib/capture/format';
 import type { CaptureRow, StreamProps, StreamQueryState } from '@/types';
@@ -378,6 +382,9 @@ export default function Stream({
                 <p className="tt-sr" aria-live="polite">
                     {announce}
                 </p>
+
+                <GuestQuotaBanner />
+                {!waiting && <GuestNextStep />}
 
                 {waiting ? (
                     <div className="tt-cap-waiting">

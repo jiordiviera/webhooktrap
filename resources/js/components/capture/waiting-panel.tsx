@@ -3,7 +3,12 @@ import { useState } from 'react';
 import ExampleRun from '@/actions/App/Modules/Proving/Http/Controllers/ExampleRunController';
 import { CaptureUrlChip } from '@/components/shell/app-shell';
 import { Glyph } from '@/components/identity/glyph';
-import { captureCopy, providerInstructions } from '@/lib/capture/format';
+import {
+    captureCopy,
+    fromYourApp,
+    providerInstructions,
+    SAMPLE_BODY,
+} from '@/lib/capture/format';
 import { LiveIndicator, ProviderMark } from './bits';
 
 /*
@@ -37,7 +42,7 @@ export function WaitingPanel({
                 mode: 'no-cors',
                 credentials: 'omit',
                 headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ hello: 'world' }),
+                body: SAMPLE_BODY,
             });
             setSent('sent');
         } catch {
@@ -120,6 +125,7 @@ export function WaitingPanel({
                         <p>{providerInstructions(tab, url)}</p>
                     )}
                 </div>
+                <p className="tt-hint">{fromYourApp}</p>
                 <div className="tt-row" style={{ flexWrap: 'wrap', gap: 12 }}>
                     <button
                         type="button"

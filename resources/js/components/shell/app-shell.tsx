@@ -27,6 +27,12 @@ import { Glyph } from '@/components/identity/glyph';
 import { RecoveryBanner } from '@/components/identity/recovery-banner';
 import { useLayout } from '@/hooks/use-layout';
 import { meterLeft } from '@/lib/identity/format';
+import {
+    ENDING_SOON_SECONDS,
+    guestCopy,
+    guestEndingSoon,
+    guestSignInUrl,
+} from '@/lib/identity/guest';
 import { workspaceCopy, workspaceFlashCopy } from '@/lib/workspace/copy';
 import { home, login, logout } from '@/routes';
 import account from '@/routes/account';
@@ -580,27 +586,85 @@ function AccountMenu({
 }
 
 function GuestMeter({ compact = false }: { compact?: boolean }) {
-    const { principal, meter } = usePage().props;
+    const { principal, meter, currentProject } = usePage().props;
 
     if (principal.kind !== 'guest' || !meter) {
         return null;
     }
     const left = meterLeft(meter.expiresAt);
-    const full = `Guest session · expires in ${left} · ${meter.captures.used}/${meter.captures.limit} deliveries · ${meter.runs.used}/${meter.runs.limit} runs`;
+    const soon = guestEndingSoon(meter);
+    const capturesFull = meter.captures.used >= meter.captures.limit;
+    const runsFull = meter.runs.used >= meter.runs.limit;
+    // FL-11: the warning style adds a word ("Ends in 1 h", "Limit reached"), not colour only.
+    const time = soon ? `${guestCopy.endingSoon.label} · ${left}` : left;
+    const captures = `${meter.captures.used}/${meter.captures.limit}`;
+    const runs = `${meter.runs.used}/${meter.runs.limit}`;
+    const full = [
+        `Guest session · ${soon ? guestCopy.endingSoon.label + ' · ' : ''}expires in ${left}`,
+        `${captures} deliveries${capturesFull ? ` · ${guestCopy.limitReached}` : ''}`,
+        `${runs} runs${runsFull ? ` · ${guestCopy.limitReached}` : ''}`,
+    ].join(' · ');
     // S-00 compact meter (390): "Guest · 23 h 49 m · 13/100 · 1/10 runs".
-    const short = `Guest · ${left} · ${meter.captures.used}/${meter.captures.limit} · ${meter.runs.used}/${meter.runs.limit} runs`;
+    const short = `Guest · ${time} · ${captures}${capturesFull ? ' ' + guestCopy.limitReached : ''} · ${runs} runs`;
+    const signIn = guestSignInUrl(currentProject?.key);
 
     return (
-        <p className="tt-meter">
+        <p
+            className="tt-meter"
+            data-warn={soon || capturesFull || runsFull || undefined}
+        >
             {compact ? (
                 short
             ) : (
                 <>
-                    {full} · <Link href={login()}>Sign in to keep</Link>
+                    {full} · <Link href={signIn}>Sign in to keep</Link>
                 </>
             )}
         </p>
     );
+}
+
+/**
+ * FL-11 "1 h left": one toast, once per guest session (kept across reloads
+ * in this tab). Checked every 30 s against the expiry time.
+ */
+function useGuestEndingToast() {
+    const { principal, meter } = usePage().props;
+    const expiresAt =
+        principal.kind === 'guest' && meter ? meter.expiresAt : null;
+
+    useEffect(() => {
+        if (!expiresAt) {
+            return;
+        }
+        const key = 'wt.guest.ending-soon';
+        const check = () => {
+            const left = Math.floor(
+                (new Date(expiresAt).getTime() - Date.now()) / 1000,
+            );
+
+            if (left <= 0 || left > ENDING_SOON_SECONDS) {
+                return;
+            }
+
+            try {
+                if (sessionStorage.getItem(key) === expiresAt) {
+                    return;
+                }
+                sessionStorage.setItem(key, expiresAt);
+            } catch {
+                // No storage: the toast may show again after a reload.
+            }
+            notify.warning({
+                title: guestCopy.endingSoon.label,
+                description: guestCopy.endingSoon.helper,
+            });
+        };
+        check();
+        const timer = window.setInterval(check, 30_000);
+
+        return () => window.clearInterval(timer);
+    }, [expiresAt]);
 }
 
 function Brand({ wordmark = false }: { wordmark?: boolean }) {
@@ -693,6 +757,7 @@ export function AppShell({
     const { shell, sidebar } = useLayout();
     const nav = useSectionNav();
     const user = principal.kind === 'user';
+    useGuestEndingToast();
 
     const announce = useEffectEvent((current: Flash) => {
         const text = toastFor?.(current) ?? workspaceFlashCopy(current);
