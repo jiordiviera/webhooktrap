@@ -129,3 +129,11 @@ The runner sends to public addresses only (`RUNNER_GUARD_CEILING=public`). `RUNN
 - With `BACKUP_BEFORE_MIGRATE` on, a backup runs before every migration.
 - Restore into a stopped stack with an empty `pgdata` volume: `docker compose run --rm backup restore`, optionally with `--target-time=…`.
 - To upgrade, change `WEBHOOKTRAP_VERSION` and run `docker compose up -d`. Migrations stay backward-compatible for one release, so rolling the image back needs no schema rollback.
+
+## License
+
+Webhook Trap is licensed under the [GNU AGPL-3.0](https://github.com/jiordiviera/webhooktrap/blob/v2/LICENSE). The self-hosted app is the same code as the hosted service, with every feature: the engine, the agent, the scenarios and the provider packs. No paid edition unlocks extra features.
+
+- **Running it unchanged:** you can run it for yourself, your team or your company, at no cost.
+- **Running a modified version as a network service:** the AGPL asks you to offer the source of your modified version to everyone who uses it over the network. Section 13 of the license covers this. This covers every user who reaches it over the network, including people inside your own company.
+- **The hosted service** at app.webhooktrap.dev runs the public code. Its paid plans sell hosting, quotas, retention and support, not features.
