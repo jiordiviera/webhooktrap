@@ -1,60 +1,48 @@
-## Description
+## Summary
 
-Clear, concise description of what this PR does.
+Describe what changed and why.
 
-Related issue: #(issue number)
+Related issue: Closes #
 
-## Type of Change
+## Priority
 
-- [ ] Bug fix (non-breaking change)
-- [ ] New feature (non-breaking change)
-- [ ] Breaking change
+- [ ] P0, Critical
+- [ ] P1, High
+- [ ] P2, Normal
+- [ ] P3, Low
+
+## Type of change
+
+- [ ] Bug fix
+- [ ] Feature
+- [ ] Refactor
 - [ ] Documentation
+- [ ] Tests
+- [ ] Maintenance
 
-## Checklist
+## Validation
 
-### Code Quality
+List only commands you actually ran and their results.
 
-- [ ] I've run `pnpm format` (Prettier)
-- [ ] I've run `pnpm lint` (ESLint)
-- [ ] I've run `pnpm check-types` (TypeScript)
-- [ ] Code follows project conventions (CLAUDE.md)
+- [ ] `php artisan test`
+- [ ] `vendor/bin/pint`
+- [ ] `vendor/bin/phpstan analyse`
+- [ ] `pnpm run build`
+- [ ] `pnpm run check`
+- [ ] `pnpm run types:check`
+- [ ] `cd agent && go test ./...`
 
-### Testing
+Checks not run and why:
 
-- [ ] I've tested this locally (`pnpm dev`)
-- [ ] Existing tests still pass (`pnpm test`)
-- [ ] I've added tests for new functionality (if applicable)
+## Risk and compatibility
 
-### Documentation
+Describe migrations, configuration changes, API changes, security implications and rollback considerations.
 
-- [ ] README updated (if user-facing)
-- [ ] CONTRIBUTING.md updated (if process changed)
-- [ ] Code comments added for non-obvious logic
+## Reviewer checklist
 
-### Security
-
-- [ ] No secrets in code/commit history
-- [ ] No breaking changes to API contracts
-- [ ] Input validation added (if applicable)
-
-## Testing Instructions
-
-How can reviewers test this change?
-
-```bash
-pnpm dev
-# Go to http://localhost:7777 and...
-```
-
-## Screenshots / Logs
-
-If UI or error output changed, include screenshots or logs.
-
-## Breaking Changes
-
-Any API, schema, or behavior changes that would require user migration?
-
----
-
-**Note:** Contributions should align with [CONTRIBUTING.md](CONTRIBUTING.md). Large features should be discussed in an issue first.
+- [ ] This PR targets `v2`.
+- [ ] Work was committed on a feature branch, never on `v2`.
+- [ ] Tests cover the changed behavior.
+- [ ] Documentation was updated where needed.
+- [ ] No secrets or private production data are included.
+- [ ] I followed [CONTRIBUTING.md](../CONTRIBUTING.md).
