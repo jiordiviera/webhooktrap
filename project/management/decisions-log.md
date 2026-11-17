@@ -766,3 +766,13 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
 - **Runs/Draft:** `preview` and `previewError` are lazy props. The draft plans all 9 scenarios once (measured: 5 captures → 23 deliveries, under CAP-1's 50); the page adds up the ticked ones plus `once`, which the engine always plans (PLAN-2). TM-18: 20 engine calls per principal per minute (cache hits free), cache 10 min keyed by capture refs, orders, body and header hashes, scenarios, pack; transport failures are not cached. Engine down: `preview` null with a code, the page works as before.
 - **Launch:** `delivery_count` is stored from the plan when the engine answers; else jobs send null as before. The agent's observations still overwrite it.
 - **Local dev:** a dynamically linked engine binary fails under lerd's PHP container (musl loader re-exec); build with `CGO_ENABLED=0`, as the Dockerfile does. The real-binary test skips when `agent/bin/webhooktrap` is absent.
+
+## 77. R-14: the Twice resemblance check, visual part done (2026-11-17)
+
+- **Visual check:** Twice was set side by side with the NS mark (Wikimedia Commons), Svix (svix.com), ngrok (svgl) and Hookdeck (hookdeck.com). None is close:
+  - NS is a closed double arrow in one blue shape;
+  - Svix is an S in a hexagon, ngrok a wordmark, and Hookdeck two linked rings.
+- **British Rail double arrow** stays the closest family (two arrows across two parallel lines). Twice keeps its distance: no arrowheads, parallel paths and not a zig-zag, both rails starting at the same edge, and the red square. The misuse rule that forbids arrowheads stays.
+- **Name:** web search found no "Webhook Trap" filing. The nearest records are WEBHOOK (USPTO 86015060, abandoned in 2014) and WEBTRAP (USPTO 75507992, cancelled in 2007). These come from third-party trademark sites, not the official registers.
+- **Still open:** a search in the official registers (INPI, EUIPO, USPTO and the WIPO Global Brand Database, including image search) before any filing. It does not block a LinkedIn post.
+- **PO's call:** whether this closes R-14 for public use.
