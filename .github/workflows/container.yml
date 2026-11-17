@@ -91,7 +91,7 @@ jobs:
           sbom: true
           tags: |
             ${{ env.APP_REPO }}:${{ github.sha }}
-            ${{ env.APP_REPO }}:${{ github.ref_name }}
+            ${{ github.event_name == 'push' && format('{0}:{1}', env.APP_REPO, github.ref_name) || '' }}
           build-args: |
             ENGINE_VERSION=${{ github.sha }}
             ENGINE_COMMIT=${{ github.sha }}
@@ -106,7 +106,7 @@ jobs:
           sbom: true
           tags: |
             ${{ env.RUNNER_REPO }}:${{ github.sha }}
-            ${{ env.RUNNER_REPO }}:${{ github.ref_name }}
+            ${{ github.event_name == 'push' && format('{0}:{1}', env.RUNNER_REPO, github.ref_name) || '' }}
           build-args: |
             ENGINE_VERSION=${{ github.sha }}
             ENGINE_COMMIT=${{ github.sha }}
@@ -120,7 +120,7 @@ jobs:
           sbom: true
           tags: |
             ${{ env.PG_REPO }}:${{ github.sha }}
-            ${{ env.PG_REPO }}:${{ github.ref_name }}
+            ${{ github.event_name == 'push' && format('{0}:{1}', env.PG_REPO, github.ref_name) || '' }}
 
       - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
         if: github.event_name == 'push'
