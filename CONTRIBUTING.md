@@ -26,12 +26,12 @@ routine direct-push exceptions.
 2. For a bug, feature, or architectural change, open or update an issue first.
 3. Agree on the expected behavior and acceptance criteria before implementation.
 4. Check the priority assigned to the issue:
-   - **P0, Critical:** security vulnerability, data loss, or production-wide
-     outage. Stop normal work and contact the maintainers privately for security
-     issues.
-   - **P1, High:** core workflow broken, severe regression, or release blocker.
-   - **P2, Normal:** important bug or planned product improvement.
-   - **P3, Low:** polish, minor UX, cleanup, or non-blocking documentation.
+    - **P0, Critical:** security vulnerability, data loss, or production-wide
+      outage. Stop normal work and contact the maintainers privately for security
+      issues.
+    - **P1, High:** core workflow broken, severe regression, or release blocker.
+    - **P2, Normal:** important bug or planned product improvement.
+    - **P3, Low:** polish, minor UX, cleanup, or non-blocking documentation.
 5. Do not start a large architectural change without maintainer agreement.
 
 ## Branch naming
