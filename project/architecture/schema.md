@@ -217,8 +217,21 @@ Password-reset tokens use Laravel's `password_reset_tokens` (email, token hash, 
 | next_run_number | integer NOT NULL DEFAULT 1 | same |
 | last_agent_id | uuid FK → agents SET NULL | |
 | deleted_at | timestamptz | soft delete for 24 h undo, then hard delete |
+| first_capture_at | timestamptz | activation funnel (decision 79): set once, by the first stored delivery |
+| first_run_at | timestamptz | activation funnel: set once, by the first run with a verdict (`findings`, `inconclusive`, `passed`) |
 
 Guest invariant (one project per guest workspace): enforced in the service and by a partial unique index on a generated column `is_guest` copied from the workspace at insert: `UNIQUE (workspace_id) WHERE is_guest`.
+
+### `activation_daily` (decision 79)
+| Column | Type | Notes |
+| ------ | ---- | ----- |
+| day | date | UTC day; PK with `milestone`, `guest` |
+| milestone | text | `project_created`, `first_capture`, `first_run`, `claimed` |
+| guest | boolean | the project was a guest project when it reached the milestone |
+| count | integer NOT NULL DEFAULT 0 | |
+| seconds_total | bigint NOT NULL DEFAULT 0 | summed seconds from project creation, for the average |
+
+Aggregate only: no project, user, session, IP or user agent. Rows outlive the projects they came from. Read by the operator dashboard only.
 
 ### Atomic quota updates
 

@@ -791,3 +791,13 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
   - The full lifecycle runs in the Paddle sandbox before production.
 - **Order:** the plan matrix (#12) first, then billing (#13). Nothing is built before the PO approves the matrix and the prices.
 - **PO's call:** the prices, the Free quotas and Paddle versus Stripe.
+
+## 79. Guest activation: first-party funnel counts, guest guidance on S-03 (2026-11-18)
+
+- **Issue #18.** The guest path from landing to first verdict mostly existed: URL on one click, waiting panel, claim that keeps the project. This slice closes the gaps.
+- **Funnel, first party and aggregate only.** Four milestones: project created (for a guest, the URL), first stored delivery, first run with a verdict, guest session claimed with something in it. Each project stores `first_capture_at` and `first_run_at` so a milestone counts once. The counts go to `activation_daily`: one row per UTC day, milestone and guest flag, with summed seconds from project creation. No identifier is written there, nothing goes to a third party, no script or cookie is added. The privacy page's "no third-party analytics or trackers" stays true.
+- **Where it shows:** a "Guest activation (7 days)" widget on the operator dashboard (decision 74), with share of URLs and average time to each milestone.
+- **Guest screens (FL-11, IA guest table):** the meter gains "Ends in 1 h" and "Limit reached" (word plus weight, not colour only); one toast at 1 h left, once per session in the tab; the persistent S-03 quota banner; "Sign in to keep" goes to `/sign-in?next=/p/{projectKey}` (FL-7 step 1).
+- **First minute:** the curl example and Send a test request use a synthetic `order.paid` event instead of `{"hello":"world"}`; one line explains sending from your own app. After the first delivery and before the first run, a dismissible "Next: prove your handler" banner points to pairing the agent and Prove.
+- **Copy:** the new lines are COPY PROPOSAL (A07).
+- **PO's call:** whether the privacy page should mention the aggregate counts (they hold no personal data; not required, but transparent).

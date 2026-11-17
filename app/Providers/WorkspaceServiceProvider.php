@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\Capture\Events\CaptureReceived;
+use App\Modules\Identity\Events\GuestSessionClaimed;
+use App\Modules\Proving\Events\RunFinished;
 use App\Modules\Workspace\Application\ProjectChannel;
 use App\Modules\Workspace\Application\WorkspaceAccountDeletion;
 use App\Modules\Workspace\Application\WorkspaceChannel;
 use App\Modules\Workspace\Application\WorkspaceOwnership;
+use App\Modules\Workspace\Events\ProjectCreated;
+use App\Modules\Workspace\Listeners\ActivationListener;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -23,5 +29,14 @@ final class WorkspaceServiceProvider extends ServiceProvider
         // Modules whose rows follow a claimed guest workspace (Agent).
         $this->app->when(WorkspaceOwnership::class)
             ->needs('$moveParticipants')->giveTagged('workspace.move-participants');
+    }
+
+    public function boot(): void
+    {
+        // Activation funnel (decision 79): first-party, aggregate counts only.
+        Event::listen(ProjectCreated::class, [ActivationListener::class, 'projectCreated']);
+        Event::listen(CaptureReceived::class, [ActivationListener::class, 'captureReceived']);
+        Event::listen(RunFinished::class, [ActivationListener::class, 'runFinished']);
+        Event::listen(GuestSessionClaimed::class, [ActivationListener::class, 'claimed']);
     }
 }

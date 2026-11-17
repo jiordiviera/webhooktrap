@@ -1817,6 +1817,16 @@
     color: var(--ink-muted);
 }
 
+/* FL-11 warning style (1 h left, limit reached): the word carries it, weight and ink back it. */
+.tt-meter[data-warn] {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.tt-nextstep {
+    border-top-color: var(--rule-strong);
+}
+
 .tt-menu-mark {
     display: inline-flex;
     justify-content: center;

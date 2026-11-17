@@ -20,7 +20,7 @@ This walkthrough takes a Stripe handler running on your machine from a first cap
       <img src="/images/quickstart-capture-url.webp" alt="Arrivals page waiting for the first delivery, with the capture URL framed." />
     </Frame>
 
-    A guest session lasts 24 hours and holds up to 100 deliveries and 10 runs. Sign in from the session bar to keep it: the session moves into your account.
+    A guest session lasts 24 hours and holds up to 100 deliveries and 10 runs. The session bar shows the time left and both counts. One hour before the end it says **Ends in 1 h**, and a full quota says **Limit reached**. Sign in from the session bar to keep it: the session moves into your account, with the same URL and deliveries.
   </Step>
 
   <Step title="Send a webhook to it">
@@ -35,8 +35,11 @@ This walkthrough takes a Stripe handler running on your machine from a first cap
     ```bash
     curl -X POST https://in.webhooktrap.dev/c/YOUR_KEY \
       -H 'Content-Type: application/json' \
-      -d '{"hello":"world"}'
+      -H 'X-Event-Type: order.paid' \
+      -d '{"id":"evt_test_0001","type":"order.paid","data":{"order_id":"ord_1042","amount":2500,"currency":"eur"}}'
     ```
+
+    From your own app, set its webhook or callback URL (often an environment variable such as `WEBHOOK_URL`) to the capture URL and trigger the event.
 
     The capture URL always answers `200` with `{"received":true}`. See [Capture endpoint](/reference/capture-endpoint).
   </Step>
