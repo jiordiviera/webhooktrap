@@ -268,11 +268,40 @@ export type RunRefusalCode =
     | 'undeclared_target'
     | 'quota';
 
-/** S-10 `Runs/Draft`. `preview` stays null until the server can plan (EngineProcess). */
+/**
+ * Server-side plan of a draft (EngineProcess `plan`, validated by the
+ * server): every scenario of the draft, codes and numbers only. The page
+ * sums the deliveries of the chosen scenarios plus `once`, which the engine
+ * always plans (PLAN-2).
+ */
+export type PlanPreview = {
+    deliveryCount: number;
+    /** Hex SHA-256 of the plan (for the run planned with this draft's seed). */
+    planHash: string;
+    /** SIGN-2: the provider signs a timestamp and the server holds no secret. */
+    needsSecret: boolean;
+    pack: { id: string; version: string };
+    budget: { ms: number; source: string };
+    /** `na`: why the scenario does not apply (a code), with 0 deliveries. */
+    scenarios: { name: string; na: string | null; deliveries: number }[];
+    /** `ref` is a selected capture's public id; `eventType` '' outside the hosted charset. */
+    events: { ref: string; eventType: string; primary: boolean }[];
+};
+
+/**
+ * Why there is no preview: `engine_unavailable`, `timeout`, `busy`,
+ * `bad_reply`, `rate_limited`, `frame_too_large`, `not_plannable`, or an
+ * engine code (`no_pack`, `bad_input`, …). Null with a preview, or while the
+ * selection is refused.
+ */
+export type PlanPreviewError = string;
+
+/** S-10 `Runs/Draft`. `preview` is null when the engine could not plan (`previewError`). */
 export type RunsDraftProps = {
     project: { key: string; name: string; isGuest: boolean };
     selection: CaptureRef[];
-    preview: null;
+    preview: PlanPreview | null;
+    previewError: PlanPreviewError | null;
     refusals: RunRefusalCode[];
     targets: RunTarget[];
     agent: AgentSummary | null;

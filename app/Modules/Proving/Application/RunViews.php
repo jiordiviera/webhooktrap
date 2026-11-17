@@ -344,6 +344,7 @@ final readonly class RunViews
     /**
      * S-10 draft props: the selection, declared targets of the workspace's
      * confirmed agents (TM-50), the agent summary and what would refuse the run.
+     * The plan preview is added by the controller (`RunPlanner`, lazy).
      *
      * @param  list<int>  $seqs
      * @return array<string, mixed>
@@ -396,7 +397,6 @@ final readonly class RunViews
 
         return [
             'selection' => $selection,
-            'preview' => null,
             'refusals' => $refusals,
             'targets' => $targets,
             'agent' => $summary,

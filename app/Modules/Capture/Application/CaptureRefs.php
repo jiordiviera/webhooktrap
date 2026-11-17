@@ -91,6 +91,48 @@ final readonly class CaptureRefs
     }
 
     /**
+     * What the server-side planner needs of the selected captures (EngineProcess
+     * `plan`), in `$seqs` order: the public id as ref, the seq as order, the
+     * headers in received order minus the ones stored redacted (the agent
+     * plans on the same list, `ResendableHeaders`), the body hash, and the
+     * kept body itself when `$bodies`. Captures missing or without a kept body
+     * are left out. Not an executor fetch: nothing leaves the server.
+     *
+     * @param  list<int>  $seqs
+     * @return list<array{id: string, ref: string, provider: string|null, order: int, headers: list<array{0: string, 1: string}>, bodySha256: string, body: string|null}>
+     */
+    public function forPlanning(string $projectId, array $seqs, bool $bodies): array
+    {
+        if ($seqs === []) {
+            return [];
+        }
+        $rows = Capture::query()->where('project_id', $projectId)->whereIn('seq', $seqs)->where('body_kept', true)
+            ->get(['id', 'seq', 'provider', 'headers', 'redacted_headers', 'body_sha256'])->keyBy('seq');
+        $kept = $bodies && $rows->isNotEmpty()
+            ? DB::table('capture_bodies')->whereIn('capture_id', $rows->pluck('id')->all())->pluck('body', 'capture_id')->all() : [];
+        $out = [];
+        foreach ($seqs as $seq) {
+            $c = $rows->get($seq);
+            if (! $c instanceof Capture) {
+                continue;
+            }
+            $redacted = array_map('strtolower', $c->redactedHeaders());
+            $headers = array_values(array_filter($c->headers, fn (array $h): bool => ! in_array(strtolower($h[0]), $redacted, true)));
+            $body = $bodies ? Bytea::read($kept[$c->id] ?? null) : null;
+            if ($bodies && $body === null) {
+                continue;
+            }
+            $provider = $c->getAttribute('provider');
+            $out[] = [
+                'id' => $c->id, 'ref' => $c->publicId(), 'provider' => is_string($provider) ? $provider : null, 'order' => $c->seq, 'headers' => $headers,
+                'bodySha256' => bin2hex($c->body_sha256), 'body' => $body,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * The stored request of a capture for an executor that Proving has
      * checked holds a live job referencing it (TM-35). Logs the access.
      * Null when the capture or its kept body no longer exists.
