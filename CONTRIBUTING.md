@@ -119,7 +119,8 @@ not rewrite shared history after review has started unless a maintainer asks.
 - A maintainer merges the PR into `v2`.
 - Prefer rebase merging to preserve individual commits while keeping the
   integration history linear.
-- Never bypass branch rules or use an administrator override for routine work.
+- The maintainer may merge their own pull request with the admin bypass once CI
+  passes. Nobody pushes to `v2` directly.
 
 ## Commit messages
 
