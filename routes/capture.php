@@ -20,6 +20,8 @@ Route::middleware('verified-email')->group(function (): void {
         ->where(['projectKey' => '[A-Za-z0-9]{10}', 'n' => '[0-9]{1,9}'])->name('project.delivery');
     Route::get('/p/{projectKey}/d/{n}/raw', [CaptureStreamController::class, 'raw'])
         ->where(['projectKey' => '[A-Za-z0-9]{10}', 'n' => '[0-9]{1,9}'])->name('project.delivery.raw');
+    Route::get('/p/{projectKey}/d/{n}/fixture', [CaptureStreamController::class, 'fixture'])
+        ->where(['projectKey' => '[A-Za-z0-9]{10}', 'n' => '[0-9]{1,9}'])->name('project.delivery.fixture');
 
     Route::post('/p/{projectKey}/settings/capture/rotate', [CaptureUrlController::class, 'rotate'])
         ->where('projectKey', '[A-Za-z0-9]{10}')->name('project.settings.rotateCaptureUrl');

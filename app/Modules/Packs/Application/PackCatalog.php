@@ -85,6 +85,28 @@ final class PackCatalog
         return array_map(fn (Pack $p): array => ['id' => $p->id, 'name' => $p->name], $this->set()->packs);
     }
 
+    /**
+     * Lowercase names of the headers a provider's pack reads the event type,
+     * event id and API version from (SCR-3 allow-list). Empty for an unknown id.
+     *
+     * @return list<string>
+     */
+    public function factHeaders(?string $provider): array
+    {
+        $pack = $this->set()->find($provider);
+        if ($pack === null) {
+            return [];
+        }
+        $names = [];
+        foreach ([...$pack->eventType, ...$pack->eventId, ...$pack->apiVersion] as [$kind, $name]) {
+            if ($kind === 'header') {
+                $names[] = strtolower($name);
+            }
+        }
+
+        return array_values(array_unique($names));
+    }
+
     /** The pinned version of a provider's pack, or null when no pack has that id. */
     public function pinnedVersion(?string $provider): ?string
     {

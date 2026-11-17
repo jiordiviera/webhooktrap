@@ -37,12 +37,15 @@ Unknown fields are refused. File paths may contain only `A-Z`, `a-z`, `0-9`, `_`
 
 ## Making fixtures from captures
 
-A fixture's body must be byte-for-byte what the provider sent. Download a capture's exact body from its delivery page (**Download raw**), and copy the headers you need from the same page. Keep the body as received: re-serialising the JSON changes the bytes.
+On a delivery's page, open the **⋯** menu and choose **Download fixture**. You get one file in this format, ready to place under `webhooktrap/fixtures/<provider>/`:
 
-<Note>
-  The **Fixtures** tab in the app is marked *Soon*: exporting fixtures from the app is not available in 2.0.
-</Note>
+- `body` is the body exactly as received, byte for byte. Don't re-format the JSON: that changes the bytes.
+- `headers` keeps `Content-Type`, `User-Agent` and the headers the provider's pack reads the event type, id and API version from. Signature headers are never included: fixtures are re-signed when they are sent.
+- `capture_order` is the delivery number, so several downloaded fixtures replay in the order they arrived.
+- `source` says where the event came from: the capture id, when it was received and the pack version.
+
+The file name is `<event type>.<delivery number>.json`. The download is offered only when the provider was recognised and the body was kept, is text, and is at most 5 MiB.
 
 ## Secrets in fixtures
 
-Don't commit real customer data or secrets. Fixtures carry no signature, so the secret only needs to be in the environment when `webhooktrap test` runs, and in CI it can be a test-only value your handler is configured with.
+The downloaded body is not scrubbed. If it looks like it holds a secret (an API key, a webhook secret, a token or a private key), the app asks you to confirm first. Remove real customer data and secrets before you commit a fixture. Fixtures carry no signature, so the secret only needs to be in the environment when `webhooktrap test` runs, and in CI it can be a test-only value your handler is configured with.

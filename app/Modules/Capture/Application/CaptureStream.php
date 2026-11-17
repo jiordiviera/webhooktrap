@@ -37,7 +37,7 @@ final readonly class CaptureStream
         'sig_state', 'sig_reason', 'sig_checks', 'body_size', 'body_kept', 'shape_verdict',
     ];
 
-    public function __construct(private PackCatalog $packs) {}
+    public function __construct(private PackCatalog $packs, private CaptureFixtures $fixtures) {}
 
     /**
      * Newest captures matching the query (`captures.latest`, live).
@@ -177,6 +177,7 @@ final readonly class CaptureStream
             'bodySha256' => bin2hex((string) $capture->body_sha256),
         ];
 
+        $bytes = null;
         if ($capture->body_kept) {
             $bytes = $this->keptBody($capture->id) ?? '';
             $body = InspectorBody::from(
@@ -188,6 +189,7 @@ final readonly class CaptureStream
             $hidden = $hidden || $body->escaped;
         }
         $detail['hiddenCharacters'] = $hidden;
+        $detail['fixture'] = $this->fixtures->summary($capture, $bytes);
 
         $checks = self::checks($capture->getAttributes()['sig_checks'] ?? null);
         if ($checks !== null) {

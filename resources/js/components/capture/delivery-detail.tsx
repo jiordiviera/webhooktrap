@@ -333,6 +333,10 @@ export function DeliveryDetail({
 }) {
     const [wrap, setWrap] = useState(false);
     const rawHref = CaptureStream.raw.url({ projectKey, n: capture.seq });
+    const fixtureHref = CaptureStream.fixture.url({
+        projectKey,
+        n: capture.seq,
+    });
     const pageHref = (seq: number) =>
         CaptureStream.show.url({ projectKey, n: seq });
     // Group keys can contain `/` (grp_github_brindle/brindle-app): always a
@@ -518,6 +522,30 @@ export function DeliveryDetail({
                                             download
                                         >
                                             Download raw
+                                        </a>
+                                    </Menu.Item>
+                                )}
+                                {capture.fixture.available && (
+                                    <Menu.Item asChild>
+                                        <a
+                                            className="tt-menu-item"
+                                            href={fixtureHref}
+                                            download
+                                            onClick={(event) => {
+                                                // COPY PROPOSAL (A07): the body is exported as received, not scrubbed.
+                                                const found =
+                                                    capture.fixture.secrets;
+                                                if (
+                                                    found.length > 0 &&
+                                                    !window.confirm(
+                                                        `This body looks like it contains secrets (${found.join(', ')}). The fixture keeps the body exactly as received. Remove them before you commit the file. Download anyway?`,
+                                                    )
+                                                ) {
+                                                    event.preventDefault();
+                                                }
+                                            }}
+                                        >
+                                            Download fixture
                                         </a>
                                     </Menu.Item>
                                 )}
