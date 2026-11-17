@@ -8,6 +8,7 @@ use App\Modules\Capture\Application\CaptureRefs;
 use App\Modules\Identity\Application\GuestSessions;
 use App\Modules\Proving\Application\RunBroadcasts;
 use App\Modules\Proving\Application\RunLauncher;
+use App\Modules\Proving\Application\RunPlanner;
 use App\Modules\Proving\Application\RunViews;
 use App\Modules\Proving\Contracts\RunRefusal;
 use App\Modules\Proving\Domain\ExampleRun;
@@ -33,6 +34,7 @@ final readonly class RunPageController
         private Projects $projects,
         private RunViews $views,
         private RunLauncher $launcher,
+        private RunPlanner $planner,
         private CaptureRefs $captures,
         private ExampleRun $example,
     ) {}
@@ -78,9 +80,22 @@ final readonly class RunPageController
             ? $this->captures->seqsOfGroup($project->id, mb_substr($group, 0, 200), RunLauncher::MAX_EVENTS)
             : self::seqs($request->query('from'));
 
+        $draft = $this->views->draft($project, $seqs);
+        $principal = $this->guests->principal($request);
+        // Lazy (partial reloads of the agent props never plan) and computed
+        // once for both props; no plan while the selection is refused.
+        $plan = null;
+        $planned = function () use (&$plan, $draft, $project, $principal, $seqs): array {
+            return $plan ??= $draft['refusals'] !== [] || $principal === null
+                ? ['preview' => null, 'previewError' => null]
+                : $this->planner->draftPreview($project, $principal, $seqs);
+        };
+
         return Inertia::render('Runs/Draft', [
             'project' => ['key' => $project->key, 'name' => $project->name, 'isGuest' => $project->isGuest],
-            ...$this->views->draft($project, $seqs),
+            ...$draft,
+            'preview' => fn (): ?array => $planned()['preview'],
+            'previewError' => fn (): ?string => $planned()['previewError'],
         ]);
     }
 

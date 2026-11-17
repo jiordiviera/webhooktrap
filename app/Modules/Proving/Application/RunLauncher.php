@@ -27,7 +27,9 @@ use Illuminate\Support\Facades\DB;
  * a pack, bodies kept, DEF-1), the target (an agent of this workspace,
  * confirmed, and a target it declared, TM-50) and the guest quotas without
  * counting them (A-13); then allocates the run number, stores a Queued run
- * and its job for that agent, and nudges the agent after commit.
+ * and its job for that agent, and nudges the agent after commit. The
+ * planned delivery count comes from the server-side plan (`RunPlanner`)
+ * when the engine answers, else stays 0 (unknown) for the agent to report.
  */
 final readonly class RunLauncher
 {
@@ -41,6 +43,7 @@ final readonly class RunLauncher
         private GuestQuotas $guestQuotas,
         private ProjectCounters $counters,
         private RunBroadcasts $broadcasts,
+        private RunPlanner $planner,
     ) {}
 
     /**
@@ -98,7 +101,10 @@ final readonly class RunLauncher
             throw new RunRefusal(422, 'quota');
         }
 
-        return DB::transaction(function () use ($project, $principal, $refs, $provider, $packVersion, $scenarios, $failOn, $agent, $url): string {
+        // Planned outside the transaction; null when the engine cannot say (the agent reports it).
+        $deliveryCount = $this->planner->deliveryCount($project, $principal, $seqs, $scenarios);
+
+        return DB::transaction(function () use ($project, $principal, $refs, $provider, $packVersion, $scenarios, $failOn, $agent, $url, $deliveryCount): string {
             $now = $this->clock->now();
             $number = $this->counters->nextRunNumber($project->id);
             $expires = $now->addSeconds((int) config('agent.jobs.accept_within_seconds'));
@@ -131,6 +137,7 @@ final readonly class RunLauncher
                 'capture_sha256' => PgArrays::literal(array_map(fn (array $r): string => $r['bodySha256'], $refs)),
                 'scenarios' => PgArrays::literal($scenarios),
                 'levels' => '{1,2}',
+                'delivery_count' => min(50, max(0, $deliveryCount ?? 0)),
             ])->save();
             $job = new RunJob;
             $job->forceFill([

@@ -7,7 +7,10 @@ namespace App\Providers;
 use App\Http\Ssr\PublicPagesSsrGateway;
 use App\Infrastructure\Clock\Clock;
 use App\Infrastructure\Clock\SystemClock;
+use App\Infrastructure\EngineProcess\Engine;
+use App\Infrastructure\EngineProcess\SocketEngine;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(Clock::class, SystemClock::class);
+        $this->app->bind(Engine::class, fn (Application $app): SocketEngine => new SocketEngine(
+            $app->make(Clock::class),
+            (string) config('engine.socket'), (int) config('engine.timeout_ms'), (int) config('engine.connect_timeout_ms'),
+        ));
         // SSR for the public pages only (replaces inertia-laravel's binding).
         $this->app->bind(Gateway::class, PublicPagesSsrGateway::class);
     }

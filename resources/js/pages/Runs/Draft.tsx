@@ -9,14 +9,15 @@ import { PageHeading } from '@/components/identity/bare-shell';
 import { Button, ErrorSummary } from '@/components/identity/form';
 import { AppShell } from '@/components/shell/app-shell';
 import { bytes, clockMs, seqLabel } from '@/lib/capture/format';
-import { refusalCopy } from '@/lib/run/format';
+import { refusalCopy, seconds } from '@/lib/run/format';
 import type { RunsDraftProps } from '@/types';
 
 /*
  * S-10 · Run draft (`/p/{key}/runs/new?from=` or `?group=`): what will be
  * proved (the selection), how (scenarios, fail on), against what (the
- * agent's declared target plus a path), then Run. The plan preview needs
- * the server-side planner (EngineProcess): a calm placeholder until then.
+ * agent's declared target plus a path), then Run. The plan preview comes
+ * from the server-side planner (EngineProcess) over every scenario; the page
+ * sums the chosen ones. Without it (engine down, rate limit) a calm line.
  * Refusals known up front disable Run with their reason; the server's
  * `errors.run` is shown above the form.
  */
@@ -33,6 +34,7 @@ const FAIL_ON = [
 export default function Draft({
     project,
     selection,
+    preview,
     refusals,
     targets,
     agent,
@@ -48,6 +50,14 @@ export default function Draft({
     const [path, setPath] = useState(`/webhooks/${provider ?? ''}`);
     const [failOn, setFailOn] = useState(defaultFailOn);
     const [busy, setBusy] = useState(false);
+    const planned =
+        preview?.scenarios.filter(
+            // PLAN-2: the engine always plans `once` (the baseline).
+            (s) => s.name === 'once' || chosen.has(s.name),
+        ) ?? [];
+    const scenarioName = (key: string) =>
+        scenarios.find((s) => s.key === key)?.name ?? key;
+    const deliveries = planned.reduce((n, s) => n + s.deliveries, 0);
     const blocked = [
         ...refusals,
         ...(targets.length === 0 && agent?.state === 'connected'
@@ -234,16 +244,56 @@ export default function Draft({
 
                     <section className="tt-sec" aria-labelledby="h-plan">
                         <h2 id="h-plan">Plan</h2>
-                        {/* COPY PROPOSAL (A07): preview is null until the server can plan. */}
-                        <p>
-                            Plan preview comes later. The agent plans the run on
-                            your machine and reports every delivery as it goes.
-                        </p>
-                        <p className="tt-muted">
-                            {selection.length}{' '}
-                            {selection.length === 1 ? 'event' : 'events'} ·{' '}
-                            {chosen.size} scenarios
-                        </p>
+                        {/* COPY PROPOSAL (A07): plan preview lines. */}
+                        {preview ? (
+                            <>
+                                <p>
+                                    {deliveries}{' '}
+                                    {deliveries === 1
+                                        ? 'delivery'
+                                        : 'deliveries'}{' '}
+                                    · {selection.length}{' '}
+                                    {selection.length === 1
+                                        ? 'event'
+                                        : 'events'}{' '}
+                                    · {chosen.size} scenarios
+                                </p>
+                                <ul className="tt-actlist">
+                                    {planned.map((s) => (
+                                        <li key={s.name} className="tt-selrow">
+                                            <span className="l1">
+                                                {scenarioName(s.name)}
+                                            </span>
+                                            <span className="tt-mono tt-muted">
+                                                {s.na === null
+                                                    ? `${s.deliveries} ${s.deliveries === 1 ? 'delivery' : 'deliveries'}`
+                                                    : `n/a · ${s.na.replace(/_/g, ' ')}`}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <p className="tt-muted">
+                                    Budget {seconds(preview.budget.ms)} (
+                                    {preview.budget.source.replace(/_/g, ' ')})
+                                    {preview.needsSecret &&
+                                        ' · valid signatures need the signing secret on the agent'}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p>
+                                    The agent plans the run on your machine and
+                                    reports every delivery as it goes.
+                                </p>
+                                <p className="tt-muted">
+                                    {selection.length}{' '}
+                                    {selection.length === 1
+                                        ? 'event'
+                                        : 'events'}{' '}
+                                    · {chosen.size} scenarios
+                                </p>
+                            </>
+                        )}
                         <div className="tt-field" style={{ maxWidth: 320 }}>
                             <label className="tt-label" htmlFor="fail-on">
                                 Fail the run on
