@@ -76,6 +76,18 @@ export type CaptureDetail = CaptureRow & {
     bodySha256: string;
     body?: InspectorBody;
     hiddenCharacters: boolean;
+    /** Fixture download (issue #15): the file path and the secret patterns found in the body. */
+    fixture: {
+        available: boolean;
+        reason:
+            | 'body_not_kept'
+            | 'no_provider'
+            | 'too_large'
+            | 'not_text'
+            | null;
+        path: string | null;
+        secrets: string[];
+    };
     signatureChecks?: { check: string; passed: boolean }[];
     decoded?: DecodedFacts;
     /** SHP-1 (path, JSON type) pairs, sorted; JSON bodies only. */

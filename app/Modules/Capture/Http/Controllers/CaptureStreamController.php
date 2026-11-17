@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Capture\Http\Controllers;
 
+use App\Modules\Capture\Application\CaptureFixtures;
 use App\Modules\Capture\Application\CaptureStream;
 use App\Modules\Capture\Domain\StreamQuery;
 use App\Modules\Identity\Application\GuestSessions;
@@ -45,6 +46,7 @@ final readonly class CaptureStreamController
         private WorkspaceOwnership $ownership,
         private CaptureStream $stream,
         private PackCatalog $packs,
+        private CaptureFixtures $fixtures,
     ) {}
 
     /** `GET /p/{projectKey}` → `Capture/Stream`. */
@@ -139,6 +141,31 @@ final readonly class CaptureStreamController
             'Content-Type' => 'application/octet-stream',
             'Content-Disposition' => sprintf('attachment; filename="delivery-%02d.bin"', $seq),
             'Content-Length' => (string) strlen($bytes),
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "sandbox; default-src 'none'; frame-ancestors 'none'",
+            'Cache-Control' => 'no-store, private',
+            'Referrer-Policy' => 'no-referrer',
+            'Cross-Origin-Resource-Policy' => 'same-origin',
+            'X-Robots-Tag' => 'noindex, nofollow',
+        ]);
+    }
+
+    /**
+     * `GET /p/{projectKey}/d/{n}/fixture`: the capture as a fixture file for
+     * `webhooktrap test` (issue #15). Same download headers as the raw body.
+     * Not found when the capture has no fixture (body not kept, no provider,
+     * over 5 MiB or not UTF-8 text).
+     */
+    public function fixture(Request $request, string $projectKey, string $n): HttpResponse
+    {
+        [$project, $seq] = $this->ownedCapture($request, $projectKey, $n);
+        $file = $this->fixtures->file($project->id, $seq);
+        abort_if($file === null, 404);
+
+        return new BytesResponse($file['json'], 200, [
+            'Content-Type' => 'application/json; charset=utf-8',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $file['filename']),
+            'Content-Length' => (string) strlen($file['json']),
             'X-Content-Type-Options' => 'nosniff',
             'Content-Security-Policy' => "sandbox; default-src 'none'; frame-ancestors 'none'",
             'Cache-Control' => 'no-store, private',
