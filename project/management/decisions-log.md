@@ -776,3 +776,18 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
 - **Name:** web search found no "Webhook Trap" filing. The nearest records are WEBHOOK (USPTO 86015060, abandoned in 2014) and WEBTRAP (USPTO 75507992, cancelled in 2007). These come from third-party trademark sites, not the official registers.
 - **Still open:** a search in the official registers (INPI, EUIPO, USPTO and the WIPO Global Brand Database, including image search) before any filing. It does not block a LinkedIn post.
 - **PO's call:** whether this closes R-14 for public use.
+
+## 78. Business model: open core stays whole, the hosted service is paid; Paddle for billing (2026-11-17)
+
+- **Principle (issue #12):** Webhook Trap stays AGPL-3.0 in full. The engine, CLI, scenarios, provider packs, local and CI runs and self-hosting are never gated. Paid plans sell the hosted service: quotas, retention, hosted CI history, team features and support.
+- **Plans, hypotheses only:** Free (€0, one hosted project, base quotas), Pro (€12/month), Team (€39/month for 5 seats). Not public prices: the PO validates them after a cost estimate (storage, runs, egress) and a gross-margin target.
+- **Entitlements:** one server-side, versioned plan matrix is the only source of truth. Every limit has a unit, a reset period and an enforcement point. Public pricing copy is generated from the enforced matrix, not written by hand.
+- **Payment provider (issue #13):** Paddle as merchant of record. Paddle is the legal seller, so it collects and remits EU VAT and sales tax in every country, and issues invoices. The PO already runs Paddle on another product (sandbox). Stripe is the fallback if Paddle refuses the account.
+- **Billing rules:**
+  - Paid access comes only from signed, idempotent Paddle webhooks, never from a checkout redirect.
+  - Subscription state can be reconciled from the Paddle API after missed or duplicated events.
+  - A failed payment or a cancellation never deletes projects or captures. There is a grace period, then a downgrade to Free quotas, and data over quota becomes read-only until retention removes it.
+  - Monthly billing first, annual later.
+  - The full lifecycle runs in the Paddle sandbox before production.
+- **Order:** the plan matrix (#12) first, then billing (#13). Nothing is built before the PO approves the matrix and the prices.
+- **PO's call:** the prices, the Free quotas and Paddle versus Stripe.
