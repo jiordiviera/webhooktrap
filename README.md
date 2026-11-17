@@ -58,6 +58,19 @@ docs/                 documentation site
 
 Details: [`project/architecture/code-layout.md`](project/architecture/code-layout.md).
 
+## Brand and visual identity
+
+Read the brand guide before you change the UI, an icon or a public page. It covers the logo,
+colours, type, icons and the delivery graph.
+
+- **Figma:** [Webhook Trap · Identité visuelle](https://www.figma.com/design/s94PcVdcq1eSnMzrNnjGE8).
+  It has three pages: the logo construction, the visual identity and the LinkedIn carousel.
+- **In the repository:**
+  [`project/design/brand/identite-visuelle/`](project/design/brand/identite-visuelle/), in HTML
+  and PDF (French).
+- **Logo files:** [`docs/logo/`](docs/logo/). Do not redraw the mark, and keep it at 16 px or
+  larger.
+
 ## Self-hosting
 
 Self-hosting 2.0 is not released yet. `compose.yaml` is the single self-host profile that will
