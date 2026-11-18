@@ -11,7 +11,7 @@ COPY --chmod=755 wt-backup /usr/local/bin/wt-backup
 # One script, called by name (wt-backup header). /status is created owned by postgres (999) in
 # this image and in the app image, so the backup_status volume gets the same owner whichever
 # container mounts it first; the backup service (uid 999) writes it, the app reads it.
-RUN for n in pgbackrest-queue wt-pgbackrest backup-loop backup-now backup-status restore ledger-fetch restore-finish; do \
+RUN for n in pgbackrest-queue wt-pgbackrest backup-loop backup-now backup-status restore recover ledger-fetch restore-finish; do \
         ln -s wt-backup "/usr/local/bin/$n"; \
     done \
     && mkdir -p /status /var/lib/pgbackrest /var/spool/pgbackrest /tmp/pgbackrest \

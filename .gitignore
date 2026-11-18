@@ -54,3 +54,6 @@ coverage
 
 # Self-host runner allow-list (compose.yaml mounts ./runner read-only)
 /runner/
+
+# Self-host secrets (deploy/selfhost/install.sh writes them; never committed)
+/secrets/

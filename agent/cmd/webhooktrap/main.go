@@ -58,11 +58,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return runServeSandbox(ctx, args[1:], realEnv(stdout, stderr))
 		}
 		return runServeRun(ctx, args[1:], realEnv(stdout, stderr))
+	case "runner-health":
+		return runRunnerHealth(args[1:], realEnv(stdout, stderr))
 	case "sandbox-ping":
 		return runSandboxPing(context.Background(), args[1:], realEnv(stdout, stderr))
 	case "sandbox-call": // serve-sandbox's per-call child, not a user command
 		return runSandboxCall(realEnv(stdout, stderr))
 	}
-	fmt.Fprintf(stderr, "webhooktrap: unknown command %q (available: version, test, rejudge, pair, agent, serve-sandbox, sandbox-ping, serve-run)\n", clean(args[0]))
+	fmt.Fprintf(stderr, "webhooktrap: unknown command %q (available: version, test, rejudge, pair, agent, serve-sandbox, sandbox-ping, serve-run, runner-health)\n", clean(args[0]))
 	return 2
 }

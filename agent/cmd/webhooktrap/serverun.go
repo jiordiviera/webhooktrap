@@ -47,6 +47,8 @@ configuration (environment, or the flag of the same meaning):
   RUNNER_GUARD_CEILING    --ceiling MODE      widest guard: public (default) or allowlist
   RUNNER_ALLOWLIST_FILE   --allowlist FILE    local allow-list, one host:port,
                                               host:from-to or cidr:port per line
+  RUNNER_HEALTH_FILE      --health-file FILE  touched after every hello the app
+                                              accepts; read by runner-health
 
 SIGTERM or Ctrl-C stops it; a job in flight is aborted on the server.
 `
@@ -68,6 +70,7 @@ type serveRunner struct {
 	ceiling guard.Mode
 	local   []guard.AllowEntry
 	conc    int
+	health  string // RUNNER_HEALTH_FILE; empty = none
 	// ownNets returns this host's networks (RN-4); a seam for tests.
 	ownNets func() []netip.Prefix
 }
@@ -96,6 +99,7 @@ func runServeRun(ctx context.Context, args []string, e env) int {
 	}
 	ceiling := fs.String("ceiling", ceilingDefault, "")
 	allowFile := fs.String("allowlist", getenv("RUNNER_ALLOWLIST_FILE"), "")
+	healthFile := fs.String("health-file", getenv("RUNNER_HEALTH_FILE"), "")
 	if err := fs.Parse(args); err != nil || fs.NArg() > 0 {
 		if errors.Is(err, flag.ErrHelp) {
 			fmt.Fprint(e.stdout, usageServeRun)
@@ -119,7 +123,7 @@ func runServeRun(ctx context.Context, args []string, e env) int {
 	if err != nil {
 		return fail("%s", err.Error())
 	}
-	r := &serveRunner{e: e, origin: origin, conc: *conc, ownNets: hostNetworks}
+	r := &serveRunner{e: e, origin: origin, conc: *conc, health: *healthFile, ownNets: hostNetworks}
 	switch guard.Mode(*ceiling) {
 	case guard.Public:
 		r.ceiling = guard.Public
@@ -245,6 +249,22 @@ func (r *serveRunner) sleep(ctx context.Context, d time.Duration) error {
 	return sleepCtx(ctx, d)
 }
 
+// markHealthy records that the app accepted a hello just now: the file's
+// modification time is what runner-health reads. A write error is ignored;
+// the health check then reports the runner as stale, which is the truth.
+func (r *serveRunner) markHealthy() {
+	if r.health == "" {
+		return
+	}
+	now := time.Now()
+	if r.e.now != nil {
+		now = r.e.now()
+	}
+	if err := os.WriteFile(r.health, []byte(now.UTC().Format(time.RFC3339)+"\n"), 0o600); err == nil {
+		_ = os.Chtimes(r.health, now, now)
+	}
+}
+
 // fatalRunner reports an answer that no retry fixes: the token is refused
 // (401) or the versions differ (426).
 func fatalRunner(err error) bool {
@@ -288,6 +308,7 @@ func (r *serveRunner) session(ctx context.Context) error {
 	if err := r.cl.HelloRunner(ctx, version.Current().Version); err != nil {
 		return err
 	}
+	r.markHealthy()
 	r.logf("runner connected origin=%s version=%s ceiling=%s concurrency=%d", r.origin, version.Current().Version, r.ceiling, r.conc)
 	sctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -304,9 +325,13 @@ func (r *serveRunner) session(ctx context.Context) error {
 				return
 			case <-t.C:
 			}
-			if err := r.cl.HelloRunner(sctx, version.Current().Version); fatalRunner(err) {
+			err := r.cl.HelloRunner(sctx, version.Current().Version)
+			if fatalRunner(err) {
 				errs <- err
 				return
+			}
+			if err == nil {
+				r.markHealthy()
 			}
 		}
 	}()

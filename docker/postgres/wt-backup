@@ -8,6 +8,8 @@
 #   backup-now [--type=T]  one backup now (deploy.sh step 4: --type=incr)
 #   backup-status [--max-full-age=26h] [--max-archive-lag=15m]   healthcheck
 #   restore [--target-time=T]  restore into an empty, stopped pgdata; writes /status/restore.pending
+#   recover                run Postgres once where the repository is reachable, until the restored
+#                          cluster has replayed WAL to the target and promoted; then stop it
 #   ledger-fetch [--identity=FILE|-]  fetch the newest shipped ledger, decrypt it with the PO's age
 #                          identity (default: standard input) and merge it with the local ledger into
 #                          /status/ledger-merged.jsonl for accounts:apply-ledger --file=
@@ -335,7 +337,33 @@ case "$NAME" in
         else
             pgbr restore "$@" --type=default
         fi
-        note "restored; next: recovery in a backup container, then ledger-fetch, accounts:apply-ledger (horizon), restore-finish"
+        note "restored; next: recover, then ledger-fetch, accounts:apply-ledger (horizon), restore-finish"
+        ;;
+
+    recover)
+        # After `restore`: run Postgres here, where the repository and the cipher pass are, so
+        # restore_command can fetch WAL; wait until it has replayed to the target and promoted,
+        # then stop it cleanly. The `postgres` service then starts on the recovered cluster.
+        [ -f "$PG_DATA/recovery.signal" ] || fail "nothing to recover: run restore first"
+        sock=$(mktemp -d /tmp/recover.XXXXXX)
+        trap 'rm -rf "$sock"' EXIT
+        pg_ctl -D "$PG_DATA" -l "$sock/postgres.log" -w -t 60 \
+            -o "-c listen_addresses= -c unix_socket_directories=$sock -c archive_mode=on" \
+            -o "-c archive_command='pgbackrest-queue %p %f'" start >/dev/null \
+            || { tail -n 20 "$sock/postgres.log" >&2; fail "postgres did not start for recovery"; }
+        waited=0
+        until [ "$(psql -h "$sock" -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DB:-postgres}" -Atc 'select pg_is_in_recovery()' 2>/dev/null)" = f ]; do
+            if [ "$waited" -ge "${RECOVER_TIMEOUT_SECONDS:-3600}" ]; then
+                pg_ctl -D "$PG_DATA" -m fast stop >/dev/null || true
+                tail -n 20 "$sock/postgres.log" >&2
+                fail "recovery did not finish in ${RECOVER_TIMEOUT_SECONDS:-3600} s"
+            fi
+            sleep 2; waited=$((waited + 2))
+        done
+        psql -h "$sock" -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DB:-postgres}" -Atc 'checkpoint' >/dev/null
+        pg_ctl -D "$PG_DATA" -m fast -w stop >/dev/null
+        grep -E 'recovery stopping|redo done|selected new timeline' "$sock/postgres.log" | sed "s/^/$NAME: /" || true
+        note "recovered and promoted; next: start postgres alone, apply the deletion ledger, restore-finish"
         ;;
 
     ledger-fetch)
