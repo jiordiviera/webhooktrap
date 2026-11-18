@@ -21,15 +21,15 @@ so a small, correct pack is worth more than a large one. Every claim in a pack n
 Collect these from the provider's own documentation. Blog posts, SDK source and observed traffic are
 not enough on their own.
 
-| Fact | Pack key | If the provider doesn't document it |
-| ---- | -------- | ----------------------------------- |
-| Signature header, signed string, algorithm, encoding | `signing` | No pack. Use `none` only for providers that really sign nothing. |
-| Timestamp tolerance | `signing.tolerance_s` | Say where the number comes from (SDK default, recommendation) in the guide. |
-| Response-time limit | `budget` | `"source": "default"`, `"documented": false`, label "Webhook Trap default". |
-| Duplicates can happen | `duplicate` | `"verified": false`: Twice is n/a ("not verified for …"). |
-| Automatic retries | `retry` | `"verified": false`; `"supported": false` only with a source saying it never retries. |
-| Event type, event id, API version | `event` | Leave the key out. |
-| Objects to group by | `grouping` | `"fallback": "data_id"` or `null`. |
+| Fact                                                 | Pack key              | If the provider doesn't document it                                                   |
+| ---------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------- |
+| Signature header, signed string, algorithm, encoding | `signing`             | No pack. Use `none` only for providers that really sign nothing.                      |
+| Timestamp tolerance                                  | `signing.tolerance_s` | Say where the number comes from (SDK default, recommendation) in the guide.           |
+| Response-time limit                                  | `budget`              | `"source": "default"`, `"documented": false`, label "Webhook Trap default".           |
+| Duplicates can happen                                | `duplicate`           | `"verified": false`: Twice is n/a ("not verified for …").                             |
+| Automatic retries                                    | `retry`               | `"verified": false`; `"supported": false` only with a source saying it never retries. |
+| Event type, event id, API version                    | `event`               | Leave the key out.                                                                    |
+| Objects to group by                                  | `grouping`            | `"fallback": "data_id"` or `null`.                                                    |
 
 Rules the tests enforce (`agent/internal/packdata/claims_test.go`):
 
@@ -73,9 +73,9 @@ verdicts stay explainable.
 
 Chosen from user demand, and from what can be verified:
 
-| Provider | Status | Why |
-| -------- | ------ | --- |
-| Slack (Events API) | shipped, 1.0.0 | Documented signature with a test vector, a 3 s limit and retries. |
-| Paddle Billing | shipped, 1.0.0 | Documented signature, a 5 s limit, retries, duplicates and no ordering guarantee. Webhook Trap bills with it (decision 78). |
-| Twilio | coming | Signs the full request URL plus sorted form fields with HMAC-SHA1. The engine has to sign for the target URL, which is a new input to `Sign`. |
-| Adyen | coming | The HMAC is inside each notification item of the body, not in a header. It needs a body-signing scheme and its own tamper rule. |
+| Provider           | Status         | Why                                                                                                                                           |
+| ------------------ | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Slack (Events API) | shipped, 1.0.0 | Documented signature with a test vector, a 3 s limit and retries.                                                                             |
+| Paddle Billing     | shipped, 1.0.0 | Documented signature, a 5 s limit, retries, duplicates and no ordering guarantee. Webhook Trap bills with it (decision 78).                   |
+| Twilio             | coming         | Signs the full request URL plus sorted form fields with HMAC-SHA1. The engine has to sign for the target URL, which is a new input to `Sign`. |
+| Adyen              | coming         | The HMAC is inside each notification item of the body, not in a header. It needs a body-signing scheme and its own tamper rule.               |

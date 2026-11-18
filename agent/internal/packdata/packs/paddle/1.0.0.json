@@ -99,7 +99,13 @@
     "objects": [],
     "status_events": [],
     "scrub": {
-        "paths": ["data.email", "data.name", "data.address.*", "data.business.*", "data.billing_details.*"],
+        "paths": [
+            "data.email",
+            "data.name",
+            "data.address.*",
+            "data.business.*",
+            "data.billing_details.*"
+        ],
         "keep_headers": ["Content-Type", "User-Agent"]
     },
     "id_pattern": "^[a-z]{3}_[a-z0-9]{26}$",
