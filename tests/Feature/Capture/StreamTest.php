@@ -125,7 +125,7 @@ it('lists the newest captures first, a page at a time, with older pages by `befo
         ->missing('groups')
         ->where('query', ['sel' => null, 'tab' => 'verdict', 'view' => 'flat', 'q' => null, 'group' => null])
         ->where('selected.seq', 7)
-        ->count('providers', 5));
+        ->count('providers', 7)); // six packs + curl
 
     $this->get("/p/{$project->key}?before=5")->assertInertia(fn (Assert $page) => $page
         ->reloadOnly('captures.older', fn (Assert $reload) => $reload

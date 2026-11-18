@@ -5,7 +5,7 @@
  * override from webhooktrap.yml arrives with the agent (BUD-2).
  */
 export type ProviderBudget = {
-    provider: 'stripe' | 'shopify' | 'github' | 'standard';
+    provider: 'stripe' | 'shopify' | 'github' | 'slack' | 'paddle' | 'standard';
     name: string;
     label: string;
     source: string;
@@ -35,6 +35,20 @@ export const providerBudgets: ProviderBudget[] = [
         tolerance: 'none',
     },
     {
+        provider: 'slack',
+        name: 'Slack',
+        label: '3 s · Slack limit',
+        source: 'Slack docs',
+        tolerance: '300 s',
+    },
+    {
+        provider: 'paddle',
+        name: 'Paddle',
+        label: '5 s · Paddle limit',
+        source: 'Paddle docs',
+        tolerance: '5 s',
+    },
+    {
         provider: 'standard',
         name: 'Standard Webhooks',
         label: '10 s budget · Webhook Trap default',
@@ -44,4 +58,4 @@ export const providerBudgets: ProviderBudget[] = [
 ];
 
 /** Names only, no budget, until their pack ships (A-18). */
-export const comingProviders = ['Twilio', 'Slack'];
+export const comingProviders = ['Twilio', 'Adyen'];

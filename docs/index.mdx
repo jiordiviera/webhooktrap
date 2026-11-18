@@ -6,7 +6,7 @@ icon: "house"
 
 Providers deliver webhooks more than once, out of order, late, and again after a timeout. A handler that passes one manual test can still create a second order on a duplicate, accept a body nobody signed, or leave state wrong when events arrive in reverse.
 
-Webhook Trap captures real deliveries from Stripe, GitHub, Shopify and any Standard Webhooks sender, then replays them against your handler in nine scenarios. A small agent on your machine sends the deliveries to localhost, signs them with a secret that never leaves your machine, and reads your database state between deliveries. The result is a list of findings with the evidence, the cause when the run shows it, and a fix.
+Webhook Trap captures real deliveries from Stripe, GitHub, Shopify, Slack, Paddle and any Standard Webhooks sender, then replays them against your handler in nine scenarios. A small agent on your machine sends the deliveries to localhost, signs them with a secret that never leaves your machine, and reads your database state between deliveries. The result is a list of findings with the evidence, the cause when the run shows it, and a fix.
 
 <Frame caption="A run against a deliberately buggy Stripe handler: two findings, exit 1.">
   <img src="/images/run-result.webp" alt="Run #1 page: 2 findings, one Critical and one High, a strip of nine scenario results, and the deliveries table." />

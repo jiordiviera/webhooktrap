@@ -801,3 +801,22 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
 - **First minute:** the curl example and Send a test request use a synthetic `order.paid` event instead of `{"hello":"world"}`; one line explains sending from your own app. After the first delivery and before the first run, a dismissible "Next: prove your handler" banner points to pairing the agent and Prove.
 - **Copy:** the new lines are COPY PROPOSAL (A07).
 - **PO's call:** whether the privacy page should mention the aggregate counts (they hold no personal data; not required, but transparent).
+
+## 80. Packs: Slack and Paddle ship; every pack claim needs a source (2026-11-18)
+
+- **Issue #19.** Two packs at 1.0.0, verified against the providers' own docs on 2026-11-18:
+  - **Slack Events API:** `slack_v0` signature, checked against Slack's documented test vector; a 300 s tolerance; a 3 s limit; up to three retries.
+  - **Paddle Billing:** `paddle_h1` signature, which accepts several `h1` values during secret rotation; a 5 s limit; documented retries, duplicates and no ordering guarantee.
+- **Paddle's 5 s tolerance** is the default in Paddle's SDKs, not a limit Paddle enforces. The guide says so.
+- **Slack capture:** Slack verifies a Request URL with a `url_verification` challenge that a capture URL can't answer. Slack deliveries reach Webhook Trap by relay from the handler or as fixtures. The waiting panel and the guide say so.
+- **Deferred, with reasons, in `packs/CONTRIBUTING.md`:**
+  - **Twilio:** it signs the target URL, so the engine needs a new input to `Sign`.
+  - **Adyen:** the HMAC is inside the body, so it needs a body-signing scheme.
+- **Rules CI now enforces** (`agent/internal/packdata/claims_test.go`):
+  - every pack and the manifest match `packs/_schema`;
+  - a verified duplicate or retry rule has an https citation;
+  - a documented budget names the provider's docs, and an undocumented one says "default";
+  - packs added from #19 on cite their signature docs. GitHub, Shopify and Standard Webhooks get citations in their next version.
+- **Plans:** every pack with fixtures plans deterministically, and every scenario that sends nothing gives its n/a reason in words (`agent/plan/packs_test.go`).
+- **Contribution workflow:** `packs/CONTRIBUTING.md`.
+- **Paddle mark:** svgl has no Paddle mark, so the neutral glyph stands in.

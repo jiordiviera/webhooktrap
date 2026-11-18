@@ -28,11 +28,11 @@ The file is read strictly: one YAML document, known keys only, plain values and 
 </ParamField>
 
 <ParamField path="provider" type="string">
-  The pack to use: `stripe`, `github`, `shopify` or `standard_webhooks`. Without `fixtures`, `test` reads `webhooktrap/fixtures/<provider>/`. Without `provider`, the provider of the first fixture is used.
+  The pack to use: `stripe`, `github`, `shopify`, `slack`, `paddle` or `standard_webhooks`. Without `fixtures`, `test` reads `webhooktrap/fixtures/<provider>/`. Without `provider`, the provider of the first fixture is used.
 </ParamField>
 
 <ParamField path="secret" type="env:NAME">
-  The environment variable that holds the signing secret, written `env:NAME` (uppercase letters, digits and `_`). A value is never accepted here. Default: the pack's variable (`STRIPE_WEBHOOK_SECRET`, `GITHUB_WEBHOOK_SECRET`, `SHOPIFY_API_SECRET`, `WEBHOOK_SECRET`).
+  The environment variable that holds the signing secret, written `env:NAME` (uppercase letters, digits and `_`). A value is never accepted here. Default: the pack's variable (`STRIPE_WEBHOOK_SECRET`, `GITHUB_WEBHOOK_SECRET`, `SHOPIFY_API_SECRET`, `SLACK_SIGNING_SECRET`, `PADDLE_WEBHOOK_SECRET`, `WEBHOOK_SECRET`).
 </ParamField>
 
 <ParamField path="fixtures" type="list of paths">
@@ -44,7 +44,7 @@ The file is read strictly: one YAML document, known keys only, plain values and 
 </ParamField>
 
 <ParamField path="budget" type="100 to 30000 ms">
-  Response-time budget, in place of the pack's. Written `5000` or `5000ms`. A value above a budget the provider documents (GitHub 10 000 ms, Shopify 5 000 ms) is refused, because it would hide a failure the provider documents. A value above a Webhook Trap default (Stripe, Standard Webhooks) is allowed.
+  Response-time budget, in place of the pack's. Written `5000` or `5000ms`. A value above a budget the provider documents (GitHub 10 000 ms, Shopify 5 000 ms, Paddle 5 000 ms, Slack 3 000 ms) is refused, because it would hide a failure the provider documents. A value above a Webhook Trap default (Stripe, Standard Webhooks) is allowed.
 </ParamField>
 
 <ParamField path="framework" type="express | nextjs | laravel">

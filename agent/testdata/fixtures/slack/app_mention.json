@@ -1,0 +1,19 @@
+{
+  "provider": "slack",
+  "event_type": "app_mention",
+  "capture_order": 1,
+  "source": "synthetic (pack test fixture, no real data)",
+  "headers": [
+    [
+      "User-Agent",
+      "Slackbot 1.0 (+https://api.slack.com/robots)"
+    ],
+    [
+      "Content-Type",
+      "application/json"
+    ]
+  ],
+  "signature": "resign",
+  "body_sha256": "498885760feecc06acbe0ce5bd990452f642369edc72df35fb0ce92b4cf09f8e",
+  "body": "{\n  \"token\": \"synthetic0token0000000000\",\n  \"team_id\": \"T0SYNTH001\",\n  \"api_app_id\": \"A0SYNTH001\",\n  \"type\": \"event_callback\",\n  \"event_context\": \"4-synthetic\",\n  \"authorizations\": [\n    {\n      \"team_id\": \"T0SYNTH001\",\n      \"user_id\": \"U0SYNTHBOT\",\n      \"is_bot\": true\n    }\n  ],\n  \"event_id\": \"Ev0SYNTH0001\",\n  \"event_time\": 1794405483,\n  \"event\": {\n    \"type\": \"app_mention\",\n    \"user\": \"U0SYNTH002\",\n    \"text\": \"<@U0SYNTHBOT> deploy status?\",\n    \"ts\": \"1794405483.000100\",\n    \"channel\": \"C0SYNTH001\",\n    \"event_ts\": \"1794405483.000100\"\n  }\n}"
+}

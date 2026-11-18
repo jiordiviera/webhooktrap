@@ -244,6 +244,8 @@
                         "github_sha256",
                         "shopify_hmac_sha256",
                         "standard_webhooks_v1",
+                        "slack_v0",
+                        "paddle_h1",
                         "none"
                     ]
                 },

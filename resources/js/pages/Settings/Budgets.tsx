@@ -1,6 +1,7 @@
 import {
     GitHubLogo,
     ShopifyLogo,
+    SlackLogo,
     StripeLogo,
 } from '@/components/brand/provider-logos';
 import { PageHeading } from '@/components/identity/bare-shell';
@@ -12,6 +13,8 @@ const logos = {
     stripe: StripeLogo,
     shopify: ShopifyLogo,
     github: GitHubLogo,
+    slack: SlackLogo,
+    paddle: null,
     standard: null,
 } as const;
 

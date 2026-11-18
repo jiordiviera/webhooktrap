@@ -1,0 +1,65 @@
+---
+title: "Paddle"
+description: "Capture Paddle Billing webhooks and prove your handler against forged, unsigned, late, duplicated and out-of-order deliveries, and Paddle's 5-second limit."
+icon: "credit-card"
+---
+
+import SecretsLocal from '/snippets/secrets-local.mdx';
+
+## Point Paddle at your capture URL
+
+<Steps>
+  <Step title="Copy your capture URL">
+    It is on **Arrivals**: `https://in.webhooktrap.dev/c/` followed by a 12-character key.
+  </Step>
+  <Step title="Create a notification destination">
+    In the Paddle sandbox dashboard, open **Developer tools › Notifications › New destination**. Paste the capture URL, pick the events you handle and save.
+  </Step>
+  <Step title="Trigger events">
+    Use **Send test notification**, the webhook simulator, or a sandbox checkout.
+  </Step>
+</Steps>
+
+Webhook Trap recognises a Paddle Billing delivery by its `Paddle-Signature` header. It takes the event type from `event_type` and the event id from `event_id`, and groups events by subscription, then transaction. Customer ids are kept for search but never link deliveries on their own.
+
+## Configure the agent
+
+```yaml webhooktrap.yml
+target: http://127.0.0.1:3000/webhooks/paddle
+provider: paddle
+secret: env:PADDLE_WEBHOOK_SECRET
+```
+
+```bash
+export PADDLE_WEBHOOK_SECRET=pdl_ntfset_...
+webhooktrap agent
+```
+
+If you leave out `secret`, the agent looks for `PADDLE_WEBHOOK_SECRET`, the name in the Paddle pack. It is the destination's **secret key**.
+
+<SecretsLocal />
+
+Paddle signs `<ts>:<body>` with HMAC-SHA256 and sends `ts=<ts>;h1=<hex>` in `Paddle-Signature`. While a secret is rotated out the header can carry more than one `h1`; any one that matches is enough.
+
+The pack's timestamp tolerance is 5 s. That is the default in Paddle's SDKs, not a limit Paddle enforces: Paddle calls the timestamp check optional but recommended. Late sends a timestamp 65 s old, which a handler using the SDK default rejects.
+
+## What the scenarios do for Paddle
+
+| Scenario | For Paddle |
+| -------- | ---------- |
+| Once | Each selected event. |
+| Twice | The first event again, 500 ms later, re-signed. Paddle says your handler may receive the same event more than once; dedupe on `event_id`. |
+| Shuffled | The events in reverse order. Needs 2 or more events. Paddle doesn't guarantee delivery order; compare `occurred_at`. |
+| Late | The first event signed for a timestamp 65 s in the past (tolerance 5 s + 60 s). |
+| Retry after error | The first event, then the same event 2 s after the first attempt completes. |
+| Tampered | The body with one field changed, signed for the original body. Paddle amounts are strings, so `"_webhooktrap_tampered":true` is usually added. |
+| Unsigned | The first event with `Paddle-Signature` removed. |
+| Burst | Every selected event at once (two copies when you select one). |
+| Slow budget | One more delivery, measured against the 5 s budget. |
+
+The 5 s budget comes from Paddle's docs: respond with a 200 within five seconds. A `budget:` above it in `webhooktrap.yml` is refused as a configuration error.
+
+## Sources
+
+- [Verify webhook signatures](https://developer.paddle.com/webhooks/signature-verification): header format, signed payload, SDK tolerance, rotation.
+- [Respond to webhooks](https://developer.paddle.com/webhooks/respond-to-webhooks): five-second limit, retry schedule, duplicates, ordering.

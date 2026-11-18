@@ -2949,6 +2949,12 @@ a.tt-navitem:hover {
     overflow-x: auto;
 }
 
+/* S-03 waiting panel: one tab per pack, so the row wraps instead of hiding curl. */
+.tt-tabs.is-wrap {
+    flex-wrap: wrap;
+    overflow-x: visible;
+}
+
 .tt-tab {
     height: 38px;
     padding: 0 14px;

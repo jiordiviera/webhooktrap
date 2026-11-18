@@ -76,7 +76,7 @@ type Target struct {
 // providerDeny: provider domains are never targets (prototype deny list).
 var providerDeny = []string{
 	"stripe.com", "github.com", "githubusercontent.com", "shopify.com", "myshopify.com",
-	"twilio.com", "slack.com", "svix.com",
+	"twilio.com", "slack.com", "svix.com", "paddle.com", "adyen.com",
 }
 
 // metadata holds cloud metadata addresses refused even when declared (TM-55).

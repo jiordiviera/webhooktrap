@@ -1,0 +1,107 @@
+{
+    "$schema": "../_schema/pack.schema.json",
+    "format": 1,
+    "id": "slack",
+    "version": "1.0.0",
+    "name": "Slack",
+    "budget": {
+        "ms": 3000,
+        "source": "Slack docs",
+        "label": "3 s · Slack limit",
+        "source_label": "Slack docs",
+        "documented": true
+    },
+    "detect": {
+        "headers_all": ["X-Slack-Signature", "X-Slack-Request-Timestamp"]
+    },
+    "event": {
+        "type_path": "event.type",
+        "id_path": "event_id"
+    },
+    "grouping": {
+        "types": {
+            "channel": {
+                "name": "Channel",
+                "key": "{id}"
+            }
+        },
+        "anchors": ["channel"],
+        "by_event": [
+            {
+                "events": ["*"],
+                "yield": [
+                    {
+                        "path": "event.channel",
+                        "type": "channel"
+                    }
+                ]
+            }
+        ],
+        "fallback": null
+    },
+    "signing": {
+        "scheme": "slack_v0",
+        "headers": ["X-Slack-Signature"],
+        "signed_timestamp": true,
+        "tolerance_s": 300,
+        "secret_env": ["SLACK_SIGNING_SECRET"]
+    },
+    "duplicate": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": [],
+        "citation": "https://docs.slack.dev/apis/events-api/#retries"
+    },
+    "retry": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": [],
+        "citation": "https://docs.slack.dev/apis/events-api/#retries"
+    },
+    "resend_headers": ["User-Agent"],
+    "tamper_paths": [],
+    "objects": [],
+    "status_events": [],
+    "scrub": {
+        "paths": ["event.text", "event.blocks.*", "event.files.*", "event.user_profile.*", "authorizations.*", "token"],
+        "keep_headers": ["Content-Type", "User-Agent"]
+    },
+    "id_pattern": "",
+    "citations": {
+        "accepts_tampered": [
+            {
+                "label": "Slack docs › Verifying requests from Slack",
+                "url": "https://docs.slack.dev/authentication/verifying-requests-from-slack"
+            }
+        ],
+        "accepts_unsigned": [
+            {
+                "label": "Slack docs › Verifying requests from Slack",
+                "url": "https://docs.slack.dev/authentication/verifying-requests-from-slack"
+            }
+        ],
+        "accepts_stale": [
+            {
+                "label": "Slack docs › Verifying requests from Slack (five-minute window)",
+                "url": "https://docs.slack.dev/authentication/verifying-requests-from-slack"
+            }
+        ],
+        "duplicate_changed_state": [
+            {
+                "label": "Slack docs › Events API › Retries",
+                "url": "https://docs.slack.dev/apis/events-api/#retries"
+            }
+        ],
+        "retry_diverged": [
+            {
+                "label": "Slack docs › Events API › Retries",
+                "url": "https://docs.slack.dev/apis/events-api/#retries"
+            }
+        ]
+    },
+    "text": {
+        "findings": {},
+        "likely_cause": {},
+        "snippets": {}
+    }
+}

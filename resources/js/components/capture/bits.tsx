@@ -2,6 +2,7 @@ import type { ComponentType, SVGAttributes } from 'react';
 import {
     GitHubLogo,
     ShopifyLogo,
+    SlackLogo,
     StripeLogo,
 } from '@/components/brand/provider-logos';
 import { StatusBadge } from '@/components/identity/form';
@@ -40,12 +41,16 @@ const LOGOS: Record<string, ComponentType<SVGAttributes<SVGElement>>> = {
     stripe: StripeLogo,
     github: GitHubLogo,
     shopify: ShopifyLogo,
+    slack: SlackLogo,
+    // Paddle has no svgl mark yet: the neutral glyph stands in.
 };
 
 const NAMES: Record<string, string> = {
     stripe: 'Stripe',
     github: 'GitHub',
     shopify: 'Shopify',
+    slack: 'Slack',
+    paddle: 'Paddle',
     standard_webhooks: 'Standard Webhooks',
     curl: 'curl',
 };

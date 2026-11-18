@@ -1,0 +1,19 @@
+{
+  "provider": "slack",
+  "event_type": "message",
+  "capture_order": 2,
+  "source": "synthetic (pack test fixture, no real data)",
+  "headers": [
+    [
+      "User-Agent",
+      "Slackbot 1.0 (+https://api.slack.com/robots)"
+    ],
+    [
+      "Content-Type",
+      "application/json"
+    ]
+  ],
+  "signature": "resign",
+  "body_sha256": "f164a8693f7a3c49c41e0485d2b05260af9890da077a7929af6b67032b3774fd",
+  "body": "{\n  \"token\": \"synthetic0token0000000000\",\n  \"team_id\": \"T0SYNTH001\",\n  \"api_app_id\": \"A0SYNTH001\",\n  \"type\": \"event_callback\",\n  \"event_context\": \"4-synthetic\",\n  \"authorizations\": [\n    {\n      \"team_id\": \"T0SYNTH001\",\n      \"user_id\": \"U0SYNTHBOT\",\n      \"is_bot\": true\n    }\n  ],\n  \"event_id\": \"Ev0SYNTH0002\",\n  \"event_time\": 1794405490,\n  \"event\": {\n    \"type\": \"message\",\n    \"user\": \"U0SYNTH002\",\n    \"text\": \"thanks\",\n    \"ts\": \"1794405490.000200\",\n    \"channel\": \"C0SYNTH001\",\n    \"channel_type\": \"channel\",\n    \"event_ts\": \"1794405490.000200\"\n  }\n}"
+}

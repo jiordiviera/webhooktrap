@@ -92,13 +92,15 @@ A **finding** is a rule the run proved broken, with a severity:
 
 ## Packs
 
-A **pack** is versioned data about one provider: how to detect it, its signing scheme and timestamp tolerance, its response-time budget, its duplicate and retry headers, which fields Tampered changes, how events group, and the text and citations of its findings. The judge reads packs only. Webhook Trap 2.0 ships packs for Stripe, GitHub, Shopify and Standard Webhooks, all at version 1.0.0, embedded in the agent.
+A **pack** is versioned data about one provider: how to detect it, its signing scheme and timestamp tolerance, its response-time budget, its duplicate and retry headers, which fields Tampered changes, how events group, and the text and citations of its findings. The judge reads packs only. Webhook Trap 2.0 ships packs for Stripe, GitHub, Shopify, Slack, Paddle and Standard Webhooks, all at version 1.0.0, embedded in the agent. To add one, see [`packs/CONTRIBUTING.md`](https://github.com/jiordiviera/webhooktrap/blob/v2/packs/CONTRIBUTING.md).
 
 | Pack | Budget | Signature header | Signed timestamp |
 | ---- | ------ | ---------------- | ---------------- |
 | Stripe | 10 s (Webhook Trap default) | `Stripe-Signature` | yes, 300 s tolerance |
 | GitHub | 10 s (GitHub limit) | `X-Hub-Signature-256` | no |
 | Shopify | 5 s (Shopify limit) | `X-Shopify-Hmac-Sha256` | no |
+| Slack | 3 s (Slack limit) | `X-Slack-Signature` | yes, 300 s tolerance |
+| Paddle | 5 s (Paddle limit) | `Paddle-Signature` | yes, 5 s tolerance (Paddle SDK default) |
 | Standard Webhooks | 10 s (Webhook Trap default) | `webhook-signature` | yes, 300 s tolerance |
 
 ## The server runner
