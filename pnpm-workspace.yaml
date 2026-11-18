@@ -3,3 +3,11 @@ packages:
 
 publicHoistPattern:
     - '@inertiajs/core'
+
+# Audit exceptions: each one names why it cannot reach users, and goes when a fix ships.
+auditConfig:
+    ignoreGhsas:
+        # picomatch <=4.0.7 ReDoS (high, no patched version on 2026-11-18). Only reached through
+        # build-time Vite plugins (laravel-vite-plugin, @inertiajs/vite) matching globs from our
+        # own config; nothing in the served app uses it. Remove once picomatch ships a fix.
+        - GHSA-fc5q-39xc-vjpf
