@@ -63,7 +63,14 @@
     "objects": [],
     "status_events": [],
     "scrub": {
-        "paths": ["event.text", "event.blocks.*", "event.files.*", "event.user_profile.*", "authorizations.*", "token"],
+        "paths": [
+            "event.text",
+            "event.blocks.*",
+            "event.files.*",
+            "event.user_profile.*",
+            "authorizations.*",
+            "token"
+        ],
         "keep_headers": ["Content-Type", "User-Agent"]
     },
     "id_pattern": "",
