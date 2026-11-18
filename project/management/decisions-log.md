@@ -820,3 +820,12 @@ The PO accepts no risks in writing. G-2: the monitoring agent's host user is rem
 - **Plans:** every pack with fixtures plans deterministically, and every scenario that sends nothing gives its n/a reason in words (`agent/plan/packs_test.go`).
 - **Contribution workflow:** `packs/CONTRIBUTING.md`.
 - **Paddle mark:** svgl has no Paddle mark, so the neutral glyph stands in.
+
+## 81. Self-host release: install script, release tags, restore service, runner off by default (2026-11-18)
+
+- **Issue #20.** A release is a git tag `vX.Y.Z`; `container.yml` publishes the three images as `:X.Y.Z` (signed like every v2 build), linux/amd64 only. arm64 waits for a PO call.
+- **Install:** `deploy/selfhost/install.sh` writes every secret file with its owner, and `.env` from `deploy/selfhost/env.template`; it never overwrites. `GUEST_MODE` defaults to `false` and mail to the log on self-host.
+- **Restore:** new `restore` service (profile `restore`, pgdata read-write) and `wt-backup recover`, because `backup` mounts pgdata read-only and `postgres` cannot fetch WAL. The hosted runbook has the same gap and needs the same change in `compose.production.yaml` before its C6 drill.
+- **Runner:** behind the profile `runner`, off by default, until the app has a `/runner/v1` API. `webhooktrap runner-health` is its health check (the app accepted a hello in the last 90 s). `runner_token` is `root:65532`.
+- **Tested** on a disposable host between two builds, with the gaps listed: `project/validation/selfhost-release-2026-11-18.md`.
+

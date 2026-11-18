@@ -7,6 +7,9 @@ name: container
 on:
   push:
     branches: [v2] # the default branch; 1.x lives on v1 and is not built here
+    # Self-host releases (docs/guides/self-hosting.mdx): pushing tag v2.1.0 publishes the three
+    # images as :2.1.0 (and :<sha>), signed like every v2 build. linux/amd64 only.
+    tags: ["v2.[0-9]+.[0-9]+", "v2.[0-9]+.[0-9]+-*"]
   pull_request:
 
 permissions: {}
@@ -32,6 +35,20 @@ jobs:
         with:
           persist-credentials: false
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # The second tag of each image: the branch name on a branch push, the release version
+      # (tag without its leading v) on a tag push, none on a pull request.
+      - name: Image tag
+        id: tag
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          case "$EVENT:$REF_TYPE" in
+            push:tag) echo "name=${REF_NAME#v}" >> "$GITHUB_OUTPUT"; echo "version=${REF_NAME#v}" >> "$GITHUB_OUTPUT" ;;
+            push:branch) echo "name=$REF_NAME" >> "$GITHUB_OUTPUT"; echo "version=$GITHUB_SHA" >> "$GITHUB_OUTPUT" ;;
+            *) echo "name=" >> "$GITHUB_OUTPUT"; echo "version=$GITHUB_SHA" >> "$GITHUB_OUTPUT" ;;
+          esac
 
       # Build the runtime image locally first so the gates run before anything is pushed.
       - name: Build runtime image (local, for the gates)
@@ -43,7 +60,7 @@ jobs:
           push: false
           tags: webhooktrap:gate
           build-args: |
-            ENGINE_VERSION=${{ github.sha }}
+            ENGINE_VERSION=${{ steps.tag.outputs.version }}
             ENGINE_COMMIT=${{ github.sha }}
 
       # Realtime extension gate (decision 50, proposed TM-T159).
@@ -91,9 +108,9 @@ jobs:
           sbom: true
           tags: |
             ${{ env.APP_REPO }}:${{ github.sha }}
-            ${{ github.event_name == 'push' && format('{0}:{1}', env.APP_REPO, github.ref_name) || '' }}
+            ${{ steps.tag.outputs.name != '' && format('{0}:{1}', env.APP_REPO, steps.tag.outputs.name) || '' }}
           build-args: |
-            ENGINE_VERSION=${{ github.sha }}
+            ENGINE_VERSION=${{ steps.tag.outputs.version }}
             ENGINE_COMMIT=${{ github.sha }}
       - name: Build and push runner
         id: runner
@@ -106,9 +123,9 @@ jobs:
           sbom: true
           tags: |
             ${{ env.RUNNER_REPO }}:${{ github.sha }}
-            ${{ github.event_name == 'push' && format('{0}:{1}', env.RUNNER_REPO, github.ref_name) || '' }}
+            ${{ steps.tag.outputs.name != '' && format('{0}:{1}', env.RUNNER_REPO, steps.tag.outputs.name) || '' }}
           build-args: |
-            ENGINE_VERSION=${{ github.sha }}
+            ENGINE_VERSION=${{ steps.tag.outputs.version }}
             ENGINE_COMMIT=${{ github.sha }}
       - name: Build and push postgres
         id: pg
@@ -120,7 +137,7 @@ jobs:
           sbom: true
           tags: |
             ${{ env.PG_REPO }}:${{ github.sha }}
-            ${{ github.event_name == 'push' && format('{0}:{1}', env.PG_REPO, github.ref_name) || '' }}
+            ${{ steps.tag.outputs.name != '' && format('{0}:{1}', env.PG_REPO, steps.tag.outputs.name) || '' }}
 
       - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
         if: github.event_name == 'push'

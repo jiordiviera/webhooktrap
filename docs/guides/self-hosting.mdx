@@ -1,139 +1,320 @@
 ---
 title: "Self-host with Docker Compose"
-description: "Run your own Webhook Trap instance from compose.yaml: services, secrets as files, TLS modes and the runner token."
+description: "Install your own Webhook Trap instance from a release, put it behind TLS, back it up, restore it, upgrade it and roll it back."
 icon: "server"
 ---
 
-Webhook Trap is open source (AGPL-3.0). The repository's `compose.yaml` is the self-host profile: one file, started with `docker compose up -d`. This page follows that file and `.env.example`; both are the reference when they change.
+Webhook Trap is open source (AGPL-3.0). A self-hosted instance runs the same code as the hosted service, with every feature, and needs no account with us or with any other hosted service. Everything below was run end to end on a fresh Docker host: install, a backup and a point-in-time restore, an upgrade and a rollback between two releases.
 
 <Note>
-  Use the agent with your instance like with the hosted one: pair with `--server https://<your app host>`. An agent paired with one server can also be paired with another; pass `--server` to `webhooktrap agent` when it is paired with several.
+  Use the agent with your instance like with the hosted one: pair with `webhooktrap pair --server https://<your app host>`. An agent paired with several servers takes `--server` on `webhooktrap agent`.
 </Note>
 
-## What runs
+## Requirements
 
-| Service | Role |
-| ------- | ---- |
-| `migrate` | One-shot: `php artisan migrate --force`, before the app starts. |
-| `app` | The web app (FrankenPHP). Publishes ports 80 and 443 (and 443/udp for HTTP/3). |
-| `ingest` | Stores webhook captures on its own PHP pool. Reached only through `app`. |
-| `haproxy` | Per-address limits on the capture path. Defaults: 20 requests in flight, 1200 per minute, 2 partial bodies per address. |
-| `reverb` | Realtime updates for the browser. |
-| `horizon` | Queue workers. |
-| `scheduler` | Scheduled jobs (retention purges, expiries). |
-| `ssr` | Server-side rendering of the public pages. Without it they render in the browser. |
-| `engine` | The `webhooktrap` engine as a network-free sandbox for the app. |
-| `runner` | The server runner (`serve-run`). Idle: the app doesn't start server runs in 2.0. |
-| `postgres` | PostgreSQL, from the `webhooktrap-postgres` image. |
-| `valkey` | Redis-compatible store for queue, cache and rate limits. `REDIS_HOST` may point at your own Redis or Valkey instead. |
-| `backup` | pgBackRest: a daily full backup and continuous WAL archiving. |
+| | |
+| --- | --- |
+| Host | Linux, **linux/amd64**. The images are not built for arm64 yet. |
+| Docker | Docker Engine 25 or later with the Compose plugin v2.24 or later (`docker compose`). |
+| Size | 2 vCPU and 4 GB of memory for a small team. The services' memory limits add up to about 4.5 GB, as ceilings, not reservations; PostgreSQL has the largest (1.5 GB). Disk: captures, runs and backups, see [Backups](#backups). |
+| Network | Three DNS names pointing at the host. Ports 80 and 443 open with built-in TLS, or a reverse proxy of your own. |
+| Tools | `openssl` and root access, for the install script. |
 
-The images are `ghcr.io/jiordiviera/webhooktrap`, `ghcr.io/jiordiviera/webhooktrap-runner` and `ghcr.io/jiordiviera/webhooktrap-postgres`. Every service runs read-only where it can, with all capabilities dropped and `no-new-privileges`. PostgreSQL and Valkey are on an internal network with no internet access.
+## Releases
 
-The reference size is 2 vCPU and 4 GB of memory.
+A release is a git tag `vX.Y.Z` on [github.com/jiordiviera/webhooktrap](https://github.com/jiordiviera/webhooktrap). Each one publishes three images, all with the tag `X.Y.Z`:
 
-## Before you start
+- `ghcr.io/jiordiviera/webhooktrap`: the app, the workers and the engine;
+- `ghcr.io/jiordiviera/webhooktrap-runner`: the server runner;
+- `ghcr.io/jiordiviera/webhooktrap-postgres`: PostgreSQL 18 with pgBackRest.
+
+Every image is signed with cosign (keyless, from the release workflow) and carries its SBOM and build provenance. Pin a release tag in `.env`, never `latest`. The `compose.yaml` of a release goes with the images of that release: use both from the same tag.
+
+## Install
 
 <Steps>
-  <Step title="Pick the image version">
-    Set `WEBHOOKTRAP_VERSION` in `.env`. Compose refuses to start without it, and every image uses it. Images are published for each commit on the `v2` branch, tagged with the commit SHA. Use a fixed tag, never `latest`.
+  <Step title="Get the release files">
+    ```bash
+    git clone --depth 1 --branch vX.Y.Z https://github.com/jiordiviera/webhooktrap.git /opt/webhooktrap
+    cd /opt/webhooktrap
+    ```
+
+    Only `compose.yaml` and `deploy/selfhost/` are used at run time. The instance's own files (`.env`, `secrets/`, `runner/`) are written next to them and are ignored by git.
   </Step>
 
   <Step title="Choose three host names">
-    The app, the capture host and the realtime host are separate names, for example `app.example.com`, `in.example.com` and `ws.example.com`, all pointing at the server. The capture host serves only `/c/…`; the app host never serves `/c/…`.
+    The app, the capture host and the realtime host are separate names, for example `app.example.com`, `in.example.com` and `ws.example.com`, all pointing at the server. The capture host serves only `/c/…`, and the app host never serves `/c/…`.
   </Step>
 
-  <Step title="Write the secrets as files">
-    No secret goes in `.env`. Each is a file in `./secrets/`, mounted as a Compose secret and read by the image's entrypoint.
+  <Step title="Run the install script">
+    As root, from the directory that holds `compose.yaml`:
 
-    | File | Content |
-    | ---- | ------- |
-    | `app_key` | `echo base64:$(openssl rand -base64 32)` |
-    | `postgres_password`, `db_password` | The same database password in both. |
-    | `valkey_password` | `openssl rand -hex 32` |
-    | `reverb_app_secret` | `openssl rand -hex 32` |
-    | `identity_email_hmac_key` | `openssl rand -hex 32`. Never change it once the instance is in use. |
-    | `identity_recovery_code_key` | `openssl rand -hex 32`. Rotating it invalidates every recovery code. |
-    | `agent_pairing_hmac_key` | `openssl rand -hex 32` |
-    | `edge_proxy_secret` | `openssl rand -hex 32`. Needed in every TLS mode: `app` signs its hop to `ingest` with it. |
-    | `backup_cipher_pass` | Encryption passphrase for the backup repository. |
-    | `runner_token` | Start with an empty file (see below). |
+    ```bash
+    deploy/selfhost/install.sh --version X.Y.Z \
+      --app-host app.example.com --capture-host in.example.com --ws-host ws.example.com \
+      --start
+    ```
 
-    These may be empty files: `mail_password`, `pulsesend_api_key`, `github_client_secret`, `google_client_secret`, `error_tracker_dsn`. An empty OAuth secret turns that sign-in method off.
+    The script:
 
-    Ownership: `postgres_password` and `backup_cipher_pass` are `root:999`, mode `0440`. Every other file is `root:33`, mode `0440`.
+    - writes every secret as a file in `./secrets/`, generated with `openssl`, owned by root with the group the images read it with, mode `0440`;
+    - writes `.env` (settings only, never a secret) from `deploy/selfhost/env.template`;
+    - checks the result with `docker compose config`;
+    - with `--start`, runs `docker compose up -d --wait`, which returns once every service is healthy.
+
+    It never overwrites a file that exists, so you can run it again. Add `--tls off --http-port 8080` to run behind your own reverse proxy (next section).
   </Step>
 
-  <Step title="Write .env">
-    `.env.example` lists every variable name, without values. For self-host, set at least:
-
-    - `WEBHOOKTRAP_VERSION`;
-    - `WEBHOOKTRAP_INSTANCE=selfhost`;
-    - `APP_URL`, `APP_HOST`, `CAPTURE_HOST`, `WS_HOST`, `CAPTURE_PUBLIC_ORIGIN`, `REVERB_PUBLIC_HOST`;
-    - `POSTGRES_DB`, `POSTGRES_USER` and the matching `DB_*` names;
-    - the TLS variables of the mode you choose, below.
-
-    `GUEST_MODE=false` turns guest sessions off on your instance.
+  <Step title="Create the first account">
+    Open `https://app.example.com/register`. Without a mail setup, the verification link is written to the log: `docker compose logs horizon`. See [Settings](#settings) for SMTP.
   </Step>
 </Steps>
 
-## TLS
+## TLS and reverse proxy
 
 <Tabs>
-  <Tab title="Built-in TLS (TLS_MODE=auto)">
-    The default. FrankenPHP gets certificates itself.
+  <Tab title="Built-in TLS (default)">
+    `--tls auto`. FrankenPHP gets and renews Let's Encrypt certificates for the three names itself. Ports 80 and 443 (and 443/udp for HTTP/3) are published on all addresses. Nothing else to do.
 
-    - `SERVER_NAME`: your three host names;
-    - `CADDY_AUTO_HTTPS=on`;
-    - `PROXY_TRUST_MODE=none`.
-
-    Ports 80 and 443 are published on `BIND_ADDRESS` (default `0.0.0.0`).
+    The settings it writes: `SERVER_NAME` lists the three names, `CADDY_AUTO_HTTPS=on`, `PROXY_TRUST_MODE=none`.
   </Tab>
-  <Tab title="Behind your proxy (TLS_MODE=off)">
-    Your reverse proxy terminates TLS and forwards to the app.
+  <Tab title="Behind your reverse proxy">
+    `--tls off --http-port 8080`. The app listens on `127.0.0.1:8080` only; your proxy terminates TLS for the three names and forwards to it. The app trusts the proxy's forwarded headers only when the request carries the edge secret, so the proxy must:
 
-    - `BIND_ADDRESS=127.0.0.1` and `HTTP_PORT=<port>`;
-    - `CADDY_AUTO_HTTPS=off`;
-    - `PROXY_TRUST_MODE=secret`: the proxy sends the edge secret, and only then are its forwarded headers trusted. `ip`, with `TRUSTED_PROXIES`, is the weaker option.
+    - send `X-WT-Edge` with the content of `secrets/edge_proxy_secret` (64 hex characters);
+    - send `X-Forwarded-For` and `X-Forwarded-Proto`, and drop `X-Forwarded-Host`;
+    - pass WebSocket upgrades on the realtime host;
+    - leave the capture host's requests and answers unchanged: no compression, no body size limit under 25 MiB, no buffering that rewrites headers.
 
-    If your proxy hides client addresses and you leave `PROXY_TRUST_MODE=none`, every capture shares one rate-limit bucket.
+    Caddy:
+
+    ```caddy
+    app.example.com, in.example.com, ws.example.com {
+      reverse_proxy 127.0.0.1:8080 {
+        header_up X-WT-Edge {file./etc/caddy/webhooktrap-edge-secret}
+        header_up -X-Forwarded-Host
+        transport http {
+          compression off
+        }
+      }
+    }
+    ```
+
+    nginx (one `server` block per name, same `location`; the `map` goes in the `http` block):
+
+    ```nginx
+    map $http_upgrade $connection_upgrade {
+      default upgrade;
+      ''      close;
+    }
+
+    location / {
+      proxy_pass http://127.0.0.1:8080;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-WT-Edge "<content of secrets/edge_proxy_secret>";
+      proxy_set_header X-Forwarded-For $remote_addr;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Host "";
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Accept-Encoding "";
+      client_max_body_size 25m;
+      proxy_request_buffering off;
+    }
+    ```
+
+    The settings it writes: `SERVER_NAME=:8080`, `CADDY_AUTO_HTTPS=off`, `PROXY_TRUST_MODE=secret`, `BIND_ADDRESS=127.0.0.1`. Compose also publishes the TLS port, so `HTTPS_PORT` is set to a free loopback port next to `HTTP_PORT`; nothing answers on it.
+
+    If the proxy doesn't send the edge secret, every capture shares one rate-limit bucket and shows the proxy's address as its source.
   </Tab>
 </Tabs>
 
-## Start
+## What runs
+
+| Service | Role | Health check |
+| ------- | ---- | ------------ |
+| `migrate` | One-shot: database migrations, before anything that uses the database. | Must exit 0. |
+| `app` | The web app (FrankenPHP). The only service with published ports. | `GET /up` |
+| `ingest` | Stores webhook captures on its own PHP pool. Reached only through `app`. | `GET /up` |
+| `haproxy` | Per-address limits on the capture path: 20 requests in flight, 1200 per minute, 2 partial bodies per address. | stats endpoint |
+| `haproxy-config` | One-shot: copies the HAProxy config out of the app image. | Must exit 0. |
+| `reverb` | Realtime updates for the browser. | port open |
+| `horizon` | Queue workers. | `horizon:status` |
+| `scheduler` | Scheduled jobs: retention purges, expiries. | heartbeat younger than 2 min |
+| `ssr` | Server-side rendering of the public pages. Without it they render in the browser. | `GET /health` |
+| `engine` | The `webhooktrap` engine as a network-free sandbox for the app. | `sandbox-ping` |
+| `postgres` | PostgreSQL 18. | `pg_isready` |
+| `valkey` | Redis-compatible store for queue, cache and rate limits. `REDIS_HOST` may point at your own Redis or Valkey instead. | `PING` |
+| `backup` | pgBackRest: a daily full backup and continuous WAL archiving. | full backup younger than 26 h, WAL archive lag under 15 min |
+
+Two services start only when asked:
+
+- `restore` (profile `restore`): the restore commands, below.
+- `runner` (profile `runner`): the server runner. The app has no server runs in 2.0, so it stays off. Its health check passes when the app accepted its hello in the last 90 seconds.
+
+`GET /health` on the app host sums it up for a monitor, as JSON with `ok` and one entry per check: database, store, scheduler heartbeat and backup age.
+
+Every service runs read-only where it can, with all capabilities dropped, `no-new-privileges`, memory and process limits, and logs rotated at 3 × 10 MB. PostgreSQL and Valkey are on an internal network with no internet access, and `engine` has no network at all.
+
+## Settings
+
+Change `.env`, then `docker compose up -d --wait`. The ones you are most likely to change:
+
+| Setting | Default | |
+| ------- | ------- | --- |
+| `GUEST_MODE` | `false` | `true` lets people capture without an account. |
+| `MAIL_MAILER` | `log` | `smtp` with `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`; the password goes in `secrets/mail_password`. |
+| `GITHUB_CLIENT_ID`, `GOOGLE_CLIENT_ID` | empty | Sign-in with GitHub or Google. The client secrets go in `secrets/github_client_secret` and `secrets/google_client_secret`; an empty file turns the method off. |
+| `WT_CAPTURE_MAX_CONN`, `WT_CAPTURE_MAX_RATE` | 20, 1200 | Per-address capture limits. |
+| `LOG_LEVEL` | `info` | Logs go to the containers' stderr. |
+
+Retention is set per project in its settings: captures 1, 7, 14 or 30 days (default 30), runs 7, 30 or 90 days (default 90). The scheduler purges what is older.
+
+### Secrets
+
+No secret goes in `.env`. Each one is a file in `./secrets/`, mounted as a Compose secret and read by the image's entrypoint.
+
+| File | Content | Group |
+| ---- | ------- | ----- |
+| `app_key` | `base64:` and 32 random bytes | 33 |
+| `postgres_password`, `db_password` | The same database password in both. | 999, 33 |
+| `valkey_password`, `reverb_app_secret`, `agent_pairing_hmac_key`, `edge_proxy_secret` | 32 random bytes as hex. | 33 |
+| `identity_email_hmac_key` | 32 random bytes as hex. Never change it once the instance is in use. | 33 |
+| `identity_recovery_code_key` | 32 random bytes as hex. Rotating it invalidates every recovery code. | 33 |
+| `backup_cipher_pass` | Encryption passphrase of the backup repository. Keep a copy off the server: a backup is unreadable without it. | 999 |
+| `backup_s3_key`, `backup_s3_secret` | S3 credentials, or empty with posix backups. | 999 |
+| `runner_token` | Empty until you run the server runner. | 65532 |
+| `mail_password`, `pulsesend_api_key`, `github_client_secret`, `google_client_secret`, `error_tracker_dsn` | Optional, may be empty. | 33 |
+
+Every file is owned by root, mode `0440`. The group is the user the reading image runs as: 33 for the app, 999 for PostgreSQL, 65532 for the runner.
+
+The logs never carry a secret: the entrypoint reads the files without printing them, request logs drop share tokens, capture keys, the edge secret and `Referer`, and capture bodies are never logged.
+
+## Backups
+
+The `backup` service takes a full backup at `BACKUP_FULL_SCHEDULE` (UTC, default `02:30`), keeps full backups `BACKUP_RETENTION_FULL` days (default 14), and archives the write-ahead log continuously, so you can restore to any second inside that window. Backups are encrypted with `backup_cipher_pass` and compressed with zstd.
+
+<Warning>
+  The default repository (`BACKUP_REPO_TYPE=posix`) is a volume on the same disk. It protects against mistakes, not against losing the server. For that, use an S3-compatible bucket elsewhere.
+</Warning>
+
+For S3 (AWS, Cloudflare R2, Backblaze B2, MinIO and others), set `BACKUP_REPO_TYPE=s3`, `BACKUP_S3_ENDPOINT`, `BACKUP_S3_BUCKET` and `BACKUP_S3_REGION` in `.env`, write the key pair in `secrets/backup_s3_key` and `secrets/backup_s3_secret`, and run `docker compose up -d --wait`.
 
 ```bash
-docker compose up -d
-docker compose ps
+docker compose exec backup backup-status   # "ok", or what is late
+docker compose exec backup backup-now      # incremental now; --type=full for a full one
 ```
 
-`migrate` runs first; `app`, `reverb`, `horizon` and `scheduler` wait for it. Then open `APP_URL` and create the first account at `/register`.
+### Deletion ledger
 
-### The runner token
+When an account is deleted, its id and deletion time are written to a ledger outside the database (never the address). A restore brings back accounts deleted after the restore point; the ledger is how they are deleted again. To keep a copy of the ledger next to the backups, set `LEDGER_AGE_RECIPIENT` to an [age](https://age-encryption.org) public key. The copies are encrypted with it, and the matching identity must stay off the server.
 
-`runner` needs a token issued by the app. Once the app is up:
+## Restore
+
+A restore replaces the database with its state at a point in time. Run every step; the app refuses to start between step 2 and step 6.
+
+<Steps>
+  <Step title="Stop everything and empty the database volume">
+    ```bash
+    docker compose down
+    docker volume rm webhooktrap_pgdata webhooktrap_valkeydata
+    ```
+
+    The volume names start with the Compose project name, `webhooktrap` unless you set `COMPOSE_PROJECT_NAME`. Valkey holds only queues, caches and counters; dropping it keeps a queued job from acting on restored rows.
+  </Step>
+
+  <Step title="Restore the files">
+    ```bash
+    docker compose run --rm restore restore --target-time="2026-11-18 22:36:31+00"
+    ```
+
+    Without `--target-time`, it restores to the latest archived moment. From now on the app's containers refuse to start until step 6.
+  </Step>
+
+  <Step title="Replay the log to the target">
+    ```bash
+    docker compose run --rm restore recover
+    ```
+
+    PostgreSQL starts once inside the `restore` container, replays the archived log up to the target, opens the database and stops. It prints where it stopped, for example `recovery stopping before commit of transaction 860, time 2026-11-18 22:36:35`.
+  </Step>
+
+  <Step title="Start the database alone">
+    ```bash
+    docker compose up -d --wait --no-deps postgres valkey
+    ```
+  </Step>
+
+  <Step title="Delete again the accounts deleted after the restore point">
+    With ledger copies (`LEDGER_AGE_RECIPIENT` set), merge the newest copy first, reading the age identity from standard input:
+
+    ```bash
+    docker compose run --rm -T restore ledger-fetch < age-identity.txt
+    docker compose run --rm --no-deps -T --entrypoint php horizon artisan accounts:apply-ledger --file=/status/ledger-merged.jsonl
+    ```
+
+    Without copies, apply the local ledger, if the server still has it:
+
+    ```bash
+    docker compose run --rm --no-deps -T --entrypoint php horizon artisan accounts:apply-ledger --allow-missing
+    ```
+
+    It reports what it applied. Run it a second time to check that nothing is left to apply.
+  </Step>
+
+  <Step title="Finish and start">
+    ```bash
+    docker compose run --rm restore restore-finish
+    docker compose up -d --wait
+    docker compose exec backup backup-now --type=full
+    ```
+
+    The restored database continues on a new timeline. The full backup gives it a fresh starting point.
+  </Step>
+</Steps>
+
+Test a restore before you need one, for example into a copy of the server.
+
+## Upgrade
+
+<Steps>
+  <Step title="Read the release notes">
+    The [changelog](/changelog) says when a release needs more than the steps below.
+  </Step>
+  <Step title="Back up">
+    ```bash
+    docker compose exec backup backup-now
+    ```
+  </Step>
+  <Step title="Switch to the new release">
+    ```bash
+    git fetch --tags && git checkout vX.Y.Z
+    sed -i 's/^WEBHOOKTRAP_VERSION=.*/WEBHOOKTRAP_VERSION=X.Y.Z/' .env
+    docker compose up -d --wait
+    ```
+
+    `migrate` runs before the app starts on the new images; `up --wait` returns once every service is healthy. New settings in `deploy/selfhost/env.template` have defaults; add them to `.env` only to change them.
+  </Step>
+</Steps>
+
+## Roll back
+
+Migrations stay compatible with the previous release, so going back one release needs no database change:
 
 ```bash
-docker compose run --rm -T app php artisan runner:token runner > secrets/runner_token
-docker compose up -d runner
+git checkout vPREVIOUS
+sed -i 's/^WEBHOOKTRAP_VERSION=.*/WEBHOOKTRAP_VERSION=PREVIOUS/' .env
+docker compose up -d --wait
 ```
 
-`-T` keeps stderr out of the file. `runner:token` also takes `--list` and `--revoke=<name>`; run it again to rotate. With `TLS_MODE=auto`, add `http://app:8080` to `SERVER_NAME`, because the runner reaches the app on that name.
-
-The runner sends to public addresses only (`RUNNER_GUARD_CEILING=public`). `RUNNER_GUARD_CEILING=allowlist` with `RUNNER_ALLOWLIST_FILE` limits it to the `host:port`, `host:from-to` or `cidr:port` lines of a file in `./runner/`.
-
-## Backups and upgrades
-
-- The default backup repository is a volume on the same disk. That is not a disaster backup: set `BACKUP_REPO_TYPE` to `s3` (with the `BACKUP_S3_*` variables) or `sftp`.
-- A full backup runs daily at `BACKUP_FULL_SCHEDULE` (UTC `HH:MM`, default `02:30`), kept `BACKUP_RETENTION_FULL` days (default 14). WAL is archived continuously.
-- With `BACKUP_BEFORE_MIGRATE` on, a backup runs before every migration.
-- Restore into a stopped stack with an empty `pgdata` volume: `docker compose run --rm backup restore`, optionally with `--target-time=…`.
-- To upgrade, change `WEBHOOKTRAP_VERSION` and run `docker compose up -d`. Migrations stay backward-compatible for one release, so rolling the image back needs no schema rollback.
+Further back than one release, restore the backup taken before the upgrade instead.
 
 ## License
 
-Webhook Trap is licensed under the [GNU AGPL-3.0](https://github.com/jiordiviera/webhooktrap/blob/v2/LICENSE). The self-hosted app is the same code as the hosted service, with every feature: the engine, the agent, the scenarios and the provider packs. No paid edition unlocks extra features.
+Webhook Trap is licensed under the [GNU AGPL-3.0](https://github.com/jiordiviera/webhooktrap/blob/v2/LICENSE). No paid edition unlocks extra features: the engine, the agent, the scenarios and the provider packs are all in the open code.
 
-- **Running it unchanged:** you can run it for yourself, your team or your company, at no cost.
-- **Running a modified version as a network service:** the AGPL asks you to offer the source of your modified version to everyone who uses it over the network. Section 13 of the license covers this. This covers every user who reaches it over the network, including people inside your own company.
+- **Running it unchanged:** for yourself, your team or your company, at no cost. You have nothing to publish.
+- **Running a modified version as a network service:** section 13 of the license asks you to offer the corresponding source of your modified version to everyone who uses it over the network, including people inside your own company. A public repository or download link of your version, shown to your users, is enough.
+- **Distributing it** (images, binaries): give the recipients the corresponding source, under the same license, and keep the copyright and license notices.
 - **The hosted service** at app.webhooktrap.dev runs the public code. Its paid plans sell hosting, quotas, retention and support, not features.
