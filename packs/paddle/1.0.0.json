@@ -1,0 +1,149 @@
+{
+    "$schema": "../_schema/pack.schema.json",
+    "format": 1,
+    "id": "paddle",
+    "version": "1.0.0",
+    "name": "Paddle",
+    "budget": {
+        "ms": 5000,
+        "source": "Paddle docs",
+        "label": "5 s · Paddle limit",
+        "source_label": "Paddle docs",
+        "documented": true
+    },
+    "detect": {
+        "headers_all": ["Paddle-Signature"]
+    },
+    "event": {
+        "type_path": "event_type",
+        "id_path": "event_id"
+    },
+    "grouping": {
+        "types": {
+            "subscription": {
+                "name": "Subscription"
+            },
+            "transaction": {
+                "name": "Transaction"
+            },
+            "customer": {
+                "name": "Customer",
+                "group": false
+            }
+        },
+        "anchors": ["subscription", "transaction"],
+        "by_event": [
+            {
+                "events": ["subscription.*"],
+                "yield": [
+                    {
+                        "path": "data.id",
+                        "type": "subscription"
+                    },
+                    {
+                        "path": "data.customer_id",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["transaction.*"],
+                "yield": [
+                    {
+                        "path": "data.subscription_id",
+                        "type": "subscription"
+                    },
+                    {
+                        "path": "data.id",
+                        "type": "transaction"
+                    },
+                    {
+                        "path": "data.customer_id",
+                        "type": "customer"
+                    }
+                ]
+            },
+            {
+                "events": ["customer.*"],
+                "yield": [
+                    {
+                        "path": "data.id",
+                        "type": "customer"
+                    }
+                ]
+            }
+        ],
+        "fallback": "data_id"
+    },
+    "signing": {
+        "scheme": "paddle_h1",
+        "headers": ["Paddle-Signature"],
+        "signed_timestamp": true,
+        "tolerance_s": 5,
+        "secret_env": ["PADDLE_WEBHOOK_SECRET"]
+    },
+    "duplicate": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": [],
+        "citation": "https://developer.paddle.com/webhooks/respond-to-webhooks"
+    },
+    "retry": {
+        "supported": true,
+        "verified": true,
+        "keep_headers": [],
+        "citation": "https://developer.paddle.com/webhooks/respond-to-webhooks"
+    },
+    "resend_headers": ["User-Agent"],
+    "tamper_paths": [],
+    "objects": [],
+    "status_events": [],
+    "scrub": {
+        "paths": ["data.email", "data.name", "data.address.*", "data.business.*", "data.billing_details.*"],
+        "keep_headers": ["Content-Type", "User-Agent"]
+    },
+    "id_pattern": "^[a-z]{3}_[a-z0-9]{26}$",
+    "citations": {
+        "accepts_tampered": [
+            {
+                "label": "Paddle docs › Verify webhook signatures",
+                "url": "https://developer.paddle.com/webhooks/signature-verification"
+            }
+        ],
+        "accepts_unsigned": [
+            {
+                "label": "Paddle docs › Verify webhook signatures",
+                "url": "https://developer.paddle.com/webhooks/signature-verification"
+            }
+        ],
+        "accepts_stale": [
+            {
+                "label": "Paddle docs › Verify webhook signatures (timestamp tolerance)",
+                "url": "https://developer.paddle.com/webhooks/signature-verification"
+            }
+        ],
+        "duplicate_changed_state": [
+            {
+                "label": "Paddle docs › Respond to webhooks (duplicates, event_id)",
+                "url": "https://developer.paddle.com/webhooks/respond-to-webhooks"
+            }
+        ],
+        "order_changed_state": [
+            {
+                "label": "Paddle docs › Respond to webhooks (order not guaranteed, occurred_at)",
+                "url": "https://developer.paddle.com/webhooks/respond-to-webhooks"
+            }
+        ],
+        "retry_diverged": [
+            {
+                "label": "Paddle docs › Respond to webhooks (retries)",
+                "url": "https://developer.paddle.com/webhooks/respond-to-webhooks"
+            }
+        ]
+    },
+    "text": {
+        "findings": {},
+        "likely_cause": {},
+        "snippets": {}
+    }
+}

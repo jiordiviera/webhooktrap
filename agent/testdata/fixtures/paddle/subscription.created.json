@@ -1,0 +1,19 @@
+{
+  "provider": "paddle",
+  "event_type": "subscription.created",
+  "capture_order": 1,
+  "source": "synthetic (pack test fixture, no real data)",
+  "headers": [
+    [
+      "User-Agent",
+      "Paddle"
+    ],
+    [
+      "Content-Type",
+      "application/json"
+    ]
+  ],
+  "signature": "resign",
+  "body_sha256": "402a8f67159ee356bcfbceb1d31da949a0820fbea13dd27d1181c461e361b725",
+  "body": "{\n  \"event_id\": \"evt_01jsynth0000000000000000a1\",\n  \"event_type\": \"subscription.created\",\n  \"occurred_at\": \"2026-11-18T09:30:00.000000Z\",\n  \"notification_id\": \"ntf_01jsynth0000000000000000a1\",\n  \"data\": {\n    \"id\": \"sub_01jsynth0000000000000000a1\",\n    \"status\": \"active\",\n    \"customer_id\": \"ctm_01jsynth0000000000000000a1\",\n    \"currency_code\": \"EUR\",\n    \"items\": [\n      {\n        \"price\": {\n          \"id\": \"pri_01jsynth0000000000000000a1\"\n        },\n        \"quantity\": 1\n      }\n    ]\n  }\n}"
+}

@@ -136,6 +136,11 @@ export function providerInstructions(id: string, url: string): string {
             return 'Repository › Settings › Webhooks › Add webhook. Payload URL = this URL, Content type = application/json, set a secret.';
         case 'shopify':
             return 'Settings › Notifications › Webhooks › Create webhook. Format JSON, URL = this URL, API version 2025-10.';
+        /** COPY PROPOSAL (A07): Slack and Paddle packs (issue #19). */
+        case 'slack':
+            return "Slack checks a new Request URL with a url_verification challenge that a capture URL doesn't answer, so Slack won't save this URL directly. Save Slack deliveries as fixtures from your app's logs, or relay them here from your handler; Webhook Trap recognises them and proves your handler with them.";
+        case 'paddle':
+            return 'Sandbox dashboard › Developer tools › Notifications › New destination. Paste the URL, pick the events, save, then use Send test notification or the webhook simulator.';
         case 'standard_webhooks':
             return "Paste the URL as the endpoint in your provider's webhook settings. We detect webhook-id / webhook-signature headers automatically.";
         default:

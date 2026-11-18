@@ -64,7 +64,7 @@ export function WaitingPanel({
                 <div
                     role="tablist"
                     aria-label="Provider instructions"
-                    className="tt-tabs"
+                    className="tt-tabs is-wrap"
                 >
                     {providers.map((p, i) => (
                         <button

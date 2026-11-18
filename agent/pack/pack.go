@@ -77,7 +77,8 @@ type Budget struct {
 // Signing describes the provider's signature scheme.
 type Signing struct {
 	// Scheme names the algorithm in package signing: stripe_v1,
-	// github_sha256, shopify_hmac_sha256, standard_webhooks_v1 or none.
+	// github_sha256, shopify_hmac_sha256, standard_webhooks_v1, slack_v0,
+	// paddle_h1 or none.
 	Scheme          string   `json:"scheme"`
 	Headers         []string `json:"headers"` // every signature header (UNS-1)
 	SignedTimestamp bool     `json:"signed_timestamp"`
@@ -179,7 +180,7 @@ var verRe = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
 // Schemes known to package signing.
 var Schemes = map[string]bool{
 	"stripe_v1": true, "github_sha256": true, "shopify_hmac_sha256": true,
-	"standard_webhooks_v1": true, "none": true,
+	"standard_webhooks_v1": true, "slack_v0": true, "paddle_h1": true, "none": true,
 }
 
 func (p *Pack) validate() error {

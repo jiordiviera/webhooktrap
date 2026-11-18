@@ -1,0 +1,58 @@
+---
+title: "Slack"
+description: "Prove your Slack Events API handler against forged, unsigned, late and retried deliveries, and Slack's 3-second limit."
+icon: "slack"
+---
+
+import SecretsLocal from '/snippets/secrets-local.mdx';
+
+## Get Slack deliveries into Webhook Trap
+
+Slack checks a new **Request URL** with a `url_verification` challenge, and only your own handler can answer it. A capture URL answers `{"received":true}`, so Slack won't save it as the Request URL.
+
+Two ways in:
+
+- **Relay:** in your handler, after it answers Slack, forward the raw request (body and headers, unchanged) to your capture URL.
+- **Fixtures:** write deliveries you logged as [fixture files](/reference/fixtures) and run them with `webhooktrap test`.
+
+Webhook Trap recognises a Slack delivery by its `X-Slack-Signature` and `X-Slack-Request-Timestamp` headers. It takes the event type from `event.type` and the event id from `event_id`, and groups events by channel (`event.channel`).
+
+## Configure the agent
+
+```yaml webhooktrap.yml
+target: http://127.0.0.1:3000/slack/events
+provider: slack
+secret: env:SLACK_SIGNING_SECRET
+```
+
+```bash
+export SLACK_SIGNING_SECRET=...
+webhooktrap agent
+```
+
+If you leave out `secret`, the agent looks for `SLACK_SIGNING_SECRET`, the name in the Slack pack. It is the app's **Signing Secret** (Basic Information › App Credentials), not a bot token.
+
+<SecretsLocal />
+
+Slack signs `v0:<timestamp>:<body>` with HMAC-SHA256 and sends `v0=<hex>` in `X-Slack-Signature`. Slack's docs ask you to reject a timestamp more than five minutes from your clock, so the pack's tolerance is 300 s.
+
+## What the scenarios do for Slack
+
+| Scenario | For Slack |
+| -------- | --------- |
+| Once | Each selected event. |
+| Twice | The first event again, 500 ms later, re-signed. Slack retries a failed delivery up to three times, so the same `event_id` can arrive more than once. |
+| Shuffled | The events in reverse order. Needs 2 or more events. |
+| Late | The first event signed for a timestamp 360 s in the past (tolerance 300 s + 60 s). |
+| Retry after error | The first event, then the same event 2 s after the first attempt completes. |
+| Tampered | The body with one field changed, signed for the original body: the first numeric field whose name contains `amount`, `total`, `price` or `quantity`, else `"_webhooktrap_tampered":true` is added. |
+| Unsigned | The first event with `X-Slack-Signature` removed. `X-Slack-Request-Timestamp` stays. |
+| Burst | Every selected event at once (two copies when you select one). |
+| Slow budget | One more delivery, measured against the 3 s budget. |
+
+The 3 s budget comes from Slack's docs: answer with a 2xx within three seconds. A `budget:` above it in `webhooktrap.yml` is refused as a configuration error.
+
+## Sources
+
+- [Verifying requests from Slack](https://docs.slack.dev/authentication/verifying-requests-from-slack): signature, base string, five-minute window.
+- [Events API › Retries](https://docs.slack.dev/apis/events-api/#retries): three-second limit, up to three retries, `x-slack-retry-num`.

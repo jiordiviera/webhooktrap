@@ -93,11 +93,12 @@ const RD_GROUP_LABELS = [
 it('loads every pack the manifest names, pinned to one version, in detection order', function (): void {
     $set = PackSet::load(base_path('packs'));
 
-    expect(array_map(fn ($p) => $p->ref(), $set->packs))->toBe(['stripe@1.0.0', 'github@1.0.0', 'shopify@1.0.0', 'standard_webhooks@1.0.0'])
+    expect(array_map(fn ($p) => $p->ref(), $set->packs))->toBe(['stripe@1.0.0', 'github@1.0.0', 'shopify@1.0.0', 'slack@1.0.0', 'paddle@1.0.0', 'standard_webhooks@1.0.0'])
         ->and(app(PackCatalog::class)->currentRefs())->toContain('none@1.0.0')
         ->and(app(PackCatalog::class)->providers())->toBe([
             ['id' => 'stripe', 'name' => 'Stripe'], ['id' => 'github', 'name' => 'GitHub'],
-            ['id' => 'shopify', 'name' => 'Shopify'], ['id' => 'standard_webhooks', 'name' => 'Standard Webhooks'],
+            ['id' => 'shopify', 'name' => 'Shopify'], ['id' => 'slack', 'name' => 'Slack'],
+            ['id' => 'paddle', 'name' => 'Paddle'], ['id' => 'standard_webhooks', 'name' => 'Standard Webhooks'],
         ]);
     // Top-level keys follow the JSON Schema shared with the engine (agent/pack).
     $schema = json_decode((string) file_get_contents(base_path('packs/_schema/pack.schema.json')), true, 512, JSON_THROW_ON_ERROR);
@@ -181,6 +182,9 @@ it('detects each provider from its headers', function (array $headers, ?string $
     'Stripe' => [['Stripe-Signature' => 't=1,v1=ab'], 'stripe', 'Stripe'],
     'GitHub' => [['X-GitHub-Event' => 'ping'], 'github', 'GitHub'],
     'Shopify' => [['X-Shopify-Topic' => 'orders/create'], 'shopify', 'Shopify'],
+    'Slack' => [['X-Slack-Signature' => 'v0=ab', 'X-Slack-Request-Timestamp' => '1531420618'], 'slack', 'Slack'],
+    'Slack signature without its timestamp is not Slack' => [['X-Slack-Signature' => 'v0=ab'], null, null],
+    'Paddle' => [['Paddle-Signature' => 'ts=1;h1=ab'], 'paddle', 'Paddle'],
     'Standard Webhooks, sender from User-Agent' => [['webhook-id' => 'msg_1', 'webhook-signature' => 'v1,abc', 'User-Agent' => 'Acme-Webhooks/1.0'], 'standard_webhooks', 'Acme'],
     'Standard Webhooks, generic client' => [['webhook-id' => 'msg_1', 'webhook-signature' => 'v1,abc', 'User-Agent' => 'python-requests/2.32'], 'standard_webhooks', 'Standard Webhooks'],
     'webhook-id alone is not Standard Webhooks' => [['webhook-id' => 'msg_1'], null, null],
@@ -434,7 +438,8 @@ it('fills the stream rows, groups, providers and the detail Decoded facts', func
         ->where('query.view', 'grouped')
         ->where('providers', [
             ['id' => 'stripe', 'name' => 'Stripe'], ['id' => 'github', 'name' => 'GitHub'],
-            ['id' => 'shopify', 'name' => 'Shopify'], ['id' => 'standard_webhooks', 'name' => 'Standard Webhooks'],
+            ['id' => 'shopify', 'name' => 'Shopify'], ['id' => 'slack', 'name' => 'Slack'],
+            ['id' => 'paddle', 'name' => 'Paddle'], ['id' => 'standard_webhooks', 'name' => 'Standard Webhooks'],
             ['id' => 'curl', 'name' => 'curl'],
         ])
         ->where('captures.latest.1.provider', 'standard_webhooks')
@@ -492,3 +497,19 @@ it('says differs for a missing path only against 5 or more baseline captures tha
         ->and(ShapeVerdict::of([['a', 'number']], [$full]))->toBe('differs')
         ->and(ShapeVerdict::of($full, []))->toBe('new');
 });
+
+it('derives Slack and Paddle event types, ids and groups from their fixtures (issue #19)', function (string $provider, string $file, string $type, string $id, ?string $groupLabel): void {
+    $fixture = json_decode((string) file_get_contents(base_path("agent/testdata/fixtures/{$provider}/{$file}.json")), true, 512, JSON_THROW_ON_ERROR);
+    $headers = ['Slack' => ['X-Slack-Signature' => 'v0=ab', 'X-Slack-Request-Timestamp' => '1794405483'], 'Paddle' => ['Paddle-Signature' => 'ts=1794405483;h1=ab']][ucfirst($provider)];
+    $project = userProject(makeUser());
+    sendRaw('POST', '/c/'.activeKey($project->id), $fixture['body'], $headers + ['Content-Type' => 'application/json'])->assertOk();
+
+    $row = derivedOf(lastCapture($project->id)->id);
+    expect($row['provider'])->toBe($provider)
+        ->and($row['event_type'])->toBe($type)
+        ->and($row['provider_event_id'])->toBe($id)
+        ->and($row['group_label'])->toBe($groupLabel);
+})->with([
+    'Slack app_mention, grouped by channel' => ['slack', 'app_mention', 'app_mention', 'Ev0SYNTH0001', 'C0SYNTH001'],
+    'Paddle transaction, grouped by its subscription' => ['paddle', 'transaction.paid', 'transaction.paid', 'evt_01jsynth0000000000000000a2', 'sub_01jsynth0000000000000000a1'],
+]);

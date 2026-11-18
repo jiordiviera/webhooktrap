@@ -16,6 +16,7 @@ import { CopyCommand, GetUrlButton } from './landing-button';
 import {
     GitHubLogo,
     ShopifyLogo,
+    SlackLogo,
     StripeLogo,
 } from '@/components/brand/provider-logos';
 import { DeliveryLane } from './delivery-lane';
@@ -638,7 +639,9 @@ const providers = [
     { name: 'Stripe', Logo: StripeLogo },
     { name: 'GitHub', Logo: GitHubLogo },
     { name: 'Shopify', Logo: ShopifyLogo },
-    // No mark for Standard Webhooks in svgl: name only.
+    { name: 'Slack', Logo: SlackLogo },
+    // No mark for Paddle or Standard Webhooks in svgl: name only.
+    { name: 'Paddle', Logo: null },
     { name: 'Standard Webhooks', Logo: null },
 ];
 
@@ -655,7 +658,7 @@ export function Providers() {
                 ))}
             </ul>
             <p className="mt-[18px] text-[13.5px] text-lp-dim">
-                Coming: Twilio, Slack
+                Coming: Twilio, Adyen
             </p>
         </Section>
     );

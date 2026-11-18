@@ -138,7 +138,7 @@ Recomputes the verdict from a local run document's plan and observations, with t
 | -------- | ------- | ------ |
 | `WEBHOOKTRAP_SERVER` | `pair`, `agent` | Server origin when `--server` is not given. |
 | `WEBHOOKTRAP_CONFIG_DIR` | `pair`, `agent` | Directory for pairings and keys, in place of `<OS config dir>/webhooktrap`. |
-| `STRIPE_WEBHOOK_SECRET`, `GITHUB_WEBHOOK_SECRET`, `SHOPIFY_API_SECRET`, `WEBHOOK_SECRET` | `test`, `agent` | Signing secrets the packs look for when `webhooktrap.yml` sets no `secret`. |
+| `STRIPE_WEBHOOK_SECRET`, `GITHUB_WEBHOOK_SECRET`, `SHOPIFY_API_SECRET`, `SLACK_SIGNING_SECRET`, `PADDLE_WEBHOOK_SECRET`, `WEBHOOK_SECRET` | `test`, `agent` | Signing secrets the packs look for when `webhooktrap.yml` sets no `secret`. |
 | `TERM=dumb` | `test` | ASCII output. |
 | `GITHUB_EVENT_NAME` | `test` | When it is `pull_request_target`, `cmd:` probes and `reset` are refused without `--allow-untrusted-config`. |
 | `WT_<TYPE>_ID` | probe commands | Set by the agent for a `{{type.id}}` template in a `cmd:` probe. See [Configuration](/reference/configuration#probe-templates). |

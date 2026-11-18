@@ -42,13 +42,16 @@ func (s Secret) MarshalJSON() ([]byte, error) { return []byte(strconv.Quote(s.Na
 
 // Header names per scheme.
 const (
-	StripeHeader       = "Stripe-Signature"
-	GitHubHeader       = "X-Hub-Signature-256"
-	GitHubLegacyHeader = "X-Hub-Signature"
-	ShopifyHeader      = "X-Shopify-Hmac-Sha256"
-	StdIDHeader        = "webhook-id"
-	StdTimestampHeader = "webhook-timestamp"
-	StdSignatureHeader = "webhook-signature"
+	StripeHeader         = "Stripe-Signature"
+	GitHubHeader         = "X-Hub-Signature-256"
+	GitHubLegacyHeader   = "X-Hub-Signature"
+	ShopifyHeader        = "X-Shopify-Hmac-Sha256"
+	StdIDHeader          = "webhook-id"
+	StdTimestampHeader   = "webhook-timestamp"
+	StdSignatureHeader   = "webhook-signature"
+	SlackSignatureHeader = "X-Slack-Signature"
+	SlackTimestampHeader = "X-Slack-Request-Timestamp"
+	PaddleHeader         = "Paddle-Signature"
 )
 
 // ErrUnsupported is returned for a scheme this engine can't sign.
@@ -79,6 +82,17 @@ func Sign(scheme string, secret Secret, eventID string, body []byte, ts int64) (
 			{StdTimestampHeader, t},
 			{StdSignatureHeader, "v1," + base64.StdEncoding.EncodeToString(mac)},
 		}, nil
+	case "slack_v0":
+		// docs.slack.dev › Verifying requests from Slack: v0=hex(HMAC-SHA256("v0:" + ts + ":" + body)).
+		mac := hmacSHA256(secret.value, []byte("v0:"+t+":"+string(body)))
+		return [][2]string{
+			{SlackTimestampHeader, t},
+			{SlackSignatureHeader, "v0=" + hex.EncodeToString(mac)},
+		}, nil
+	case "paddle_h1":
+		// developer.paddle.com › Verify webhook signatures: ts=<ts>;h1=hex(HMAC-SHA256(ts + ":" + body)).
+		mac := hmacSHA256(secret.value, []byte(t+":"+string(body)))
+		return [][2]string{{PaddleHeader, "ts=" + t + ";h1=" + hex.EncodeToString(mac)}}, nil
 	}
 	return nil, ErrUnsupported
 }
@@ -182,6 +196,54 @@ func Verify(scheme string, secret Secret, headers [][2]string, body []byte, now 
 			}
 		}
 		c.TimestampOK = abs(now-ts) <= int64(toleranceS)
+	case "slack_v0":
+		sig := header(headers, SlackSignatureHeader)
+		if sig == "" {
+			return c
+		}
+		c.HeaderPresent = true
+		t := header(headers, SlackTimestampHeader)
+		ts, err := strconv.ParseInt(t, 10, 64)
+		hexsig, ok := strings.CutPrefix(sig, "v0=")
+		got, herr := hex.DecodeString(hexsig)
+		if err != nil || !ok || herr != nil || len(got) != sha256.Size {
+			return c
+		}
+		c.WellFormed = true
+		c.SignatureOK = hmac.Equal(got, hmacSHA256(secret.value, []byte("v0:"+t+":"+string(body))))
+		c.TimestampOK = abs(now-ts) <= int64(toleranceS)
+	case "paddle_h1":
+		h := header(headers, PaddleHeader)
+		if h == "" {
+			return c
+		}
+		c.HeaderPresent = true
+		var t string
+		var sigs []string
+		for _, part := range strings.Split(h, ";") {
+			k, v, ok := strings.Cut(strings.TrimSpace(part), "=")
+			if !ok {
+				continue
+			}
+			switch k {
+			case "ts":
+				t = v
+			case "h1": // more than one h1 while a secret is rotated out
+				sigs = append(sigs, v)
+			}
+		}
+		ts, err := strconv.ParseInt(t, 10, 64)
+		if err != nil || len(sigs) == 0 {
+			return c
+		}
+		c.WellFormed = true
+		want := hmacSHA256(secret.value, []byte(t+":"+string(body)))
+		for _, s := range sigs {
+			if got, err := hex.DecodeString(s); err == nil && hmac.Equal(got, want) {
+				c.SignatureOK = true
+			}
+		}
+		c.TimestampOK = abs(now-ts) <= int64(toleranceS)
 	default:
 		c.HeaderPresent, c.WellFormed, c.SignatureOK = true, true, true
 	}
@@ -199,6 +261,10 @@ func Headers(scheme string) []string {
 		return []string{ShopifyHeader}
 	case "standard_webhooks_v1":
 		return []string{StdSignatureHeader} // webhook-id and webhook-timestamp stay (UNS-1)
+	case "slack_v0":
+		return []string{SlackSignatureHeader} // the timestamp header stays (UNS-1)
+	case "paddle_h1":
+		return []string{PaddleHeader}
 	}
 	return nil
 }

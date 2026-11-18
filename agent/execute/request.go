@@ -2,6 +2,7 @@ package execute
 
 import (
 	"errors"
+	"slices"
 	"strings"
 	"time"
 
@@ -63,11 +64,13 @@ func (o *Options) buildRequest(d plan.Delivery, now time.Time) (*Request, error)
 	case plan.SignOriginal:
 		sig = captured
 	case plan.SignNone:
-		if scheme == "standard_webhooks_v1" && !o.Secret.IsZero() { // UNS-1 keeps webhook-id and webhook-timestamp
+		// UNS-1 keeps the scheme's other headers fresh: webhook-id and
+		// webhook-timestamp (Standard Webhooks), X-Slack-Request-Timestamp (Slack).
+		if (scheme == "standard_webhooks_v1" || scheme == "slack_v0") && !o.Secret.IsZero() {
 			h, err := signing.Sign(scheme, o.Secret, o.messageID(ev.ProviderEventID, c.Headers), c.Body, now.Unix())
 			if err == nil {
 				for _, kv := range h {
-					if !strings.EqualFold(kv[0], signing.StdSignatureHeader) {
+					if !slices.ContainsFunc(signing.Headers(scheme), func(n string) bool { return strings.EqualFold(n, kv[0]) }) {
 						sig = append(sig, kv)
 					}
 				}

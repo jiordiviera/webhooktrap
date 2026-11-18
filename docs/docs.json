@@ -72,6 +72,8 @@
           "guides/stripe",
           "guides/github",
           "guides/shopify",
+          "guides/slack",
+          "guides/paddle",
           "guides/standard-webhooks",
           "guides/ci",
           "guides/self-hosting",

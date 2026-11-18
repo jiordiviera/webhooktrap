@@ -16,11 +16,19 @@
             "version": "1.0.0"
         },
         {
+            "id": "slack",
+            "version": "1.0.0"
+        },
+        {
+            "id": "paddle",
+            "version": "1.0.0"
+        },
+        {
             "id": "standard_webhooks",
             "version": "1.0.0"
         }
     ],
-    "coming": ["twilio", "slack"],
+    "coming": ["twilio", "adyen"],
     "unknown": {
         "group_fallback": "data_id"
     }
