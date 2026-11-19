@@ -199,7 +199,7 @@ jobs:
           python3 -I -B deploy/policy/test_compose_policy.py "$d/resolved.json" "$d"
       - name: Caddyfile is valid in every trust mode
         run: |
-          img=dunglas/frankenphp:1-php8.5-bookworm@sha256:681db339fc7751be886ac69b6daab1ac32c0a78ed8fa255abdacc75391a00480
+          img=dunglas/frankenphp:1-php8.5-bookworm@sha256:e673b1932022450620304b18543d9437205fb5ded3daf25fadf7d777fa4cd0b8
           for mode in secret none ip; do
             for ingest in local proxy; do
               docker run --rm -e PROXY_TRUST_MODE="$mode" -e INGEST_MODE="$ingest" -e TRUSTED_PROXIES=172.16.0.0/12 \

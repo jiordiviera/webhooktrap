@@ -6,7 +6,7 @@
 #   runtime  the app image: app, reverb, horizon, scheduler and the engine sandbox (one image)
 #   runner   the server runner: the engine binary alone, distroless, non-root (ADR-010 §12)
 #
-# Base images are pinned by digest (resolved 2026-11-15); Dependabot (docker ecosystem) proposes bumps.
+# Base images are pinned by digest (resolved 2026-11-19, PHP 8.5.13); Dependabot (docker ecosystem) proposes bumps.
 
 ARG PHP_VERSION=8.5
 
@@ -30,7 +30,7 @@ RUN CGO_ENABLED=0 go build -trimpath -buildvcs=false \
 # ---------------------------------------------------------------------------
 # PHP base: FrankenPHP and the extensions every PHP service shares.
 # ---------------------------------------------------------------------------
-FROM dunglas/frankenphp:1-php${PHP_VERSION}-bookworm@sha256:681db339fc7751be886ac69b6daab1ac32c0a78ed8fa255abdacc75391a00480 AS base
+FROM dunglas/frankenphp:1-php${PHP_VERSION}-bookworm@sha256:e673b1932022450620304b18543d9437205fb5ded3daf25fadf7d777fa4cd0b8 AS base
 WORKDIR /app
 # Realtime (decision 50, compose-profile §3.2): Reverb needs an event-loop extension, or ReactPHP
 # falls back to stream_select and dies near 1,014 sockets. Both `uv` and `event` were built and
