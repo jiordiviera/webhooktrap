@@ -106,5 +106,25 @@
       "x": "https://x.com/jiordiviera",
       "github": "https://github.com/jiordiviera/webhooktrap"
     }
-  }
+  },
+  "redirects": [
+    { "source": "/introduction", "destination": "/", "permanent": true },
+    { "source": "/account-setup", "destination": "/quickstart", "permanent": true },
+    { "source": "/concepts/capture", "destination": "/concepts", "permanent": true },
+    { "source": "/concepts/inboxes", "destination": "/concepts", "permanent": true },
+    { "source": "/concepts/replay", "destination": "/concepts", "permanent": true },
+    { "source": "/concepts/sharing", "destination": "/concepts", "permanent": true },
+    { "source": "/guides/anonymous-vs-saved", "destination": "/concepts", "permanent": true },
+    { "source": "/guides/team-debugging", "destination": "/concepts", "permanent": true },
+    { "source": "/api/authentication", "destination": "/reference/capture-endpoint", "permanent": true },
+    { "source": "/api/events", "destination": "/reference/capture-endpoint", "permanent": true },
+    { "source": "/api/inboxes", "destination": "/reference/capture-endpoint", "permanent": true },
+    { "source": "/api/replay", "destination": "/concepts", "permanent": true },
+    { "source": "/integrations/overview", "destination": "/quickstart", "permanent": true },
+    { "source": "/integrations/github", "destination": "/guides/github", "permanent": true },
+    { "source": "/integrations/shopify", "destination": "/guides/shopify", "permanent": true },
+    { "source": "/integrations/other-providers", "destination": "/guides/standard-webhooks", "permanent": true },
+    { "source": "/security/overview", "destination": "/security", "permanent": true },
+    { "source": "/security/data-storage", "destination": "/security", "permanent": true }
+  ]
 }
