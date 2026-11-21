@@ -169,8 +169,8 @@ services:
     <<: *app
     command: ["php", "artisan", "schedule:work"]
     secrets: [app_key, db_password, valkey_password, error_tracker_dsn]
-    mem_limit: 128m
-    memswap_limit: 128m
+    mem_limit: 192m # rev. 18: 128m OOM-killed schedule:work about every 20 min (three PHP processes at peak)
+    memswap_limit: 192m
     cpus: 0.25
     pids_limit: 128
     healthcheck: # heartbeat written by a scheduled task every minute (command lands with Retention/Instance)

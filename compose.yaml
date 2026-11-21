@@ -196,7 +196,7 @@ services:
     <<: *app
     command: ["php", "artisan", "schedule:work"]
     secrets: [app_key, db_password, valkey_password, error_tracker_dsn]
-    mem_limit: 128m
+    mem_limit: 192m # 128m OOM-killed schedule:work in production (three PHP processes at peak)
     pids_limit: 128
     healthcheck:
       test: ["CMD", "php", "artisan", "app:heartbeat-check", "--max-age=120"]
