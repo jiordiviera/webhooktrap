@@ -1,6 +1,7 @@
 # Compose profile · Webhook Trap 2.0
 
-**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-16 (rev. 17)
+**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-21 (rev. 18)
+**Rev. 18 (2026-11-21):** `scheduler` raised from 128m to 192m in both profiles. In production the kernel killed `schedule:work` 72 times in 24 hours: the parent, the per-minute `schedule:run` and an inline command make three PHP processes of 35 to 50 MiB each. 192m keeps the hosted sum (6,096 MiB) under the 6G slice. Change table at the end.
 **Rev. 17 (2026-11-16):** PO decision of 2026-11-16: server-side rendering of the public pages (landing, legal pages, example run) for anonymous visitors only, by a new `ssr` service in both profiles: the same image, `node` on the self-contained bundle, network `ssr` with `app` only, no secrets, 128m (new §2.5, §3, §4, §5, §6; policy P-21). Change table at the end.
 **Rev. 16 (2026-11-16):** decision 72: mail through PulseSend (`MAIL_MAILER=pulsesend`); its key is the optional file secret `pulsesend_api_key` on `app` and `horizon` (§5). Change table at the end.
 **Scope:** decision 32 §4 (one self-host profile, Redis-compatible store required, no minimal profile), decision 43 (template `jiordiviera/laravel-inertia-vps-template`), HD-4, HD-5, HD-8, HD-10, ADR-008.
@@ -203,8 +204,8 @@ services:
   scheduler:
     <<: *app
     command: ["php", "artisan", "schedule:work"]
-    mem_limit: 128m
-    memswap_limit: 128m
+    mem_limit: 192m
+    memswap_limit: 192m
     cpus: 0.25
     pids_limit: 128
     healthcheck:                        # heartbeat written by a scheduled task every minute
@@ -635,14 +636,14 @@ None of them depends on the capture key. The front removes `Server` and `Via` fr
 | haproxy-config | 32m · 0.1 |
 | reverb | 384m · 0.5 |
 | horizon | 512m · 1.0 |
-| scheduler | 128m · 0.25 |
+| scheduler | 192m · 0.25 (rev. 18) |
 | engine | 192m · 0.25 |
 | ssr (rev. 17) | 128m · 0.25 |
 | valkey | 384m · 0.5 |
 | postgres | 2048m · 1.5 (`shared_buffers` 1 GB, `effective_cache_size` 3 GB) |
 | backup | 384m · 0.5 |
 
-- **Sum:** about 5.9 GiB (rev. 17: 6,032 MiB with `ssr`; 5,904 MiB before). The slice proposal is `MemoryMax=6G`, `CPUQuota=300%` (the private hosted deployment plan §6.1), so the ceilings fit under it with no overcommit.
+- **Sum:** about 5.9 GiB (rev. 18: 6,096 MiB with `scheduler` at 192m; rev. 17: 6,032 MiB with `ssr`; 5,904 MiB before). The slice proposal is `MemoryMax=6G`, `CPUQuota=300%` (the private hosted deployment plan §6.1), so the ceilings fit under it with no overcommit.
 - **Settings in `.env.production`:** `PASSWORD_HASH_MAX_CONCURRENT=3`, `LONGPOLL_AGENT_SLOTS=6`, `VALKEY_MAXMEMORY=288mb`.
 - **§3.1 rule at 1200m:** 3 × 70 MiB ≤ 300 MiB (25 %), and a 560 MB baseline ≤ 600 MB (50 %).
 
@@ -660,7 +661,7 @@ Ceilings, not reservations. The slice caps the sum; per-service limits cap each 
 | ingest (rev. 8, 10) | 384m · 0.5 | 512m · 0.75 | rev. 10: `INGEST_NUM_THREADS` 8 on both boxes (S3-17), measured 194 MiB peak at 8 threads, about 275 MiB with stored bodies (§2.4); the body is streamed, at most 5 MiB kept |
 | reverb | 256m · 0.5 | 384m · 0.5 | `nofile` soft = hard 10 000, checked at boot (§3.2) |
 | horizon | 448m · 0.5 (rev. 11) | 512m · 1.0 | rev. 11: three supervisors, measured 304 MiB with the default queue scaled to 2 (§3.4) |
-| scheduler | 128m · 0.25 | 128m · 0.25 | |
+| scheduler | 192m · 0.25 (rev. 18) | 192m · 0.25 | 128m was OOM-killed in production: three PHP processes of 35 to 50 MiB at peak |
 | valkey | 256m (`VALKEY_MAXMEMORY` ~75 % of it) · 0.25 | 384m · 0.5 | |
 | backup | 256m · 0.25 | 384m · 0.5 | low I/O weight |
 | engine | 128m · 0.25 | 192m · 0.25 | `pids_limit` 128, no network |
@@ -771,7 +772,7 @@ One file, derived from §2 by these changes only (decision 32: single profile, R
 | Runner | not present (own VM) | `runner` service: `ghcr.io/<owner>/<repo>-runner:${WEBHOOKTRAP_VERSION}` (distroless static, non-root), `read_only`, `cap_drop: [ALL]`, `pids_limit: 256`, 256 MB, 1 CPU; network `runner` only (with `app`), no DB/Valkey/Reverb variables; `RUNNER_TOKEN_FILE` from a secret created by `php artisan runner:token` on first start; idle while server runs are off |
 | Backup repository | `s3` (R2 EU) | default `posix` on the `pgbackrest_repo` volume, with a loud note that same-disk backups are not disaster backups; `s3`/`sftp` documented |
 | `cgroup_parent`, `oom_score_adj` | set (shared box) | removed (unknown host) |
-| Limits | §3 (and §3.2 for Reverb: same image, same boot check, `REVERB_APP_MAX_CONNECTIONS` 500 on the 4 GB reference size until measured) | reference size (2 vCPU / 4 GB): postgres 1.5g, app 768m, reverb 256m, horizon 448m (rev. 11), scheduler 128m, valkey 384m, backup 256m, runner 256m |
+| Limits | §3 (and §3.2 for Reverb: same image, same boot check, `REVERB_APP_MAX_CONNECTIONS` 500 on the 4 GB reference size until measured) | reference size (2 vCPU / 4 GB): postgres 1.5g, app 768m, reverb 256m, horizon 448m (rev. 11), scheduler 192m (rev. 18), valkey 384m, backup 256m, runner 256m |
 | Networks | fixed subnets from F-5 | Docker-assigned; `PROXY_TRUST_MODE` defaults to `none` with built-in TLS and to `secret` behind a proxy (`ip` only as the weaker documented option, with `TRUSTED_PROXIES` defaulting to the `edge` network, declared with a documented default subnet the operator may change) |
 | Admin bootstrap | console command over SSH | `ADMIN_SETUP_TOKEN` printed to the log on first start if unset (TM-19) |
 | Kill switch | `SERVER_REPLAY_PUBLIC` false until C11 | same default false; the operator turns it on |
@@ -1020,3 +1021,9 @@ Required at start: `APP_KEY` everywhere; the identity keys on `app` only; the pa
 | PO 2026-11-16 | Image | no Node at runtime | `node` binary from the pinned build-stage image: +125 MB uncompressed, +42 MB compressed | §2.5 |
 | PO 2026-11-16 | Resources | sum 5,904 MiB | 6,032 MiB with `ssr` at 128m, under the 6G slice | §3 |
 | PO 2026-11-16 | Fallback | none needed | 1 s timeout, 0.25 s connect timeout, never throws: client rendering | §2.5 |
+
+## Change table (rev. 17 → rev. 18, scheduler memory)
+
+| By | Area | Rev. 17 | Rev. 18 | Where |
+| -- | ---- | ------- | ------- | ----- |
+| PO 2026-11-21 | Resources | `scheduler` 128m; hosted sum 6,032 MiB | `scheduler` 192m in both profiles; hosted sum 6,096 MiB, under the 6G slice | §2, §3 |
