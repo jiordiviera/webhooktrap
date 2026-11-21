@@ -1,6 +1,7 @@
 # CI/CD · Webhook Trap 2.0
 
-**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-16 (rev. 16)
+**Status:** DRAFT, paper only · **Author:** A10 (DevOps) · **Date:** 2026-11-21 (rev. 17)
+**Rev. 17 (2026-11-21):** PO decision of 2026-11-21: `ci.yml`, `container.yml` and `deploy.yml` run on the runner named by the repository variable `WT_RUNNER` (a self-hosted runner labelled `wt-local`), and on `ubuntu-24.04` when it is unset. A pull request from a fork always gets `ubuntu-24.04`, so no outside code runs on the self-hosted machine. The `php` job's services use host ports 55432 and 56379. Signatures and the on-box checks do not depend on the runner type. Change table at the end.
 **Rev. 16 (2026-11-16):** PO decision of 2026-11-16 (SSR of the public pages): the `ssr` service in the policy (P-1, P-2, P-3 user `65534:65534`, P-7 network `ssr` internal, P-14 no secrets, P-15, P-16, new P-21), 15 more fixtures (49); `pnpm run build` now also writes the SSR bundle, which the image ships and the Pest suite renders with. No workflow change. Change table at the end.
 **Rev. 15 (2026-11-16):** decision 72: the `pulsesend_api_key` secret (P-5, P-14 on `app` and `horizon`, P-20 `PULSESEND_API_KEY`). Change table at the end.
 **Rev. 13 (2026-11-15, step C2):** the repo is on GitHub, private, default branch `v2` (decisions 65-66; `main` deleted, 1.x on `v1`). CI and container run on `v2` and are green. The Compose policy (`deploy/policy`), `deploy.sh` and `deploy-gate` (`deploy/bin`) exist and are tested in CI. GitHub artifact attestations wait for the repo to go public. §1.3 lists the GitHub settings and secrets (names only). Change table at the end.
@@ -331,6 +332,7 @@ The template has **no licence** (`gh api` reports `license: null`; its README as
 | GitHub `production` environment secrets | `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `SERVER_HOST`, `SERVER_USER` |
 | GitHub `production` environment vars | `APP_DIR`, `APP_PORT` (values in the private plan) |
 | GitHub repository secrets | `CONFORMANCE_CAPTURE_URL` |
+| GitHub repository variables | `WT_RUNNER` (rev. 17): runner label for `ci.yml`, `container.yml` and `deploy.yml`; unset means `ubuntu-24.04` |
 | GitHub `release-agent` environment secrets (CI-3) | `HOMEBREW_TAP_TOKEN`; optional `APPLE_API_KEY_ID`, `APPLE_API_ISSUER_ID`, `APPLE_API_KEY_P8` |
 | GitHub `npm-publish` environment | no secret; trusted-publishing binding, PO as reviewer |
 | VPS only (root-only files) | `.env.production`, `secrets/*`: every app secret is a file (rev. 12, list in `compose-profile.md` §5), `.env.production` holds no secret, optional GHCR read token; `bin/` tools and `trusted_root.json` (§4.3) |
@@ -472,3 +474,10 @@ The template has **no licence** (`gh api` reports `license: null`; its README as
 | -- | ---- | ------- | ------- | ----- |
 | PO 2026-11-16 | Compose policy | eleven services | twelve: `ssr` (P-1, P-2, P-3, P-7, P-14, P-15, P-16, new P-21); 49 fixtures | §4.2 |
 | PO 2026-11-16 | Build | `pnpm run build` writes `public/build` | also `bootstrap/ssr/ssr.js` (`vp build && vp build --ssr`); the image keeps the bundle without source maps and gains the `node` binary | §3 |
+
+## Change table (rev. 17, self-hosted runner)
+
+| ID | Area | Rev. 16 | Rev. 17 | Where |
+| -- | ---- | ------- | ------- | ----- |
+| PO 2026-11-21 | Runners | `ubuntu-24.04` only | `vars.WT_RUNNER` or `ubuntu-24.04`; fork pull requests always `ubuntu-24.04` | §2, §3, §4, §8 |
+| PO 2026-11-21 | `php` job | services on host ports 5432 and 6379 | 55432 and 56379 | §2 |

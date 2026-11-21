@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   php:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ (github.event.pull_request.head.repo.fork && 'ubuntu-24.04') || vars.WT_RUNNER || 'ubuntu-24.04' }}
     permissions:
       contents: read
     services:
@@ -27,13 +27,13 @@ jobs:
           POSTGRES_USER: webhooktrap
           POSTGRES_PASSWORD: webhooktrap-ci # CI-only test value
           POSTGRES_DB: webhooktrap_testing
-        ports: ["5432:5432"]
+        ports: ["55432:5432"] # off 5432/6379 so a self-hosted runner with a local database still works
         options: >-
           --health-cmd "pg_isready -h 127.0.0.1 -U webhooktrap -d webhooktrap_testing"
           --health-interval 5s --health-timeout 5s --health-retries 10
       valkey:
         image: valkey/valkey:8-alpine@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a
-        ports: ["6379:6379"]
+        ports: ["56379:6379"]
         options: >-
           --health-cmd "valkey-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 10
@@ -41,12 +41,12 @@ jobs:
       APP_ENV: testing
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
-      DB_PORT: 5432
+      DB_PORT: 55432
       DB_DATABASE: webhooktrap_testing
       DB_USERNAME: webhooktrap
       DB_PASSWORD: webhooktrap-ci
       REDIS_HOST: 127.0.0.1
-      REDIS_PORT: 6379
+      REDIS_PORT: 56379
       # phpunit.xml sets the test drivers (array cache, sync queue, array mail); a real
       # environment variable would override them, so none is set here.
       APP_URL: https://webhooktrap.test # the origin the tests and phpunit.xml use
@@ -83,7 +83,7 @@ jobs:
         run: php artisan test
 
   go:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ (github.event.pull_request.head.repo.fork && 'ubuntu-24.04') || vars.WT_RUNNER || 'ubuntu-24.04' }}
     permissions:
       contents: read
     defaults:
@@ -112,7 +112,7 @@ jobs:
     # Dry run of the agent release (agent-release.yml, project/operations/agent-release.md):
     # the six release archives, SHA256SUMS, the seven npm packages packed, and the launcher
     # smoke-tested on linux-x64. Signs and publishes nothing.
-    runs-on: ubuntu-24.04
+    runs-on: ${{ (github.event.pull_request.head.repo.fork && 'ubuntu-24.04') || vars.WT_RUNNER || 'ubuntu-24.04' }}
     permissions:
       contents: read
     steps:
@@ -137,7 +137,7 @@ jobs:
         run: agent/release/npm-pack.sh 0.0.0-ci "$RUNNER_TEMP/release" "$RUNNER_TEMP/npm"
 
   infra:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ (github.event.pull_request.head.repo.fork && 'ubuntu-24.04') || vars.WT_RUNNER || 'ubuntu-24.04' }}
     permissions:
       contents: read
     steps:
