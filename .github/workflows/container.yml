@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ (github.event.pull_request.head.repo.fork && 'ubuntu-24.04') || vars.WT_RUNNER || 'ubuntu-24.04' }}
     permissions:
       contents: read
       packages: write # push to GHCR (only used on push)

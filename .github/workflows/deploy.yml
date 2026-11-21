@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ vars.WT_RUNNER || 'ubuntu-24.04' }}
     environment: production
     permissions:
       contents: read
