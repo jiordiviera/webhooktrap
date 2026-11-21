@@ -291,10 +291,11 @@ Test a restore before you need one, for example into a copy of the server.
     ```bash
     git fetch --tags && git checkout vX.Y.Z
     sed -i 's/^WEBHOOKTRAP_VERSION=.*/WEBHOOKTRAP_VERSION=X.Y.Z/' .env
+    sudo deploy/selfhost/install.sh
     docker compose up -d --wait
     ```
 
-    `migrate` runs before the app starts on the new images; `up --wait` returns once every service is healthy. New settings in `deploy/selfhost/env.template` have defaults; add them to `.env` only to change them.
+    `install.sh` keeps your `.env` and every existing secret; it only writes the secret files a new release adds, so `docker compose` finds them. `migrate` runs before the app starts on the new images; `up --wait` returns once every service is healthy. New settings in `deploy/selfhost/env.template` have defaults; add them to `.env` only to change them.
   </Step>
 </Steps>
 

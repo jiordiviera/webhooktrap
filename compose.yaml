@@ -57,7 +57,7 @@ x-app: &app
     migrate: { condition: service_completed_successfully }
 
 services:
-  migrate: # one-shot; take `docker compose run --rm backup backup-now` before an upgrade
+  migrate: # one-shot; take `docker compose exec backup backup-now` before an upgrade
     <<: *hardening
     image: ghcr.io/jiordiviera/webhooktrap:${WEBHOOKTRAP_VERSION:?Set WEBHOOKTRAP_VERSION}
     env_file: [.env]
