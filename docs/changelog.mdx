@@ -4,6 +4,18 @@ description: "Releases of Webhook Trap and of the webhooktrap agent."
 icon: "history"
 ---
 
+<Update label="21 November 2026" description="Webhook Trap 2.0.0, first self-host release">
+  ## Webhook Trap 2.0.0
+
+  The first release to install on your own Docker host, tag `v2.0.0`. It runs the same code as app.webhooktrap.dev. Follow the [self-hosting guide](/guides/self-hosting).
+
+  - Three images tagged `2.0.0`, linux/amd64: `ghcr.io/jiordiviera/webhooktrap`, `webhooktrap-runner` and `webhooktrap-postgres`. Each is signed with cosign and carries its SBOM and build provenance.
+  - `deploy/selfhost/install.sh` writes every secret file and `.env`. It never overwrites an existing file.
+  - Backups with pgBackRest, and point-in-time restore with the `restore` service.
+  - Upgrade and rollback between releases, tested end to end on a fresh host.
+  - The server runner is off by default; turn it on with the Compose profile `runner`.
+</Update>
+
 <Update label="16 November 2026" description="Webhook Trap 2.0 and agent 1.0.0">
   ## Webhook Trap 2.0
 
